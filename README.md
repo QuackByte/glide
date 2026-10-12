@@ -76,6 +76,7 @@ The checked-in Xcode project is generated from [`project.yml`](project.yml) with
 ### Layout
 
 - `Sources/GlideCore`: the pure-Swift layout engine (strip model, column widths, scroll offset, visibility and parking rules, keymap, restore planner). It only imports CoreGraphics, has no AppKit or Accessibility code, and is fully unit-tested in `Tests/GlideCoreTests`.
+- `Design/glide-icon.svg`: the app icon source. Re-render the asset catalog with `for n in 16 32 64 128 256 512 1024; do rsvg-convert -w $n -h $n Design/glide-icon.svg -o Assets.xcassets/AppIcon.appiconset/icon_$n.png; done`.
 - `Sources/Glide`: the app: AX window tracking (`WindowManager`, `AXWindow`), Carbon hotkeys (`HotkeyCenter`), the menu bar item, the settings and onboarding windows.
 
 Debug logging of the strip after every action: `log stream --level debug --predicate 'subsystem == "dev.quackbyte.glide"'`.

@@ -34,9 +34,9 @@ private struct OnboardingView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
-                Image(systemName: "rectangle.split.3x1.fill")
-                    .font(.system(size: 34))
-                    .foregroundStyle(.tint)
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .frame(width: 56, height: 56)
                 Text("Glide needs Accessibility access")
                     .font(.title2.bold())
             }

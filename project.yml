@@ -23,11 +23,13 @@ targets:
         - GlideCoreTests
     sources:
       - path: Sources/Glide
+      - path: Assets.xcassets
     dependencies:
       - target: GlideCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.quackbyte.glide
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES

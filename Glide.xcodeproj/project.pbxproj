@@ -33,6 +33,7 @@
 		E8C8A02BDD4E3C29C27EC33C /* FrameAnimationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B33FD4253A18B35308DCF6 /* FrameAnimationTests.swift */; };
 		F10682418406DA343212A609 /* StatusMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */; };
 		F255AEECF2965E1D44FFD06B /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B932133198BF26973212958C /* WindowManager.swift */; };
+		F6983173BD3A374B347B0478 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 314E60E90D26FC7C62D81809 /* Assets.xcassets */; };
 		FBDA779A3D9620B228EE028F /* ShortcutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */; };
 /* End PBXBuildFile section */
 
@@ -85,6 +86,7 @@
 		211731250170AA7196708655 /* KeyCombo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCombo.swift; sourceTree = "<group>"; };
 		25B33FD4253A18B35308DCF6 /* FrameAnimationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameAnimationTests.swift; sourceTree = "<group>"; };
 		2A06047E647B6B48699CC776 /* Strip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strip.swift; sourceTree = "<group>"; };
+		314E60E90D26FC7C62D81809 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3A6A28B03CDE994D57F86522 /* FrameAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameAnimation.swift; sourceTree = "<group>"; };
 		531206BCE2FA2DABC6339953 /* Keymap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keymap.swift; sourceTree = "<group>"; };
 		59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutStore.swift; sourceTree = "<group>"; };
@@ -177,6 +179,7 @@
 		94BA5C58C1A72FDC6E953004 = {
 			isa = PBXGroup;
 			children = (
+				314E60E90D26FC7C62D81809 /* Assets.xcassets */,
 				0DBDD1188172043B6B135611 /* Glide */,
 				2785E0EA72387D4C5B972711 /* GlideCore */,
 				87F6AED6B3D2A5B9F0BB73F7 /* GlideCoreTests */,
@@ -239,6 +242,7 @@
 			buildConfigurationList = 136EAE6969C4A2C055CC773B /* Build configuration list for PBXNativeTarget "Glide" */;
 			buildPhases = (
 				CE014D1674B58123726B5048 /* Sources */,
+				A69B313BC2461CB831565779 /* Resources */,
 				C1A45032CBB16193099EB372 /* Frameworks */,
 				40AA9B0BD1D7ABEF30394861 /* Embed Frameworks */,
 			);
@@ -297,6 +301,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A69B313BC2461CB831565779 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F6983173BD3A374B347B0478 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		14F5CB47E6E6FA6126806AB0 /* Sources */ = {
