@@ -1,0 +1,645 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00C3E0C2456EA04C1BA5D2A6 /* GlideCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; };
+		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
+		15E9FA80D8D9DB5E14C69285 /* KeymapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1529283E97AE33824F61C0A5 /* KeymapTests.swift */; };
+		1ADA5E746AD53B25E033F49A /* GlideCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1BA66D9B2CD8AE2CF58148FD /* Strip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A06047E647B6B48699CC776 /* Strip.swift */; };
+		28EEDE8930D6815B953705DF /* HotkeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D5BCF04C2F6A9E0B7A39A5 /* HotkeyCenter.swift */; };
+		3B3A0AC8EC8515F2D73F7CE2 /* GlideCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; };
+		468E6CB8186840D9CBD39703 /* WorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 855D351DAF3428DE0F359ACF /* WorkspaceTests.swift */; };
+		47DFC044C64B0DD3B4BEBECE /* StripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ECA03FC26B7820A6830B7D2 /* StripTests.swift */; };
+		4F7F0DCACEA41D66A3506417 /* Keymap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531206BCE2FA2DABC6339953 /* Keymap.swift */; };
+		5B90D240DEDA13828B1D84EF /* RestorePlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16BE04140139A88E5CF19C67 /* RestorePlanner.swift */; };
+		5BF428AD4310B57D10EE8AA9 /* OnboardingWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AFF5FCB944F55C17F2DB /* OnboardingWindow.swift */; };
+		6336834BF168EB783F12E62C /* KeyCombo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211731250170AA7196708655 /* KeyCombo.swift */; };
+		83397809128CF693A2954850 /* GlideCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		94B380400A200760117CEDF7 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD1ADCA9153C04F07A3271E /* Workspace.swift */; };
+		9752D2DB073C18961DD26742 /* RestorePlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55E3468B2292B798242FE4E /* RestorePlannerTests.swift */; };
+		9DC758C127A17141F074A152 /* AXWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7723B886DE20AE2F7F7E0E /* AXWindow.swift */; };
+		B43D06626F88A29E9F6C511E /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */; };
+		BE717C6D231512529E2BC0DE /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A78F29015300266375FF59E /* Action.swift */; };
+		CDE703CBDFAC970353EE4CFB /* AccessibilityPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */; };
+		F10682418406DA343212A609 /* StatusMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */; };
+		F255AEECF2965E1D44FFD06B /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B932133198BF26973212958C /* WindowManager.swift */; };
+		FBDA779A3D9620B228EE028F /* ShortcutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4212D35EC8125CDA568D7CA3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2C87CDC4AB5959E237BDBE6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 74A942F81FD2ACA39CCDAFA6;
+			remoteInfo = GlideCore;
+		};
+		A9FD197B8D063A4277C46DEF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2C87CDC4AB5959E237BDBE6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 74A942F81FD2ACA39CCDAFA6;
+			remoteInfo = GlideCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		40AA9B0BD1D7ABEF30394861 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				83397809128CF693A2954850 /* GlideCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9F6F3ECB5EBBB7AA117AFDC7 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				1ADA5E746AD53B25E033F49A /* GlideCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		05D0AFF5FCB944F55C17F2DB /* OnboardingWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindow.swift; sourceTree = "<group>"; };
+		1529283E97AE33824F61C0A5 /* KeymapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeymapTests.swift; sourceTree = "<group>"; };
+		16BE04140139A88E5CF19C67 /* RestorePlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorePlanner.swift; sourceTree = "<group>"; };
+		211731250170AA7196708655 /* KeyCombo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCombo.swift; sourceTree = "<group>"; };
+		2A06047E647B6B48699CC776 /* Strip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strip.swift; sourceTree = "<group>"; };
+		531206BCE2FA2DABC6339953 /* Keymap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keymap.swift; sourceTree = "<group>"; };
+		59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutStore.swift; sourceTree = "<group>"; };
+		6A78F29015300266375FF59E /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
+		6D0B438DF90FEDB0793748C3 /* GlideCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GlideCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityPermission.swift; sourceTree = "<group>"; };
+		7ECA03FC26B7820A6830B7D2 /* StripTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripTests.swift; sourceTree = "<group>"; };
+		855D351DAF3428DE0F359ACF /* WorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceTests.swift; sourceTree = "<group>"; };
+		97C6EBB568AC2ADAFB1A70E0 /* Glide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Glide.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F7723B886DE20AE2F7F7E0E /* AXWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindow.swift; sourceTree = "<group>"; };
+		B932133198BF26973212958C /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
+		C8DC58FA05CD84A7E6606359 /* GlideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlideApp.swift; sourceTree = "<group>"; };
+		C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenu.swift; sourceTree = "<group>"; };
+		D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
+		DD74BF51238E38CE7484D1F6 /* GlideCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GlideCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1D5BCF04C2F6A9E0B7A39A5 /* HotkeyCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCenter.swift; sourceTree = "<group>"; };
+		F55E3468B2292B798242FE4E /* RestorePlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorePlannerTests.swift; sourceTree = "<group>"; };
+		FFD1ADCA9153C04F07A3271E /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3D1210FB2152F7A5F4F90856 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00C3E0C2456EA04C1BA5D2A6 /* GlideCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1A45032CBB16193099EB372 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3B3A0AC8EC8515F2D73F7CE2 /* GlideCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0DBDD1188172043B6B135611 /* Glide */ = {
+			isa = PBXGroup;
+			children = (
+				7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */,
+				9F7723B886DE20AE2F7F7E0E /* AXWindow.swift */,
+				C8DC58FA05CD84A7E6606359 /* GlideApp.swift */,
+				E1D5BCF04C2F6A9E0B7A39A5 /* HotkeyCenter.swift */,
+				05D0AFF5FCB944F55C17F2DB /* OnboardingWindow.swift */,
+				D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */,
+				59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */,
+				C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */,
+				B932133198BF26973212958C /* WindowManager.swift */,
+			);
+			name = Glide;
+			path = Sources/Glide;
+			sourceTree = "<group>";
+		};
+		2785E0EA72387D4C5B972711 /* GlideCore */ = {
+			isa = PBXGroup;
+			children = (
+				6A78F29015300266375FF59E /* Action.swift */,
+				211731250170AA7196708655 /* KeyCombo.swift */,
+				531206BCE2FA2DABC6339953 /* Keymap.swift */,
+				16BE04140139A88E5CF19C67 /* RestorePlanner.swift */,
+				2A06047E647B6B48699CC776 /* Strip.swift */,
+				FFD1ADCA9153C04F07A3271E /* Workspace.swift */,
+			);
+			name = GlideCore;
+			path = Sources/GlideCore;
+			sourceTree = "<group>";
+		};
+		87F6AED6B3D2A5B9F0BB73F7 /* GlideCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				1529283E97AE33824F61C0A5 /* KeymapTests.swift */,
+				F55E3468B2292B798242FE4E /* RestorePlannerTests.swift */,
+				7ECA03FC26B7820A6830B7D2 /* StripTests.swift */,
+				855D351DAF3428DE0F359ACF /* WorkspaceTests.swift */,
+			);
+			name = GlideCoreTests;
+			path = Tests/GlideCoreTests;
+			sourceTree = "<group>";
+		};
+		94BA5C58C1A72FDC6E953004 = {
+			isa = PBXGroup;
+			children = (
+				0DBDD1188172043B6B135611 /* Glide */,
+				2785E0EA72387D4C5B972711 /* GlideCore */,
+				87F6AED6B3D2A5B9F0BB73F7 /* GlideCoreTests */,
+				F0257EE2523A968F22A93828 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F0257EE2523A968F22A93828 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				97C6EBB568AC2ADAFB1A70E0 /* Glide.app */,
+				DD74BF51238E38CE7484D1F6 /* GlideCore.framework */,
+				6D0B438DF90FEDB0793748C3 /* GlideCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6A8CF1982FB41A30C5D9E1FE /* GlideCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CB2E5C063AD085A5591377D0 /* Build configuration list for PBXNativeTarget "GlideCoreTests" */;
+			buildPhases = (
+				D24CCEBD1376ECF6DB9D711B /* Sources */,
+				3D1210FB2152F7A5F4F90856 /* Frameworks */,
+				9F6F3ECB5EBBB7AA117AFDC7 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CC634BBA8EE58B017A7C127B /* PBXTargetDependency */,
+			);
+			name = GlideCoreTests;
+			packageProductDependencies = (
+			);
+			productName = GlideCoreTests;
+			productReference = 6D0B438DF90FEDB0793748C3 /* GlideCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		74A942F81FD2ACA39CCDAFA6 /* GlideCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA343F5EF60C99EDAF016334 /* Build configuration list for PBXNativeTarget "GlideCore" */;
+			buildPhases = (
+				14F5CB47E6E6FA6126806AB0 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GlideCore;
+			packageProductDependencies = (
+			);
+			productName = GlideCore;
+			productReference = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		936B9B754CEB2B9DB5C2DE7E /* Glide */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 136EAE6969C4A2C055CC773B /* Build configuration list for PBXNativeTarget "Glide" */;
+			buildPhases = (
+				CE014D1674B58123726B5048 /* Sources */,
+				C1A45032CBB16193099EB372 /* Frameworks */,
+				40AA9B0BD1D7ABEF30394861 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F6ADAC79C14BFC9689DD26E9 /* PBXTargetDependency */,
+			);
+			name = Glide;
+			packageProductDependencies = (
+			);
+			productName = Glide;
+			productReference = 97C6EBB568AC2ADAFB1A70E0 /* Glide.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B2C87CDC4AB5959E237BDBE6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					6A8CF1982FB41A30C5D9E1FE = {
+						DevelopmentTeam = 435MC3786D;
+						ProvisioningStyle = Automatic;
+					};
+					74A942F81FD2ACA39CCDAFA6 = {
+						DevelopmentTeam = 435MC3786D;
+						ProvisioningStyle = Automatic;
+					};
+					936B9B754CEB2B9DB5C2DE7E = {
+						DevelopmentTeam = 435MC3786D;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 71EC61E422414CCFC29A82A5 /* Build configuration list for PBXProject "Glide" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 94BA5C58C1A72FDC6E953004;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F0257EE2523A968F22A93828 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				936B9B754CEB2B9DB5C2DE7E /* Glide */,
+				74A942F81FD2ACA39CCDAFA6 /* GlideCore */,
+				6A8CF1982FB41A30C5D9E1FE /* GlideCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		14F5CB47E6E6FA6126806AB0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE717C6D231512529E2BC0DE /* Action.swift in Sources */,
+				6336834BF168EB783F12E62C /* KeyCombo.swift in Sources */,
+				4F7F0DCACEA41D66A3506417 /* Keymap.swift in Sources */,
+				5B90D240DEDA13828B1D84EF /* RestorePlanner.swift in Sources */,
+				1BA66D9B2CD8AE2CF58148FD /* Strip.swift in Sources */,
+				94B380400A200760117CEDF7 /* Workspace.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE014D1674B58123726B5048 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9DC758C127A17141F074A152 /* AXWindow.swift in Sources */,
+				CDE703CBDFAC970353EE4CFB /* AccessibilityPermission.swift in Sources */,
+				099BBA34005BADFA62071358 /* GlideApp.swift in Sources */,
+				28EEDE8930D6815B953705DF /* HotkeyCenter.swift in Sources */,
+				5BF428AD4310B57D10EE8AA9 /* OnboardingWindow.swift in Sources */,
+				B43D06626F88A29E9F6C511E /* SettingsWindow.swift in Sources */,
+				FBDA779A3D9620B228EE028F /* ShortcutStore.swift in Sources */,
+				F10682418406DA343212A609 /* StatusMenu.swift in Sources */,
+				F255AEECF2965E1D44FFD06B /* WindowManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D24CCEBD1376ECF6DB9D711B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				15E9FA80D8D9DB5E14C69285 /* KeymapTests.swift in Sources */,
+				9752D2DB073C18961DD26742 /* RestorePlannerTests.swift in Sources */,
+				47DFC044C64B0DD3B4BEBECE /* StripTests.swift in Sources */,
+				468E6CB8186840D9CBD39703 /* WorkspaceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CC634BBA8EE58B017A7C127B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 74A942F81FD2ACA39CCDAFA6 /* GlideCore */;
+			targetProxy = 4212D35EC8125CDA568D7CA3 /* PBXContainerItemProxy */;
+		};
+		F6ADAC79C14BFC9689DD26E9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 74A942F81FD2ACA39CCDAFA6 /* GlideCore */;
+			targetProxy = A9FD197B8D063A4277C46DEF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2D90AB4995AD19DF6C5CCA3F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 435MC3786D;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 0.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3EAF8C6732278D539BA26AB9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 435MC3786D;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 0.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		4994EFFFC420B197FFD86B3F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.quackbyte.glide.core.tests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		587AC0A7B93E9375BEBF3B41 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.quackbyte.glide.core.tests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		613A63DB4BF8A372B6AE340A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGNING_ALLOWED = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Glide;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 QuackByte. MIT License.";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.quackbyte.glide;
+				SDKROOT = macosx;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+			};
+			name = Debug;
+		};
+		68380938107810EF2985E80E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGNING_ALLOWED = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Glide;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 QuackByte. MIT License.";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.quackbyte.glide;
+				SDKROOT = macosx;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+			};
+			name = Release;
+		};
+		AC05461A618793E85A5F9987 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.quackbyte.glide.core;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		EA4609292D22DEDA49C3373B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.quackbyte.glide.core;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		136EAE6969C4A2C055CC773B /* Build configuration list for PBXNativeTarget "Glide" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				613A63DB4BF8A372B6AE340A /* Debug */,
+				68380938107810EF2985E80E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		71EC61E422414CCFC29A82A5 /* Build configuration list for PBXProject "Glide" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D90AB4995AD19DF6C5CCA3F /* Debug */,
+				3EAF8C6732278D539BA26AB9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CB2E5C063AD085A5591377D0 /* Build configuration list for PBXNativeTarget "GlideCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4994EFFFC420B197FFD86B3F /* Debug */,
+				587AC0A7B93E9375BEBF3B41 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DA343F5EF60C99EDAF016334 /* Build configuration list for PBXNativeTarget "GlideCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EA4609292D22DEDA49C3373B /* Debug */,
+				AC05461A618793E85A5F9987 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B2C87CDC4AB5959E237BDBE6 /* Project object */;
+}
