@@ -4,7 +4,7 @@ A scrolling window manager for macOS. Windows are laid out as columns on an endl
 
 Keyboard-first: every action has a default shortcut out of the box, and every shortcut can be rebound.
 
-Status: early development (milestone 1: one display, keyboard only, no animation).
+Status: early development (milestone 1: one display, keyboard only).
 
 ## How it works
 
@@ -13,6 +13,7 @@ Status: early development (milestone 1: one display, keyboard only, no animation
 - Glide keeps the focused column fully on screen, scrolling the strip as little as possible. macOS doesn't let windows sit entirely off screen, so columns scrolled out of view are parked as 4 pt slivers at the left and right screen edges.
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.
 - Closing, minimizing or hiding a window removes it from the strip; restoring it brings it back next to the focused column.
+- Layout changes slide into place in about 120 ms (ease-out). Turn this off under **Settings › Animate window movement**.
 - Turning tiling off (or quitting Glide) moves every window to a sensible spot on screen, so nothing stays parked at the edges.
 
 ## Default shortcuts

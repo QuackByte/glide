@@ -2,6 +2,7 @@ import AppKit
 import ApplicationServices
 import GlideCore
 import OSLog
+import QuartzCore
 
 private let log = Logger(subsystem: "dev.quackbyte.glide", category: "windows")
 
@@ -58,6 +59,7 @@ final class WindowManager {
     /// Stops tiling and moves every window somewhere fully on screen.
     func stop() {
         guard isEnabled else { return }
+        finishAnimations()
         let ordered = workspace.strip.windows.compactMap { id in
             windows[id].flatMap { window in window.element.frame.map { (window, $0) } }
         }
@@ -363,6 +365,7 @@ final class WindowManager {
         userTiled.remove(id)
         lastApplied[id] = nil
         lastObserved[id] = nil
+        motions[id] = nil
         workspace.minimumWidths[id] = nil
     }
 
@@ -418,26 +421,122 @@ final class WindowManager {
 
     // MARK: Applying frames
 
+    /// Whether layout changes slide into place. Read each time so the setting applies at once.
+    static var animatesWindows: Bool {
+        get { UserDefaults.standard.object(forKey: "animateWindows") as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: "animateWindows") }
+    }
+
     private func applyLayout(pass: Int = 0) {
         guard isEnabled else { return }
+        let animate = Self.animatesWindows
+        let now = CACurrentMediaTime()
         var learnedMinimum = false
         for placement in workspace.placements() {
-            guard let window = windows[placement.window], lastApplied[placement.window] != placement.frame else { continue }
-            setFrame(placement.frame, of: window)
-            lastApplied[placement.window] = placement.frame
-            let actual = window.element.frame
-            lastObserved[placement.window] = actual
-            // Some apps refuse to shrink below a minimum width; make room for it.
-            if let actual, actual.width > placement.frame.width + 2,
-               actual.width > workspace.minimumWidths[placement.window] ?? 0 {
-                workspace.minimumWidths[placement.window] = actual.width
-                learnedMinimum = true
+            let id = placement.window
+            guard let window = windows[id], lastApplied[id] != placement.frame else { continue }
+            let from = motions[id].map { FrameAnimation.frame(from: $0.from, to: $0.to, progress: (now - $0.start) / FrameAnimation.defaultDuration) }
+                ?? lastApplied[id]
+            lastApplied[id] = placement.frame
+            if animate, let from, FrameAnimation.shouldAnimate(from: from, to: placement.frame, in: workspace.viewport) {
+                if motions[id] == nil || motions[id]?.to.size != placement.frame.size {
+                    // Resize once up front, then only move: see FrameAnimation.frame.
+                    window.element.setSize(placement.frame.size)
+                }
+                motions[id] = Motion(from: from, to: placement.frame, start: now)
+            } else {
+                motions[id] = nil
+                setFrame(placement.frame, of: window)
+                learnedMinimum = settle(window, at: placement.frame) || learnedMinimum
             }
         }
+        if !motions.isEmpty { startAnimationTimer() }
         if learnedMinimum, pass < 2 {
             workspace.ensureFocusedVisible()
             applyLayout(pass: pass + 1)
         }
+    }
+
+    /// Records where a window actually landed. Returns true if it revealed a minimum width
+    /// (some apps refuse to shrink further), so the layout needs another pass.
+    private func settle(_ window: TrackedWindow, at frame: CGRect) -> Bool {
+        let actual = window.element.frame
+        lastObserved[window.id] = actual
+        guard let actual, actual.width > frame.width + 2, actual.width > workspace.minimumWidths[window.id] ?? 0 else { return false }
+        workspace.minimumWidths[window.id] = actual.width
+        return true
+    }
+
+    // MARK: Animation
+
+    private struct Motion {
+        let from: CGRect
+        let to: CGRect
+        let start: CFTimeInterval
+    }
+
+    private var motions: [WindowID: Motion] = [:]
+    private var animationTimer: Timer?
+
+    private func startAnimationTimer() {
+        guard animationTimer == nil else { return }
+        let timer = Timer(timeInterval: 1.0 / 120, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.animationTick() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        animationTimer = timer
+        animationTick()
+    }
+
+    /// Time-based, so a slow AX call skips frames instead of stretching the animation.
+    private func animationTick() {
+        let now = CACurrentMediaTime()
+        var finished: [(TrackedWindow, CGRect)] = []
+        var steps: [pid_t: [(AXUIElement, CGPoint)]] = [:]
+        for (id, motion) in motions {
+            guard let window = windows[id] else {
+                motions[id] = nil
+                continue
+            }
+            let progress = (now - motion.start) / FrameAnimation.defaultDuration
+            if progress >= 1 {
+                motions[id] = nil
+                finished.append((window, motion.to))
+            } else {
+                let origin = FrameAnimation.frame(from: motion.from, to: motion.to, progress: progress).origin
+                steps[window.pid, default: []].append((window.element, origin))
+            }
+        }
+        // AX calls block until the target app answers. Apps answer independently, so move each
+        // app's windows on its own thread; one slow app then doesn't hold the others back.
+        let groups = Array(steps.values)
+        DispatchQueue.concurrentPerform(iterations: groups.count) { index in
+            for (element, origin) in groups[index] { element.setPosition(origin) }
+        }
+
+        var learnedMinimum = false
+        for (window, frame) in finished {
+            setFrame(frame, of: window)
+            learnedMinimum = settle(window, at: frame) || learnedMinimum
+        }
+        if motions.isEmpty {
+            animationTimer?.invalidate()
+            animationTimer = nil
+        }
+        if learnedMinimum {
+            workspace.ensureFocusedVisible()
+            applyLayout(pass: 1)
+        }
+    }
+
+    /// Jumps every moving window to its destination.
+    private func finishAnimations() {
+        animationTimer?.invalidate()
+        animationTimer = nil
+        for (id, motion) in motions {
+            if let window = windows[id] { setFrame(motion.to, of: window) }
+        }
+        motions = [:]
     }
 
     private func setFrame(_ frame: CGRect, of window: TrackedWindow) {
@@ -454,7 +553,7 @@ final class WindowManager {
         reassertWork?.cancel()
         let work = DispatchWorkItem { [weak self] in
             guard let self, isEnabled else { return }
-            if NSEvent.pressedMouseButtons != 0 {
+            if NSEvent.pressedMouseButtons != 0 || !motions.isEmpty {
                 scheduleReassert()
                 return
             }

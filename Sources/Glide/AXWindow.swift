@@ -4,9 +4,12 @@ import ApplicationServices
 /// Returns the CGWindowID behind an AX window element. Private but stable for over a decade,
 /// and used by every macOS window manager; Glide is distributed outside the App Store.
 @_silgen_name("_AXUIElementGetWindow")
-private func _AXUIElementGetWindow(_ element: AXUIElement, _ id: UnsafeMutablePointer<CGWindowID>) -> AXError
+nonisolated private func _AXUIElementGetWindow(_ element: AXUIElement, _ id: UnsafeMutablePointer<CGWindowID>) -> AXError
 
-extension AXUIElement {
+// AXUIElement is a CFType that the AX API lets callers use from any thread.
+extension AXUIElement: @retroactive @unchecked Sendable {}
+
+nonisolated extension AXUIElement {
     func value<T>(_ attribute: String) -> T? {
         var value: CFTypeRef?
         guard AXUIElementCopyAttributeValue(self, attribute as CFString, &value) == .success else { return nil }

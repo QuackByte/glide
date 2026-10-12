@@ -113,6 +113,12 @@ struct SettingsView: View {
             ))
             .toggleStyle(.switch)
 
+            Toggle("Animate window movement", isOn: Binding(
+                get: { WindowManager.animatesWindows },
+                set: { WindowManager.animatesWindows = $0 }
+            ))
+            .toggleStyle(.switch)
+
             Form {
                 ForEach(Action.Group.allCases, id: \.self) { group in
                     Section(group.rawValue) {
