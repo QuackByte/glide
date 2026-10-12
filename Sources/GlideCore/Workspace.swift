@@ -115,6 +115,62 @@ public struct Workspace: Equatable, Sendable {
         ensureFocusedVisible()
     }
 
+    // MARK: Gesture scrolling
+
+    /// The scroll range that shows no empty space past the strip's ends.
+    public var scrollBounds: ClosedRange<CGFloat> { 0...max(contentWidth - usableWidth, 0) }
+
+    /// Moves the strip with the fingers. Past either end it follows at a third of the speed,
+    /// up to a quarter of the screen, like a rubber band.
+    public mutating func scroll(by delta: CGFloat) {
+        let bounds = scrollBounds
+        let limit = usableWidth / 4
+        let outside = scrollOffset < bounds.lowerBound || scrollOffset > bounds.upperBound
+            || scrollOffset + delta < bounds.lowerBound || scrollOffset + delta > bounds.upperBound
+        let next = scrollOffset + (outside ? delta / 3 : delta)
+        scrollOffset = min(max(next, bounds.lowerBound - limit), bounds.upperBound + limit)
+    }
+
+    /// The column-aligned scroll position nearest to `offset`: some column's left edge at the
+    /// left of the screen, or its right edge at the right, never past the strip's ends.
+    public func snappedOffset(near offset: CGFloat) -> CGFloat {
+        let bounds = scrollBounds
+        let offsets = columnOffsets()
+        var candidates: [CGFloat] = [bounds.lowerBound, bounds.upperBound]
+        for index in strip.columns.indices {
+            candidates.append(offsets[index])
+            candidates.append(offsets[index] + width(ofColumn: index) - usableWidth)
+        }
+        let clamped = candidates.map { min(max($0, bounds.lowerBound), bounds.upperBound) }
+        return clamped.min { abs($0 - offset) < abs($1 - offset) } ?? 0
+    }
+
+    /// Ends a swipe: snaps near where momentum would carry the strip, then keeps focus on a
+    /// column that is fully on screen there (preferring the current one, else the one nearest
+    /// the middle). Returns true if focus moved.
+    @discardableResult
+    public mutating func settleSwipe(projectedOffset: CGFloat) -> Bool {
+        guard !strip.isEmpty else {
+            scrollOffset = 0
+            return false
+        }
+        scrollOffset = snappedOffset(near: projectedOffset)
+        let offsets = columnOffsets()
+        func fullyVisible(_ index: Int) -> Bool {
+            offsets[index] >= scrollOffset - 0.5 && offsets[index] + width(ofColumn: index) <= scrollOffset + usableWidth + 0.5
+        }
+        let current = strip.focusedColumnIndex
+        guard !fullyVisible(current) else { return false }
+        let middle = scrollOffset + usableWidth / 2
+        let candidates = strip.columns.indices.filter(fullyVisible)
+        let nearest = (candidates.isEmpty ? Array(strip.columns.indices) : candidates).min {
+            abs(offsets[$0] + width(ofColumn: $0) / 2 - middle) < abs(offsets[$1] + width(ofColumn: $1) / 2 - middle)
+        }!
+        strip.focus(strip.columns[nearest].focusedWindow)
+        ensureFocusedVisible()
+        return true
+    }
+
     // MARK: Actions
 
     /// Applies a layout action. Returns false if it changed nothing or is not a layout action.

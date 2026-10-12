@@ -119,6 +119,24 @@ struct SettingsView: View {
             ))
             .toggleStyle(.switch)
 
+            Toggle("Scroll with a three-finger swipe", isOn: Binding(
+                get: { controller.isTrackpadSwipeEnabled },
+                set: { controller.isTrackpadSwipeEnabled = $0 }
+            ))
+            .toggleStyle(.switch)
+
+            if controller.isTrackpadSwipeEnabled && controller.systemUsesThreeFingerSwipe {
+                HStack(alignment: .firstTextBaseline) {
+                    Label("macOS also switches Spaces with three-finger swipes. Set “Swipe between full-screen apps” to four fingers.", systemImage: "exclamationmark.triangle.fill")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Trackpad Settings…") {
+                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Trackpad-Settings.extension")!)
+                    }
+                }
+            }
+
             Form {
                 ForEach(Action.Group.allCases, id: \.self) { group in
                     Section(group.rawValue) {
@@ -144,7 +162,7 @@ struct SettingsView: View {
             }
         }
         .padding(20)
-        .frame(width: 560, height: 680)
+        .frame(width: 560, height: 720)
     }
 }
 

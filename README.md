@@ -4,7 +4,7 @@ A scrolling window manager for macOS. Windows are laid out as columns on an endl
 
 Keyboard-first: every action has a default shortcut out of the box, and every shortcut can be rebound.
 
-Status: early development (milestone 1: one display, keyboard only).
+Status: early development (milestone 1: one display).
 
 ## How it works
 
@@ -16,6 +16,14 @@ Status: early development (milestone 1: one display, keyboard only).
 - Layout changes slide into place in about 120 ms (ease-out). Turn this off under **Settings › Animate window movement**.
 - Glide remembers the layout (column order, stacks, widths, and windows you floated or tiled by hand) when you quit it or turn tiling off. Windows that are still open come back exactly as they were. The layout resets after a restart, because macOS window IDs only last until then.
 - Turning tiling off (or quitting Glide) moves every window to a sensible spot on screen, so nothing stays parked at the edges.
+
+## Trackpad
+
+Swipe **three fingers** left or right to scroll the strip. It follows your fingers and rubber-bands past the ends. When you let go, momentum carries it on and it settles on a column edge, keeping focus on a column that's fully on screen. Vertical three-finger swipes (Mission Control, App Exposé) still go to macOS.
+
+macOS uses three-finger horizontal swipes to switch Spaces by default, which would fire at the same time. Set **System Settings › Trackpad › More Gestures › Swipe between full-screen apps** to **four fingers** (Settings shows a reminder while it's still on three). Turn trackpad scrolling off under **Settings › Scroll with a three-finger swipe**.
+
+Raw finger positions come from Apple's private MultitouchSupport framework, the same source BetterTouchTool and similar tools use.
 
 ## Default shortcuts
 

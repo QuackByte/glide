@@ -42,6 +42,7 @@ final class WindowManager {
     var onChange: (() -> Void)?
 
     var tiledWindowCount: Int { workspace.strip.windows.count }
+    var viewportWidth: CGFloat { workspace.viewport.width }
     var columnCount: Int { workspace.strip.columns.count }
     var floatingWindowCount: Int { windows.count - tiledWindowCount }
 
@@ -467,7 +468,7 @@ final class WindowManager {
         set { UserDefaults.standard.set(newValue, forKey: "animateWindows") }
     }
 
-    private func applyLayout(pass: Int = 0) {
+    private func applyLayout(pass: Int = 0, duration: Double = FrameAnimation.defaultDuration) {
         guard isEnabled else { return }
         let animate = Self.animatesWindows
         let now = CACurrentMediaTime()
@@ -475,7 +476,7 @@ final class WindowManager {
         for placement in workspace.placements() {
             let id = placement.window
             guard let window = windows[id], lastApplied[id] != placement.frame else { continue }
-            let from = motions[id].map { FrameAnimation.frame(from: $0.from, to: $0.to, progress: (now - $0.start) / FrameAnimation.defaultDuration) }
+            let from = motions[id].map { $0.frame(at: now) }
                 ?? lastApplied[id]
             lastApplied[id] = placement.frame
             if animate, let from, FrameAnimation.shouldAnimate(from: from, to: placement.frame, in: workspace.viewport) {
@@ -483,7 +484,7 @@ final class WindowManager {
                     // Resize once up front, then only move: see FrameAnimation.frame.
                     window.element.setSize(placement.frame.size)
                 }
-                motions[id] = Motion(from: from, to: placement.frame, start: now)
+                motions[id] = Motion(from: from, to: placement.frame, start: now, duration: duration)
             } else {
                 motions[id] = nil
                 setFrame(placement.frame, of: window)
@@ -507,12 +508,81 @@ final class WindowManager {
         return true
     }
 
+    // MARK: Trackpad swipes
+
+    private(set) var isSwiping = false
+    private var swipeApplyScheduled = false
+
+    /// How far momentum carries the strip after release: seconds of travel at release speed.
+    private static let momentum: Double = 0.35
+    private static let settleDuration: Double = 0.25
+
+    func beginSwipe() {
+        guard isEnabled, !workspace.strip.isEmpty else { return }
+        finishAnimations()
+        isSwiping = true
+        log.debug("swipe began")
+    }
+
+    /// Moves the strip by `delta` points while the fingers move. Updates are coalesced so a
+    /// slow app can't queue up a backlog of frames.
+    func swipe(by delta: CGFloat) {
+        guard isSwiping else { return }
+        workspace.scroll(by: delta)
+        guard !swipeApplyScheduled else { return }
+        swipeApplyScheduled = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            swipeApplyScheduled = false
+            if isSwiping { applyLayoutImmediately() }
+        }
+    }
+
+    /// `velocity` in points per second. Snaps to a column and focuses one that is on screen.
+    func endSwipe(velocity: CGFloat) {
+        guard isSwiping else { return }
+        isSwiping = false
+        let projected = workspace.scrollOffset + velocity * Self.momentum
+        let focusMoved = workspace.settleSwipe(projectedOffset: projected)
+        log.debug("swipe ended at velocity \(Int(velocity)) pt/s: \(self.stripDescription, privacy: .public)")
+        applyLayout(duration: Self.settleDuration)
+        if focusMoved, let target = workspace.strip.focusedWindow { focus(target) }
+        didChange()
+    }
+
+    /// Applies the layout without animation, moving each app's windows on its own thread.
+    private func applyLayoutImmediately() {
+        var resized: [(TrackedWindow, CGRect)] = []
+        var moves: [pid_t: [(AXUIElement, CGPoint)]] = [:]
+        for placement in workspace.placements() {
+            guard let window = windows[placement.window], let previous = lastApplied[placement.window],
+                  previous != placement.frame else { continue }
+            lastApplied[placement.window] = placement.frame
+            lastObserved[placement.window] = placement.frame
+            if previous.size == placement.frame.size {
+                moves[window.pid, default: []].append((window.element, placement.frame.origin))
+            } else {
+                resized.append((window, placement.frame))
+            }
+        }
+        let groups = Array(moves.values)
+        DispatchQueue.concurrentPerform(iterations: groups.count) { index in
+            for (element, origin) in groups[index] { element.setPosition(origin) }
+        }
+        for (window, frame) in resized { setFrame(frame, of: window) }
+    }
+
     // MARK: Animation
 
     private struct Motion {
         let from: CGRect
         let to: CGRect
         let start: CFTimeInterval
+        let duration: Double
+
+        func frame(at time: CFTimeInterval) -> CGRect {
+            FrameAnimation.frame(from: from, to: to, progress: (time - start) / duration)
+        }
     }
 
     private var motions: [WindowID: Motion] = [:]
@@ -538,12 +608,11 @@ final class WindowManager {
                 motions[id] = nil
                 continue
             }
-            let progress = (now - motion.start) / FrameAnimation.defaultDuration
-            if progress >= 1 {
+            if now - motion.start >= motion.duration {
                 motions[id] = nil
                 finished.append((window, motion.to))
             } else {
-                let origin = FrameAnimation.frame(from: motion.from, to: motion.to, progress: progress).origin
+                let origin = motion.frame(at: now).origin
                 steps[window.pid, default: []].append((window.element, origin))
             }
         }
@@ -593,7 +662,7 @@ final class WindowManager {
         reassertWork?.cancel()
         let work = DispatchWorkItem { [weak self] in
             guard let self, isEnabled else { return }
-            if NSEvent.pressedMouseButtons != 0 || !motions.isEmpty {
+            if NSEvent.pressedMouseButtons != 0 || !motions.isEmpty || isSwiping {
                 scheduleReassert()
                 return
             }

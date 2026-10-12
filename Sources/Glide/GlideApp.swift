@@ -33,6 +33,8 @@ final class AppController {
     @ObservationIgnored let windowManager = WindowManager()
     @ObservationIgnored let hotkeys = HotkeyCenter()
     @ObservationIgnored let permission = AccessibilityPermission()
+    @ObservationIgnored private let trackpad = TrackpadMonitor()
+    @ObservationIgnored private var swipeTracker = SwipeTracker(fingerCount: 3)
     let shortcuts = ShortcutStore()
     /// Bumped whenever tiling or hotkey state changes, so SwiftUI views refresh.
     private(set) var revision = 0
@@ -58,6 +60,8 @@ final class AppController {
         permission.onChange = { [weak self] trusted in self?.permissionChanged(trusted) }
         permission.startMonitoring()
         registerHotkeys()
+        trackpad.onFrame = { [weak self] touches, time in self?.handleTouches(touches, at: time) }
+        updateTrackpad()
 
         if permission.isTrusted {
             if isTilingPreferred { windowManager.start() }
@@ -115,6 +119,52 @@ final class AppController {
             showOnboarding()
         }
         stateChanged()
+    }
+
+    // MARK: Trackpad
+
+    private static let trackpadSwipeKey = "trackpadSwipe"
+
+    var isTrackpadSwipeEnabled: Bool {
+        get { UserDefaults.standard.object(forKey: Self.trackpadSwipeKey) as? Bool ?? true }
+        set {
+            UserDefaults.standard.set(newValue, forKey: Self.trackpadSwipeKey)
+            updateTrackpad()
+            stateChanged()
+        }
+    }
+
+    /// True when macOS also switches Spaces with a three-finger horizontal swipe.
+    var systemUsesThreeFingerSwipe: Bool {
+        ["com.apple.AppleMultitouchTrackpad", "com.apple.driver.AppleBluetoothMultitouch.trackpad"].contains {
+            UserDefaults(suiteName: $0)?.integer(forKey: "TrackpadThreeFingerHorizSwipeGesture") == 2
+        }
+    }
+
+    private func updateTrackpad() {
+        if isTrackpadSwipeEnabled {
+            if !trackpad.start() { NSLog("Glide: no trackpad available for swipes") }
+        } else {
+            trackpad.stop()
+            swipeTracker = SwipeTracker(fingerCount: 3)
+        }
+    }
+
+    /// One trackpad width of finger travel scrolls one and a half screens.
+    private var swipeGain: CGFloat { windowManager.viewportWidth * 1.5 }
+
+    private func handleTouches(_ touches: [Touch], at time: Double) {
+        for event in swipeTracker.update(touches: touches, at: time) {
+            switch event {
+            case .began:
+                windowManager.beginSwipe()
+            case .changed(let dx):
+                // The strip follows the fingers: moving them left reveals columns on the right.
+                windowManager.swipe(by: -CGFloat(dx) * swipeGain)
+            case .ended(let velocity):
+                windowManager.endSwipe(velocity: -CGFloat(velocity) * swipeGain)
+            }
+        }
     }
 
     private func stateChanged() {
