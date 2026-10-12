@@ -33,8 +33,10 @@ final class WindowManager {
     /// late notifications from the previously focused app don't pull focus back.
     private var focusLock: (window: WindowID, until: Date)?
     private var workspaceObservers: [NSObjectProtocol] = []
-    /// Column order when tiling last stopped, so turning it back on restores the same strip.
-    private var previousOrder: [WindowID] = []
+    /// The layout to rebuild when tiling starts, saved when it stops or after changes.
+    private var snapshot: StripSnapshot?
+    private var saveWork: DispatchWorkItem?
+    private static let snapshotKey = "stripSnapshot"
 
     /// Called after the layout or window membership changes.
     var onChange: (() -> Void)?
@@ -50,6 +52,7 @@ final class WindowManager {
         isEnabled = true
         AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 1)
         workspace = Workspace(viewport: ScreenGeometry.primaryViewport() ?? .zero)
+        loadSnapshot()
         observeWorkspace()
         let apps = NSWorkspace.shared.runningApplications.filter(isManageable)
         for app in apps { observe(app) }
@@ -68,7 +71,7 @@ final class WindowManager {
             if let frame = restored[window.id] { window.element.setFrame(frame) }
         }
 
-        previousOrder = workspace.strip.windows
+        saveSnapshot()
         isEnabled = false
         reassertWork?.cancel()
         for observer in observers.values {
@@ -89,6 +92,47 @@ final class WindowManager {
         workspace = Workspace(viewport: .zero)
         onChange?()
     }
+
+    // MARK: Persistence
+
+    private func didChange() {
+        onChange?()
+        // Saved shortly after changes too, so a crash doesn't lose the layout.
+        saveWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.saveSnapshot() }
+        saveWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: work)
+    }
+
+    private func saveSnapshot() {
+        saveWork?.cancel()
+        guard isEnabled, let bootTime = Self.bootTime else { return }
+        let snapshot = StripSnapshot(strip: workspace.strip, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
+        self.snapshot = snapshot
+        if let data = try? JSONEncoder().encode(snapshot) {
+            UserDefaults.standard.set(data, forKey: Self.snapshotKey)
+        }
+    }
+
+    /// Restores the user's float/tile choices now; columns are rebuilt when windows are adopted.
+    private func loadSnapshot() {
+        if snapshot == nil, let data = UserDefaults.standard.data(forKey: Self.snapshotKey) {
+            snapshot = try? JSONDecoder().decode(StripSnapshot.self, from: data)
+        }
+        guard let saved = snapshot, let bootTime = Self.bootTime, abs(saved.bootTime.timeIntervalSince(bootTime)) < 1 else {
+            snapshot = nil
+            return
+        }
+        userFloating = Set(saved.userFloating)
+        userTiled = Set(saved.userTiled)
+    }
+
+    private static let bootTime: Date? = {
+        var time = timeval()
+        var size = MemoryLayout<timeval>.size
+        guard sysctlbyname("kern.boottime", &time, &size, nil, 0) == 0 else { return nil }
+        return Date(timeIntervalSince1970: TimeInterval(time.tv_sec) + TimeInterval(time.tv_usec) / 1_000_000)
+    }()
 
     // MARK: Actions
 
@@ -111,7 +155,7 @@ final class WindowManager {
         if let target = workspace.strip.focusedWindow, target != focusedWindowID() {
             focus(target)
         }
-        onChange?()
+        didChange()
     }
 
     private func toggleFloating() {
@@ -139,7 +183,7 @@ final class WindowManager {
             workspace.ensureFocusedVisible()
             applyLayout()
         }
-        onChange?()
+        didChange()
     }
 
     /// A floated window keeps its size (up to 70% of the screen) and moves to the center.
@@ -241,7 +285,7 @@ final class WindowManager {
         workspace.settleScroll()
         applyLayout()
         syncFocus()
-        onChange?()
+        didChange()
     }
 
     fileprivate func handle(_ notification: String, element: AXUIElement) {
@@ -321,17 +365,13 @@ final class WindowManager {
 
         let width = workspace.settings.defaultWidthIndex
         if adopting {
-            let rank = Dictionary(previousOrder.enumerated().map { ($1, $0) }, uniquingKeysWith: min)
-            let ordered = newTiles.sorted { a, b in
-                switch (rank[a.id], rank[b.id]) {
-                case let (ra?, rb?): ra < rb
-                case (_?, nil): true
-                case (nil, _?): false
-                case (nil, nil): a.x < b.x
+            let ordered = newTiles.sorted { $0.x < $1.x }.map(\.id)
+            if let snapshot {
+                workspace.strip = snapshot.restore(windows: ordered, widthIndex: width, presetCount: workspace.settings.widthPresets.count)
+            } else {
+                for id in ordered {
+                    workspace.strip.insert(id, widthIndex: width, at: workspace.strip.columns.count, focus: false)
                 }
-            }
-            for tile in ordered {
-                workspace.strip.insert(tile.id, widthIndex: width, at: workspace.strip.columns.count, focus: false)
             }
         } else {
             for tile in newTiles.sorted(by: { $0.x < $1.x }) {
@@ -346,7 +386,7 @@ final class WindowManager {
         log.debug("reconciled \(pids.count) apps: \(self.stripDescription, privacy: .public)")
         workspace.settleScroll()
         applyLayout()
-        onChange?()
+        didChange()
     }
 
     private func track(_ id: WindowID, pid: pid_t, element: AXUIElement) {
@@ -395,7 +435,7 @@ final class WindowManager {
         workspace.strip.focus(id)
         workspace.ensureFocusedVisible()
         applyLayout()
-        onChange?()
+        didChange()
     }
 
     private func focus(_ id: WindowID) {

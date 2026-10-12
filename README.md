@@ -14,6 +14,7 @@ Status: early development (milestone 1: one display, keyboard only).
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.
 - Closing, minimizing or hiding a window removes it from the strip; restoring it brings it back next to the focused column.
 - Layout changes slide into place in about 120 ms (ease-out). Turn this off under **Settings › Animate window movement**.
+- Glide remembers the layout (column order, stacks, widths, and windows you floated or tiled by hand) when you quit it or turn tiling off. Windows that are still open come back exactly as they were. The layout resets after a restart, because macOS window IDs only last until then.
 - Turning tiling off (or quitting Glide) moves every window to a sensible spot on screen, so nothing stays parked at the edges.
 
 ## Default shortcuts
