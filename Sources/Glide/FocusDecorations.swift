@@ -32,6 +32,12 @@ enum Appearance {
         }
     }
 
+    /// A brief display of the workspace numbers when switching.
+    static var showsWorkspaceHUD: Bool {
+        get { defaults.object(forKey: "workspaceHUD") as? Bool ?? true }
+        set { defaults.set(newValue, forKey: "workspaceHUD") }
+    }
+
     static var dimsUnfocusedWindows: Bool {
         get { defaults.object(forKey: "dimUnfocused") as? Bool ?? false }
         set { defaults.set(newValue, forKey: "dimUnfocused") }

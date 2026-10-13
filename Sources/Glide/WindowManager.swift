@@ -56,9 +56,12 @@ final class WindowManager {
 
     /// Called after the layout or window membership changes.
     var onChange: (() -> Void)?
+    /// Called after switching workspaces or sending a column to one, with a description.
+    var onWorkspaceEvent: ((String) -> Void)?
 
     var tiledWindowCount: Int { workspace.strip.windows.count }
     var viewportWidth: CGFloat { workspace.viewport.width }
+    var viewportSize: CGSize { workspace.viewport.size }
     var columnCount: Int { workspace.strip.columns.count }
     var floatingWindowCount: Int { windows.count - tiledWindowCount }
 
@@ -546,6 +549,7 @@ final class WindowManager {
             applyLayout()
             if let next = workspace.strip.focusedWindow { focus(next) }
             didChange()
+            onWorkspaceEvent?("Column sent to workspace \(index + 1)")
         } else {
             switchWorkspace(to: index, focusing: nil)
         }
@@ -567,6 +571,33 @@ final class WindowManager {
         if let focused = workspace.strip.focusedWindow, focused != focusedWindowID() { focus(focused) }
         log.debug("workspace \(index + 1): \(self.stripDescription, privacy: .public)")
         refreshOverlays()
+        didChange()
+        onWorkspaceEvent?(workspace.strip.isEmpty ? "Workspace \(index + 1) is empty" : "Workspace \(index + 1)")
+    }
+
+    // MARK: Overview
+
+    func makeOverview() -> Overview? {
+        guard isEnabled else { return nil }
+        return Overview(spaces: spaces)
+    }
+
+    func windowSummary(_ id: WindowID) -> (title: String, pid: pid_t?) {
+        let tab = tab(for: id)
+        return (tab.title, tab.pid)
+    }
+
+    /// Goes to a window chosen in the overview, switching workspace if needed.
+    func focusFromOverview(_ id: WindowID) {
+        guard isEnabled, let index = spaces.index(of: id) else { return }
+        if index != spaces.activeIndex {
+            switchWorkspace(to: index, focusing: id)
+            return
+        }
+        workspace.strip.focus(id)
+        workspace.ensureFocusedVisible()
+        applyLayout()
+        focus(id)
         didChange()
     }
 

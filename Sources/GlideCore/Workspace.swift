@@ -220,7 +220,7 @@ public struct Workspace: Equatable, Sendable {
             let before = scrollOffset
             centerFocusedColumn()
             return scrollOffset != before
-        case .toggleFloating, .toggleTiling:
+        case .toggleOverview, .toggleFloating, .toggleTiling:
             return false
         default:
             // Workspace actions act on the whole `WorkspaceSet`.

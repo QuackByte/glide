@@ -68,6 +68,7 @@ public enum KeyCode {
     public static let rightBracket: UInt32 = 30
     public static let c: UInt32 = 8
     public static let f: UInt32 = 3
+    public static let o: UInt32 = 31
     public static let r: UInt32 = 15
     public static let t: UInt32 = 17
     public static let v: UInt32 = 9

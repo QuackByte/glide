@@ -211,6 +211,8 @@ private struct AppearanceSection: View {
                 }
             }
 
+            Toggle("Show workspace number when switching", isOn: binding(get: { Appearance.showsWorkspaceHUD }, set: { Appearance.showsWorkspaceHUD = $0 }))
+
             Toggle("Dim unfocused windows", isOn: binding(get: { Appearance.dimsUnfocusedWindows }, set: { Appearance.dimsUnfocusedWindows = $0 }))
             if Appearance.dimsUnfocusedWindows {
                 LabeledContent("Dimming") {

@@ -39,6 +39,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case moveColumnToWorkspace7
     case moveColumnToWorkspace8
     case moveColumnToWorkspace9
+    case toggleOverview
     case toggleFloating
     case toggleTiling
 
@@ -91,6 +92,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .moveColumnToWorkspace7: "Move Column to Workspace 7"
         case .moveColumnToWorkspace8: "Move Column to Workspace 8"
         case .moveColumnToWorkspace9: "Move Column to Workspace 9"
+        case .toggleOverview: "Show or Hide Overview"
         case .toggleFloating: "Toggle Floating"
         case .toggleTiling: "Enable or Disable Tiling"
         }
@@ -104,7 +106,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
             .move
         case .cycleColumnWidth, .cycleColumnWidthBackward, .toggleFullWidth, .toggleTabbed, .centerColumn:
             .column
-        case .toggleFloating, .toggleTiling:
+        case .toggleOverview, .toggleFloating, .toggleTiling:
             .general
         default:
             .workspaces

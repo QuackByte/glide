@@ -26,10 +26,14 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         } else {
             symbol = "rectangle.split.3x1"
         }
-        button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Glide")
-        button.imagePosition = .imageLeading
         let manager = controller.windowManager
-        button.title = manager.isEnabled ? " \(manager.activeWorkspaceNumber)" : ""
+        if manager.isEnabled {
+            let entries = manager.workspaceSummary.map { WorkspaceIndicator.Entry(number: $0.number, isActive: $0.isActive) }
+            button.image = WorkspaceIndicator.menuBarImage(symbol: symbol, entries: entries)
+        } else {
+            button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Glide")
+        }
+        button.setAccessibilityLabel(manager.isEnabled ? "Glide, workspace \(manager.activeWorkspaceNumber)" : "Glide")
         button.toolTip = manager.isEnabled ? "Glide: workspace \(manager.activeWorkspaceNumber)" : "Glide: paused"
     }
 

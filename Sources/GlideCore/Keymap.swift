@@ -22,6 +22,7 @@ public struct Keymap: Equatable, Sendable {
             .toggleFullWidth: KeyCombo(KeyCode.f, hyper),
             .toggleTabbed: KeyCombo(KeyCode.w, hyper),
             .centerColumn: KeyCombo(KeyCode.c, hyper),
+            .toggleOverview: KeyCombo(KeyCode.o, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
             .toggleTiling: KeyCombo(KeyCode.t, move),
             .focusPreviousWorkspace: KeyCombo(KeyCode.pageUp, hyper),

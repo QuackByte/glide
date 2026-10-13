@@ -53,6 +53,8 @@ final class AppController {
 
     @ObservationIgnored private var statusMenu: StatusMenu?
     @ObservationIgnored private var watchdog: Process?
+    @ObservationIgnored private lazy var overview = OverviewController(manager: windowManager)
+    @ObservationIgnored private let workspaceHUD = WorkspaceHUD()
     @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(controller: self)
     @ObservationIgnored private lazy var onboardingWindow = OnboardingWindowController(controller: self)
 
@@ -71,6 +73,7 @@ final class AppController {
         hotkeys.onAction = { [weak self] action in self?.perform(action) }
         shortcuts.onChange = { [weak self] in self?.registerHotkeys() }
         windowManager.onChange = { [weak self] in self?.stateChanged() }
+        windowManager.onWorkspaceEvent = { [weak self] message in self?.showWorkspaceHUD(message) }
         permission.onChange = { [weak self] trusted in self?.permissionChanged(trusted) }
         permission.startMonitoring()
         registerHotkeys()
@@ -105,6 +108,12 @@ final class AppController {
             showOnboarding()
             return
         }
+        if action == .toggleOverview {
+            overview.toggle()
+            return
+        }
+        // Anything else acts on the layout behind the overview, which would make it stale.
+        if overview.isShown { overview.close(goingTo: nil) }
         if action == .toggleTiling {
             setTiling(!windowManager.isEnabled)
         } else {
@@ -133,6 +142,11 @@ final class AppController {
             showOnboarding()
         }
         stateChanged()
+    }
+
+    private func showWorkspaceHUD(_ message: String) {
+        guard Appearance.showsWorkspaceHUD else { return }
+        workspaceHUD.show(entries: windowManager.workspaceSummary.map { .init(number: $0.number, isActive: $0.isActive) }, message: message)
     }
 
     /// Tells the watchdog this is a clean quit, so it doesn't step in.

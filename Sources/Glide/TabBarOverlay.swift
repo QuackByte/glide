@@ -67,7 +67,7 @@ private final class TabBarPanel: NSPanel {
 }
 
 /// Lets the first click on a tab select it, although Glide's panel is never key.
-private final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
+final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }
 
