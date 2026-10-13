@@ -77,6 +77,16 @@ public struct WorkspaceSet: Equatable, Sendable {
         return true
     }
 
+    /// Adds a new window as its own column on a workspace (the active one by default), right of
+    /// that workspace's focused column. Returns the workspace it joined.
+    @discardableResult
+    public mutating func insert(_ window: WindowID, widthIndex: Int, workspace: Int? = nil, focus: Bool) -> Int {
+        let target = workspace.flatMap { workspaces.indices.contains($0) ? $0 : nil } ?? activeIndex
+        workspaces[target].strip.insert(window, widthIndex: widthIndex, focus: focus)
+        if target == activeIndex || focus { workspaces[target].ensureFocusedVisible() }
+        return target
+    }
+
     // MARK: Windows that leave and come back
 
     /// Where a window was, so it can return there after its app is hidden or it is minimized.

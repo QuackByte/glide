@@ -54,6 +54,9 @@ final class WindowManager {
     /// Where windows were when their app was hidden or they were minimized, so they return there.
     private var departures: [WindowID: WorkspaceSet.Departure] = [:]
 
+    /// Per-app float/tile, width and workspace rules, applied as windows appear.
+    var rules = AppRules()
+
     /// Called after the layout or window membership changes.
     var onChange: (() -> Void)?
     /// Called after switching workspaces or sending a column to one, with a description.
@@ -415,8 +418,9 @@ final class WindowManager {
                 guard onScreen.contains(id) else { continue }
                 track(id, pid: pid, element: entry.element)
                 changed = true
-                let tile = (entry.kind == .tileable && !userFloating.contains(id)) || userTiled.contains(id)
-                if tile { newTiles.append((id, entry.element.position?.x ?? 0)) }
+                if shouldTile(id, pid: pid, element: entry.element, kind: entry.kind) {
+                    newTiles.append((id, entry.element.position?.x ?? 0))
+                }
             }
         }
 
@@ -429,7 +433,13 @@ final class WindowManager {
                 hide(inactiveWindows)
             } else {
                 for id in ordered {
-                    workspace.strip.insert(id, widthIndex: width, at: workspace.strip.columns.count, focus: false)
+                    let rule = rule(for: id)
+                    if let target = rule?.workspace, target != spaces.activeIndex {
+                        spaces.insert(id, widthIndex: widthIndex(for: rule), workspace: target, focus: false)
+                        hide([id])
+                    } else {
+                        workspace.strip.insert(id, widthIndex: widthIndex(for: rule), at: workspace.strip.columns.count, focus: false)
+                    }
                 }
             }
         } else {
@@ -438,7 +448,9 @@ final class WindowManager {
                     let landed = spaces.rejoin(tile.id, from: departure, focus: tile.id == focusedID)
                     if landed != spaces.activeIndex { hide([tile.id]) }
                 } else {
-                    workspace.strip.insert(tile.id, widthIndex: width, focus: tile.id == focusedID)
+                    let rule = rule(for: tile.id)
+                    let landed = spaces.insert(tile.id, widthIndex: widthIndex(for: rule), workspace: rule?.workspace, focus: tile.id == focusedID)
+                    if landed != spaces.activeIndex { hide([tile.id]) }
                 }
             }
             if departures.count > 500 { departures = [:] }
@@ -446,9 +458,68 @@ final class WindowManager {
 
         if let focusedID, workspace.strip.contains(focusedID) {
             changed = workspace.strip.focus(focusedID) || changed
+        } else if !adopting, let focusedID, let index = spaces.index(of: focusedID), index != spaces.activeIndex {
+            // A new window a rule sent to another workspace has focus: follow it there.
+            switchWorkspace(to: index, focusing: focusedID)
+            return
         }
         guard changed || adopting else { return }
         log.debug("reconciled \(pids.count) apps: \(self.stripDescription, privacy: .public)")
+        workspace.settleScroll()
+        applyLayout()
+        refreshOverlays()
+        didChange()
+    }
+
+    // MARK: App rules
+
+    private func rule(for id: WindowID) -> AppRule? {
+        windows[id].flatMap { rules.rule(for: NSRunningApplication(processIdentifier: $0.pid)?.bundleIdentifier) }
+    }
+
+    private func widthIndex(for rule: AppRule?) -> Int {
+        let presets = workspace.settings.widthPresets.indices
+        return rule?.widthIndex.flatMap { presets.contains($0) ? $0 : nil } ?? workspace.settings.defaultWidthIndex
+    }
+
+    private func shouldTile(_ id: WindowID, pid: pid_t, element: AXUIElement, kind: WindowKind) -> Bool {
+        AppRules.shouldTile(
+            rule: rules.rule(for: NSRunningApplication(processIdentifier: pid)?.bundleIdentifier),
+            classifiedTileable: kind == .tileable,
+            canTile: kind == .tileable || WindowClassifier.canTile(element),
+            userFloating: userFloating.contains(id),
+            userTiled: userTiled.contains(id)
+        )
+    }
+
+    /// Applies edited rules to windows already open: windows of apps whose rule changed float
+    /// or tile now. Widths and workspaces only apply to new windows, so nothing gets reshuffled.
+    func rulesChanged(_ rules: AppRules) {
+        let affected = Set(self.rules.rules.map(\.bundleID)).symmetricDifference(rules.rules.map(\.bundleID))
+            .union(rules.rules.filter { self.rules.rule(for: $0.bundleID) != $0 }.map(\.bundleID))
+        self.rules = rules
+        guard isEnabled, !affected.isEmpty else { return }
+        var changed = false
+        for window in windows.values {
+            guard let bundleID = NSRunningApplication(processIdentifier: window.pid)?.bundleIdentifier, affected.contains(bundleID) else { continue }
+            let kind = WindowClassifier.classify(window.element)
+            guard kind != .ignored else { continue }
+            let tile = shouldTile(window.id, pid: window.pid, element: window.element, kind: kind)
+            let tiled = spaces.index(of: window.id) != nil
+            if tiled, !tile {
+                spaces.remove(window.id)
+                lastApplied[window.id] = nil
+                hiddenWindows.remove(window.id)
+                window.element.setFrame(floatingFrame(for: window.element))
+                changed = true
+            } else if !tiled, tile {
+                let rule = rules.rule(for: bundleID)
+                let landed = spaces.insert(window.id, widthIndex: widthIndex(for: rule), workspace: rule?.workspace, focus: false)
+                if landed != spaces.activeIndex { hide([window.id]) }
+                changed = true
+            }
+        }
+        guard changed else { return }
         workspace.settleScroll()
         applyLayout()
         refreshOverlays()

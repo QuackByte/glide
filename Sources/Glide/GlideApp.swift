@@ -48,6 +48,7 @@ final class AppController {
     @ObservationIgnored private let trackpad = TrackpadMonitor()
     @ObservationIgnored private var swipeTracker = SwipeTracker(fingerCount: 3)
     let shortcuts = ShortcutStore()
+    let appRules = RuleStore()
     /// Bumped whenever tiling or hotkey state changes, so SwiftUI views refresh.
     private(set) var revision = 0
 
@@ -73,6 +74,8 @@ final class AppController {
         hotkeys.onAction = { [weak self] action in self?.perform(action) }
         shortcuts.onChange = { [weak self] in self?.registerHotkeys() }
         windowManager.onChange = { [weak self] in self?.stateChanged() }
+        windowManager.rules = appRules.rules
+        appRules.onChange = { [weak self] rules in self?.windowManager.rulesChanged(rules) }
         windowManager.onWorkspaceEvent = { [weak self] message in self?.showWorkspaceHUD(message) }
         permission.onChange = { [weak self] trusted in self?.permissionChanged(trusted) }
         permission.startMonitoring()

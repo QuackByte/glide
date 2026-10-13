@@ -92,6 +92,13 @@ enum WindowKind: Equatable {
 }
 
 enum WindowClassifier {
+    /// Whether a rule may tile this window even though `classify` floats it: a resizable,
+    /// movable standard window that isn't modal. Dialogs, sheets and fixed-size windows can't.
+    static func canTile(_ element: AXUIElement) -> Bool {
+        element.role == kAXWindowRole && element.subrole == kAXStandardWindowSubrole && !element.isModal
+            && element.isSettable(kAXSizeAttribute) && element.isSettable(kAXPositionAttribute)
+    }
+
     static func classify(_ element: AXUIElement) -> WindowKind {
         guard element.role == kAXWindowRole else { return .ignored }
         if element.isMinimized || element.isFullScreen { return .ignored }

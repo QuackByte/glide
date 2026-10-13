@@ -2,6 +2,7 @@ import AppKit
 import GlideCore
 import ServiceManagement
 import SwiftUI
+import UniformTypeIdentifiers
 
 final class SettingsWindowController: NSObject, NSWindowDelegate {
     private unowned let controller: AppController
@@ -149,6 +150,8 @@ struct SettingsView: View {
 
                 AppearanceSection(controller: controller)
 
+                AppRulesSection(store: controller.appRules)
+
                 ForEach(Action.Group.allCases, id: \.self) { group in
                     Section(group.rawValue) {
                         ForEach(Action.allCases.filter { $0.group == group }, id: \.self) { action in
@@ -173,7 +176,102 @@ struct SettingsView: View {
             }
         }
         .padding(20)
-        .frame(width: 560, height: 760)
+        .frame(width: 620, height: 780)
+    }
+}
+
+private struct AppRulesSection: View {
+    let store: RuleStore
+
+    var body: some View {
+        Section {
+            ForEach(store.rules.rules) { rule in
+                AppRuleRow(rule: rule, store: store)
+            }
+            Menu("Add App…") {
+                ForEach(store.appsWithoutRules, id: \.processIdentifier) { app in
+                    Button(app.localizedName ?? app.bundleIdentifier ?? "App") {
+                        store.set(AppRule(bundleID: app.bundleIdentifier!, appName: app.localizedName ?? app.bundleIdentifier!, mode: .float))
+                    }
+                }
+                Divider()
+                Button("Other App…") { chooseApp() }
+            }
+            .fixedSize()
+        } header: {
+            Text("App Rules")
+        } footer: {
+            Text("Rules apply as windows open. Float and tile take effect right away; width and workspace apply to new windows. ⌃⌥V still floats or tiles a single window.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func chooseApp() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.application]
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        panel.allowsMultipleSelection = false
+        if panel.runModal() == .OK, let url = panel.url { store.addApp(at: url) }
+    }
+}
+
+private struct AppRuleRow: View {
+    let rule: AppRule
+    let store: RuleStore
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: rule.bundleID) {
+                    Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                }
+                Text(rule.appName)
+                    .fontWeight(.medium)
+                Spacer()
+                Button {
+                    store.remove(rule.bundleID)
+                } label: {
+                    Image(systemName: "minus.circle")
+                }
+                .buttonStyle(.borderless)
+                .help("Remove the rule for \(rule.appName)")
+            }
+            HStack(spacing: 8) {
+                Picker("Windows", selection: binding(\.mode)) {
+                    Text("Automatic").tag(AppRule.Mode.automatic)
+                    Text("Always float").tag(AppRule.Mode.float)
+                    Text("Always tile").tag(AppRule.Mode.tile)
+                }
+                Picker("Width", selection: binding(\.widthIndex)) {
+                    Text("Default width").tag(Int?.none)
+                    ForEach(Array(["⅓ width", "½ width", "⅔ width", "Full width"].enumerated()), id: \.offset) { index, name in
+                        Text(name).tag(Int?.some(index))
+                    }
+                }
+                .disabled(rule.mode == .float)
+                Picker("Workspace", selection: binding(\.workspace)) {
+                    Text("Any workspace").tag(Int?.none)
+                    ForEach(0..<WorkspaceSet.count, id: \.self) { index in
+                        Text("Workspace \(index + 1)").tag(Int?.some(index))
+                    }
+                }
+                .disabled(rule.mode == .float)
+            }
+            .labelsHidden()
+            .padding(.leading, 28)
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func binding<Value>(_ keyPath: WritableKeyPath<AppRule, Value>) -> Binding<Value> {
+        Binding(get: { rule[keyPath: keyPath] }, set: { value in
+            var updated = rule
+            updated[keyPath: keyPath] = value
+            store.set(updated)
+        })
     }
 }
 
