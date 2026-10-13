@@ -21,6 +21,7 @@
 		47DFC044C64B0DD3B4BEBECE /* StripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ECA03FC26B7820A6830B7D2 /* StripTests.swift */; };
 		4F7F0DCACEA41D66A3506417 /* Keymap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531206BCE2FA2DABC6339953 /* Keymap.swift */; };
 		59E4C77F219C4CB17D21E2A8 /* FrameAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6A28B03CDE994D57F86522 /* FrameAnimation.swift */; };
+		5B857383E576775DD779433F /* CrashWatchdog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A5D4666AF12CDEA444570C0 /* CrashWatchdog.swift */; };
 		5B90D240DEDA13828B1D84EF /* RestorePlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16BE04140139A88E5CF19C67 /* RestorePlanner.swift */; };
 		5BF428AD4310B57D10EE8AA9 /* OnboardingWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AFF5FCB944F55C17F2DB /* OnboardingWindow.swift */; };
 		5D6B74505C439B0419733952 /* StripSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81C06183F18F46F0E197D11 /* StripSnapshot.swift */; };
@@ -103,6 +104,7 @@
 		7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityPermission.swift; sourceTree = "<group>"; };
 		7ECA03FC26B7820A6830B7D2 /* StripTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripTests.swift; sourceTree = "<group>"; };
 		855D351DAF3428DE0F359ACF /* WorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceTests.swift; sourceTree = "<group>"; };
+		8A5D4666AF12CDEA444570C0 /* CrashWatchdog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashWatchdog.swift; sourceTree = "<group>"; };
 		97C6EBB568AC2ADAFB1A70E0 /* Glide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Glide.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F7723B886DE20AE2F7F7E0E /* AXWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindow.swift; sourceTree = "<group>"; };
 		A81C06183F18F46F0E197D11 /* StripSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripSnapshot.swift; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 			children = (
 				7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */,
 				9F7723B886DE20AE2F7F7E0E /* AXWindow.swift */,
+				8A5D4666AF12CDEA444570C0 /* CrashWatchdog.swift */,
 				2CDFB0C976C8DE2E7661FA52 /* FocusDecorations.swift */,
 				C8DC58FA05CD84A7E6606359 /* GlideApp.swift */,
 				E1D5BCF04C2F6A9E0B7A39A5 /* HotkeyCenter.swift */,
@@ -354,6 +357,7 @@
 			files = (
 				9DC758C127A17141F074A152 /* AXWindow.swift in Sources */,
 				CDE703CBDFAC970353EE4CFB /* AccessibilityPermission.swift in Sources */,
+				5B857383E576775DD779433F /* CrashWatchdog.swift in Sources */,
 				32291BF1A8BF5940323A8ACE /* FocusDecorations.swift in Sources */,
 				099BBA34005BADFA62071358 /* GlideApp.swift in Sources */,
 				28EEDE8930D6815B953705DF /* HotkeyCenter.swift in Sources */,

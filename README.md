@@ -19,6 +19,7 @@ Status: early development (milestone 1: one display).
 - Set the **gap** between windows (0–40 pt), the ring color, and the dimming amount under **Settings › Appearance**. Changes apply immediately.
 - Glide remembers the layout (column order, stacks, widths, and windows you floated or tiled by hand) when you quit it or turn tiling off. Windows that are still open come back exactly as they were. The layout resets after a restart, because macOS window IDs only last until then.
 - Turning tiling off (or quitting Glide) moves every window to a sensible spot on screen, so nothing stays parked at the edges.
+- **Crash recovery:** Glide runs a small watchdog (a second copy of itself started with `--watchdog`). If Glide exits without quitting cleanly, whether it crashed or was force quit, the watchdog brings every parked or hidden window back on screen. After a real crash (macOS wrote a crash report) it also relaunches Glide, at most once a minute, and Glide re-tiles from the saved layout.
 
 ## Trackpad
 

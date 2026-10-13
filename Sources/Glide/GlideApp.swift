@@ -4,6 +4,16 @@ import ServiceManagement
 import SwiftUI
 
 @main
+enum GlideMain {
+    static func main() {
+        let arguments = CommandLine.arguments
+        if let index = arguments.firstIndex(of: CrashWatchdog.argument), index + 1 < arguments.count, let parent = pid_t(arguments[index + 1]) {
+            CrashWatchdog.run(parent: parent)
+        }
+        GlideApp.main()
+    }
+}
+
 struct GlideApp: App {
     @NSApplicationDelegateAdaptor(GlideAppDelegate.self) private var appDelegate
 
@@ -25,6 +35,7 @@ final class GlideAppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         // Never leave windows parked off screen.
         controller.windowManager.stop()
+        controller.stopWatchdog()
     }
 }
 
@@ -41,6 +52,7 @@ final class AppController {
     private(set) var revision = 0
 
     @ObservationIgnored private var statusMenu: StatusMenu?
+    @ObservationIgnored private var watchdog: Process?
     @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(controller: self)
     @ObservationIgnored private lazy var onboardingWindow = OnboardingWindowController(controller: self)
 
@@ -54,6 +66,7 @@ final class AppController {
     var isTrusted: Bool { permission.isTrusted }
 
     func launch() {
+        watchdog = CrashWatchdog.launch()
         statusMenu = StatusMenu(controller: self)
         hotkeys.onAction = { [weak self] action in self?.perform(action) }
         shortcuts.onChange = { [weak self] in self?.registerHotkeys() }
@@ -120,6 +133,12 @@ final class AppController {
             showOnboarding()
         }
         stateChanged()
+    }
+
+    /// Tells the watchdog this is a clean quit, so it doesn't step in.
+    func stopWatchdog() {
+        watchdog?.terminate()
+        watchdog = nil
     }
 
     // MARK: Login item

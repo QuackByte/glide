@@ -36,7 +36,7 @@ final class WindowManager {
     /// The layout to rebuild when tiling starts, saved when it stops or after changes.
     private var snapshot: StripSnapshot?
     private var saveWork: DispatchWorkItem?
-    private static let snapshotKey = "stripSnapshot"
+    static let snapshotKey = "stripSnapshot"
     private let decorations = FocusDecorations()
     private let tabBars = TabBarOverlay()
     /// Tabs that aren't showing; they jump in and out of place rather than sliding.

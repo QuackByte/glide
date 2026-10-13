@@ -30,6 +30,9 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
         self.bootTime = bootTime
     }
 
+    /// Every window in the saved layout, in strip order.
+    public var allWindows: [WindowID] { columns.flatMap(\.windows) }
+
     /// Rebuilds a strip from the windows that exist now. Saved columns come first, keeping
     /// their order, stacks and widths but dropping windows that have closed. Windows the
     /// snapshot doesn't know follow in the order given.
