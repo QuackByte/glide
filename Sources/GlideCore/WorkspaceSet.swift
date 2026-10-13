@@ -77,6 +77,16 @@ public struct WorkspaceSet: Equatable, Sendable {
         return true
     }
 
+    /// Adds a new window as its own column on a workspace (the active one by default), right of
+    /// that workspace's focused column. Returns the workspace it joined.
+    @discardableResult
+    public mutating func insert(_ window: WindowID, widthIndex: Int, workspace: Int? = nil, focus: Bool) -> Int {
+        let target = workspace.flatMap { workspaces.indices.contains($0) ? $0 : nil } ?? activeIndex
+        workspaces[target].strip.insert(window, widthIndex: widthIndex, focus: focus)
+        if target == activeIndex || focus { workspaces[target].ensureFocusedVisible() }
+        return target
+    }
+
     // MARK: Windows that leave and come back
 
     /// Where a window was, so it can return there after its app is hidden or it is minimized.
@@ -88,6 +98,7 @@ public struct WorkspaceSet: Equatable, Sendable {
         public var leftNeighbour: WindowID?
         public var widthIndex: Int
         public var isFullWidth: Bool
+        public var customWidth: CGFloat?
     }
 
     public func departure(of window: WindowID) -> Departure? {
@@ -99,7 +110,8 @@ public struct WorkspaceSet: Equatable, Sendable {
             sibling: column.windows.first { $0 != window },
             leftNeighbour: columnIndex > 0 ? strip.columns[columnIndex - 1].windows.first : nil,
             widthIndex: column.widthIndex,
-            isFullWidth: column.isFullWidth
+            isFullWidth: column.isFullWidth,
+            customWidth: column.customWidth
         )
     }
 
@@ -116,7 +128,8 @@ public struct WorkspaceSet: Equatable, Sendable {
             case nil: 0
             case let neighbour?: strip.location(of: neighbour).map { $0.column + 1 }
             }
-            strip.insert(Column(windows: [window], widthIndex: departure.widthIndex, isFullWidth: departure.isFullWidth), at: position, focus: focus)
+            strip.insert(Column(windows: [window], widthIndex: departure.widthIndex, isFullWidth: departure.isFullWidth, customWidth: departure.customWidth),
+                         at: position, focus: focus)
         }
         workspaces[target].strip = strip
         workspaces[target].ensureFocusedVisible()

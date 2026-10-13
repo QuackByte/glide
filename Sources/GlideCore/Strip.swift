@@ -21,14 +21,18 @@ public struct Column: Equatable, Sendable {
     /// Overrides `widthIndex` with the full viewport width until toggled off.
     public internal(set) var isFullWidth: Bool
     public internal(set) var isTabbed: Bool
+    /// A width in points set by resizing a window with the mouse; replaces the preset until the
+    /// width is cycled.
+    public internal(set) var customWidth: CGFloat?
 
-    public init(windows: [WindowID], focusedRow: Int = 0, widthIndex: Int, isFullWidth: Bool = false, isTabbed: Bool = false) {
+    public init(windows: [WindowID], focusedRow: Int = 0, widthIndex: Int, isFullWidth: Bool = false, isTabbed: Bool = false, customWidth: CGFloat? = nil) {
         precondition(!windows.isEmpty, "A column needs at least one window")
         self.windows = windows
         self.focusedRow = min(max(focusedRow, 0), windows.count - 1)
         self.widthIndex = widthIndex
         self.isFullWidth = isFullWidth
         self.isTabbed = isTabbed
+        self.customWidth = customWidth
     }
 
     public var focusedWindow: WindowID { windows[focusedRow] }
@@ -228,7 +232,27 @@ public struct Strip: Equatable, Sendable {
         let step = forward ? 1 : presetCount - 1
         column.widthIndex = column.isFullWidth ? column.widthIndex : (column.widthIndex + step) % presetCount
         column.isFullWidth = false
+        column.customWidth = nil
         columns[focusedColumnIndex] = column
+        return true
+    }
+
+    /// Switches the focused column to a preset, dropping any custom or full width.
+    @discardableResult
+    public mutating func setWidthIndex(_ index: Int) -> Bool {
+        guard !columns.isEmpty else { return false }
+        columns[focusedColumnIndex].widthIndex = index
+        columns[focusedColumnIndex].isFullWidth = false
+        columns[focusedColumnIndex].customWidth = nil
+        return true
+    }
+
+    /// Gives the column holding `window` a width in points, e.g. after the user resized it.
+    @discardableResult
+    public mutating func setCustomWidth(_ width: CGFloat, forColumnOf window: WindowID) -> Bool {
+        guard let (index, _) = location(of: window) else { return false }
+        columns[index].customWidth = width
+        columns[index].isFullWidth = false
         return true
     }
 

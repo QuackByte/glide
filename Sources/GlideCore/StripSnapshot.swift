@@ -11,6 +11,7 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
         public var isFullWidth: Bool
         /// Optional so snapshots saved before tabs existed still load.
         public var isTabbed: Bool?
+        public var customWidth: Double?
 
         init(_ column: Column) {
             windows = column.windows
@@ -18,6 +19,7 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
             widthIndex = column.widthIndex
             isFullWidth = column.isFullWidth
             isTabbed = column.isTabbed
+            customWidth = column.customWidth.map(Double.init)
         }
     }
 
@@ -94,7 +96,8 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
                 let previouslyFocused = saved.windows[min(max(saved.focusedRow, 0), saved.windows.count - 1)]
                 let row = windows.firstIndex(of: previouslyFocused) ?? 0
                 let width = (0..<presetCount).contains(saved.widthIndex) ? saved.widthIndex : widthIndex
-                restored.append(Column(windows: windows, focusedRow: row, widthIndex: width, isFullWidth: saved.isFullWidth, isTabbed: saved.isTabbed ?? false))
+                restored.append(Column(windows: windows, focusedRow: row, widthIndex: width, isFullWidth: saved.isFullWidth, isTabbed: saved.isTabbed ?? false,
+                                       customWidth: saved.customWidth.map { CGFloat($0) }))
             }
             var strip = Strip(columns: restored)
             if let focused = state.focusedWindow { strip.focus(focused) }
