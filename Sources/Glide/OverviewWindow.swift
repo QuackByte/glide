@@ -130,8 +130,8 @@ private struct OverviewView: View {
     let go: (WindowID) -> Void
     let dismiss: () -> Void
 
-    private let padding: CGFloat = 56
-    private let rowSpacing: CGFloat = 28
+    private let padding: CGFloat = 72
+    private let rowSpacing: CGFloat = 44
     private let footerHeight: CGFloat = 40
 
     var body: some View {
@@ -189,6 +189,11 @@ private struct OverviewView: View {
     }
 }
 
+private enum OverviewMetrics {
+    static let columnSpacing: CGFloat = 20
+    static let stackSpacing: CGFloat = 14
+}
+
 private struct OverviewRowView: View {
     let model: OverviewModel
     let rowIndex: Int
@@ -199,7 +204,7 @@ private struct OverviewRowView: View {
     var body: some View {
         let row = model.overview.rows[rowIndex]
         let isActive = row.workspace == model.activeWorkspace
-        HStack(alignment: .center, spacing: 20) {
+        HStack(alignment: .center, spacing: 28) {
             Text("\(row.workspace + 1)")
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(isActive ? .white : .white.opacity(0.7))
@@ -214,13 +219,15 @@ private struct OverviewRowView: View {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .top, spacing: max(model.gap * scale, 6)) {
+                        // Roomier than the scaled screen gap, which would be a few points.
+                        HStack(alignment: .top, spacing: OverviewMetrics.columnSpacing) {
                             ForEach(row.columns.indices, id: \.self) { column in
                                 columnView(row: row, column: column)
                                     .frame(width: row.widths[column] * scale, height: height)
                             }
                         }
-                        .padding(4)
+                        // Room for the selected tile's highlight and shadow.
+                        .padding(12)
                     }
                     .onChange(of: model.overview.selection) { _, selection in
                         guard let selection, model.overview.location(of: selection)?.row == rowIndex else { return }
@@ -241,8 +248,8 @@ private struct OverviewRowView: View {
         let windows = row.columns[column].windows
         if row.columns[column].isTabbed {
             let shown = model.overview.shownWindow(row: rowIndex, column: column)
-            VStack(spacing: 4) {
-                HStack(spacing: 4) {
+            VStack(spacing: 6) {
+                HStack(spacing: 6) {
                     ForEach(windows, id: \.self) { window in
                         AppIcon(pid: model.pids[window], size: 14)
                             .padding(3)
@@ -255,7 +262,7 @@ private struct OverviewRowView: View {
                 tile(shown)
             }
         } else {
-            VStack(spacing: max(model.gap * scale, 4)) {
+            VStack(spacing: OverviewMetrics.stackSpacing) {
                 ForEach(windows, id: \.self) { window in tile(window) }
             }
         }
