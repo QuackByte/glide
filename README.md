@@ -9,11 +9,13 @@ Status: early development (milestone 1: one display).
 ## How it works
 
 - Each standard window is a **column** on the strip. New windows open to the right of the focused column and take focus.
-- Columns use preset widths (⅓, ½, ⅔, full) and fill the screen height, minus a 12 pt gap. A column can stack several windows vertically.
+- Columns use preset widths (⅓, ½, ⅔, full) and fill the screen height, minus a gap (12 pt by default). A column can stack several windows vertically.
 - Glide keeps the focused column fully on screen, scrolling the strip as little as possible. macOS doesn't let windows sit entirely off screen, so columns scrolled out of view are parked as 4 pt slivers at the left and right screen edges.
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.
 - Closing, minimizing or hiding a window removes it from the strip; restoring it brings it back next to the focused column.
 - Layout changes slide into place in about 120 ms (ease-out). Turn this off under **Settings › Animate window movement**.
+- A **focus ring** outlines the focused window (your accent color, or any color you pick). Optionally, Glide **dims every other window**. Both are click-through overlay windows stacked just above and just below the focused window, since macOS doesn't let one app restyle another's windows. They hide while a floating window or Glide's own Settings has focus.
+- Set the **gap** between windows (0–40 pt), the ring color, and the dimming amount under **Settings › Appearance**. Changes apply immediately.
 - Glide remembers the layout (column order, stacks, widths, and windows you floated or tiled by hand) when you quit it or turn tiling off. Windows that are still open come back exactly as they were. The layout resets after a restart, because macOS window IDs only last until then.
 - Turning tiling off (or quitting Glide) moves every window to a sensible spot on screen, so nothing stays parked at the edges.
 

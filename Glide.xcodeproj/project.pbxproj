@@ -15,6 +15,7 @@
 		1BA66D9B2CD8AE2CF58148FD /* Strip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A06047E647B6B48699CC776 /* Strip.swift */; };
 		28EEDE8930D6815B953705DF /* HotkeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D5BCF04C2F6A9E0B7A39A5 /* HotkeyCenter.swift */; };
 		30590D9CE31593CF304E70F0 /* SwipeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E398FD0B43B3340D4B1921 /* SwipeTests.swift */; };
+		32291BF1A8BF5940323A8ACE /* FocusDecorations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CDFB0C976C8DE2E7661FA52 /* FocusDecorations.swift */; };
 		3B3A0AC8EC8515F2D73F7CE2 /* GlideCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; };
 		468E6CB8186840D9CBD39703 /* WorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 855D351DAF3428DE0F359ACF /* WorkspaceTests.swift */; };
 		47DFC044C64B0DD3B4BEBECE /* StripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ECA03FC26B7820A6830B7D2 /* StripTests.swift */; };
@@ -89,6 +90,7 @@
 		211731250170AA7196708655 /* KeyCombo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCombo.swift; sourceTree = "<group>"; };
 		25B33FD4253A18B35308DCF6 /* FrameAnimationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameAnimationTests.swift; sourceTree = "<group>"; };
 		2A06047E647B6B48699CC776 /* Strip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strip.swift; sourceTree = "<group>"; };
+		2CDFB0C976C8DE2E7661FA52 /* FocusDecorations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusDecorations.swift; sourceTree = "<group>"; };
 		314E60E90D26FC7C62D81809 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3A6A28B03CDE994D57F86522 /* FrameAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameAnimation.swift; sourceTree = "<group>"; };
 		531206BCE2FA2DABC6339953 /* Keymap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keymap.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 			children = (
 				7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */,
 				9F7723B886DE20AE2F7F7E0E /* AXWindow.swift */,
+				2CDFB0C976C8DE2E7661FA52 /* FocusDecorations.swift */,
 				C8DC58FA05CD84A7E6606359 /* GlideApp.swift */,
 				E1D5BCF04C2F6A9E0B7A39A5 /* HotkeyCenter.swift */,
 				05D0AFF5FCB944F55C17F2DB /* OnboardingWindow.swift */,
@@ -345,6 +348,7 @@
 			files = (
 				9DC758C127A17141F074A152 /* AXWindow.swift in Sources */,
 				CDE703CBDFAC970353EE4CFB /* AccessibilityPermission.swift in Sources */,
+				32291BF1A8BF5940323A8ACE /* FocusDecorations.swift in Sources */,
 				099BBA34005BADFA62071358 /* GlideApp.swift in Sources */,
 				28EEDE8930D6815B953705DF /* HotkeyCenter.swift in Sources */,
 				5BF428AD4310B57D10EE8AA9 /* OnboardingWindow.swift in Sources */,

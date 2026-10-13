@@ -37,6 +37,7 @@ final class WindowManager {
     private var snapshot: StripSnapshot?
     private var saveWork: DispatchWorkItem?
     private static let snapshotKey = "stripSnapshot"
+    private let decorations = FocusDecorations()
 
     /// Called after the layout or window membership changes.
     var onChange: (() -> Void)?
@@ -52,7 +53,7 @@ final class WindowManager {
         guard !isEnabled, AXIsProcessTrusted() else { return }
         isEnabled = true
         AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 1)
-        workspace = Workspace(viewport: ScreenGeometry.primaryViewport() ?? .zero)
+        workspace = Workspace(viewport: ScreenGeometry.primaryViewport() ?? .zero, settings: LayoutSettings(gap: Appearance.gap))
         loadSnapshot()
         observeWorkspace()
         let apps = NSWorkspace.shared.runningApplications.filter(isManageable)
@@ -73,6 +74,7 @@ final class WindowManager {
         }
 
         saveSnapshot()
+        decorations.hide()
         isEnabled = false
         reassertWork?.cancel()
         for observer in observers.values {
@@ -134,6 +136,18 @@ final class WindowManager {
         guard sysctlbyname("kern.boottime", &time, &size, nil, 0) == 0 else { return nil }
         return Date(timeIntervalSince1970: TimeInterval(time.tv_sec) + TimeInterval(time.tv_usec) / 1_000_000)
     }()
+
+    /// Applies changed gap, focus ring and dimming settings.
+    func appearanceChanged() {
+        guard isEnabled else { return }
+        if workspace.settings.gap != Appearance.gap {
+            workspace.settings.gap = Appearance.gap
+            workspace.minimumWidths = [:]
+            workspace.settleScroll()
+            applyLayout()
+        }
+        refreshDecorations()
+    }
 
     // MARK: Actions
 
@@ -226,6 +240,7 @@ final class WindowManager {
         on(NSWorkspace.didDeactivateApplicationNotification) { [weak self] app in
             // Catches windows that disappear when their app loses focus.
             self?.scheduleReconcile(app.processIdentifier, retries: [0.3])
+            self?.refreshDecorations()
         }
         on(NSWorkspace.didHideApplicationNotification) { [weak self] app in
             self?.scheduleReconcile(app.processIdentifier)
@@ -286,6 +301,7 @@ final class WindowManager {
         workspace.settleScroll()
         applyLayout()
         syncFocus()
+        refreshDecorations()
         didChange()
     }
 
@@ -297,6 +313,8 @@ final class WindowManager {
         case kAXFocusedWindowChangedNotification, kAXMainWindowChangedNotification:
             syncFocus()
         case kAXWindowMovedNotification, kAXWindowResizedNotification:
+            // The ring can't follow a drag smoothly; hide it until the window snaps back.
+            if NSEvent.pressedMouseButtons != 0, element.windowID == decorations.target { decorations.hide() }
             scheduleReassert()
         default:
             scheduleReconcile(pid)
@@ -387,6 +405,7 @@ final class WindowManager {
         log.debug("reconciled \(pids.count) apps: \(self.stripDescription, privacy: .public)")
         workspace.settleScroll()
         applyLayout()
+        refreshDecorations()
         didChange()
     }
 
@@ -427,7 +446,9 @@ final class WindowManager {
 
     /// Follows focus changes made outside Glide (clicks, ⌘-Tab, new windows) and scrolls to them.
     private func syncFocus() {
-        guard isEnabled, let id = focusedWindowID() else { return }
+        guard isEnabled else { return }
+        defer { refreshDecorations() }
+        guard let id = focusedWindowID() else { return }
         if let lock = focusLock, Date() < lock.until, lock.window != id { return }
         guard workspace.strip.contains(id) else {
             if windows[id] == nil, let pid = focusedWindowElement()?.pid { scheduleReconcile(pid) }
@@ -445,6 +466,32 @@ final class WindowManager {
         AXUIElementCreateApplication(window.pid).set(kAXFrontmostAttribute, kCFBooleanTrue)
         window.element.set(kAXMainAttribute, kCFBooleanTrue)
         AXUIElementPerformAction(window.element, kAXRaiseAction as CFString)
+        refreshDecorations()
+        // Apps raise windows asynchronously; restack once the raise has landed.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.refreshDecorations() }
+    }
+
+    // MARK: Focus ring and dimming
+
+    /// Decorates the focused tiled window, restacking the overlays around it. Hides them when
+    /// something else has focus: a floating window, another Space, or Glide's own windows.
+    private func refreshDecorations() {
+        guard isEnabled, Appearance.showsFocusRing || Appearance.dimsUnfocusedWindows,
+              let id = workspace.strip.focusedWindow, let frame = currentFrame(of: id) else { return decorations.hide() }
+        let locked = focusLock.map { $0.window == id && Date() < $0.until } ?? false
+        guard locked || focusedWindowID() == id else { return decorations.hide() }
+        decorations.show(around: id, frame: frame)
+    }
+
+    /// Moves the ring along with its window during animations and swipes.
+    private func moveDecorations() {
+        guard let id = decorations.target, let frame = currentFrame(of: id) else { return }
+        decorations.move(to: frame)
+    }
+
+    /// Where a window is now, mid-animation included.
+    private func currentFrame(of id: WindowID) -> CGRect? {
+        motions[id].map { $0.frame(at: CACurrentMediaTime()) } ?? lastObserved[id] ?? lastApplied[id]
     }
 
     /// e.g. "[Ghostty#2208] [*Safari#31 Safari#40] scroll 600" with * marking focus.
@@ -492,6 +539,7 @@ final class WindowManager {
             }
         }
         if !motions.isEmpty { startAnimationTimer() }
+        moveDecorations()
         if learnedMinimum, pass < 2 {
             workspace.ensureFocusedVisible()
             applyLayout(pass: pass + 1)
@@ -570,6 +618,7 @@ final class WindowManager {
             for (element, origin) in groups[index] { element.setPosition(origin) }
         }
         for (window, frame) in resized { setFrame(frame, of: window) }
+        moveDecorations()
     }
 
     // MARK: Animation
@@ -628,6 +677,7 @@ final class WindowManager {
             setFrame(frame, of: window)
             learnedMinimum = settle(window, at: frame) || learnedMinimum
         }
+        moveDecorations()
         if motions.isEmpty {
             animationTimer?.invalidate()
             animationTimer = nil
@@ -681,6 +731,7 @@ final class WindowManager {
             moved = true
         }
         if moved { applyLayout() }
+        refreshDecorations()
     }
 
     private static func roughlyEqual(_ a: CGRect, _ b: CGRect) -> Bool {

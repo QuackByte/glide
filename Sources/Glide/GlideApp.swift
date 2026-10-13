@@ -167,6 +167,12 @@ final class AppController {
         }
     }
 
+    /// Applies gap, focus ring and dimming changes made in Settings.
+    func appearanceChanged() {
+        windowManager.appearanceChanged()
+        stateChanged()
+    }
+
     private func stateChanged() {
         revision += 1
         statusMenu?.refreshIcon()

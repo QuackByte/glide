@@ -35,6 +35,19 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertEqual(f[2]!.maxX + 12, viewport.maxX)
     }
 
+    func testCustomGapsStillFillViewport() {
+        for gap: CGFloat in [0, 24] {
+            var ws = workspace([[1], [2, 3]])
+            ws.settings.gap = gap
+            let f = frames(ws)
+            XCTAssertEqual(f[1]!.minX, gap)
+            XCTAssertEqual(f[2]!.minX - f[1]!.maxX, gap)
+            XCTAssertEqual(f[2]!.maxX + gap, viewport.maxX)
+            XCTAssertEqual(f[3]!.minY - f[2]!.maxY, gap, "Stacked windows use the same gap")
+            XCTAssertEqual(f[3]!.maxY + gap, viewport.maxY, accuracy: 1)
+        }
+    }
+
     func testThreeThirdsFillViewport() {
         let ws = workspace([[1], [2], [3]], widths: [0, 0, 0])
         XCTAssertEqual(ws.contentWidth, ws.usableWidth)
