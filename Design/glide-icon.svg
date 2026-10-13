@@ -1,0 +1,58 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Glide icon">
+  <defs>
+    <linearGradient id="glBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2E3448"/>
+      <stop offset="1" stop-color="#151924"/>
+    </linearGradient>
+    <linearGradient id="glFocus" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E4E7EE"/>
+    </linearGradient>
+    <linearGradient id="glSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#55607F"/>
+      <stop offset="1" stop-color="#3A4260"/>
+    </linearGradient>
+    <clipPath id="glSquircle">
+      <rect x="100" y="100" width="824" height="824" rx="185"/>
+    </clipPath>
+    <filter id="glShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+    <filter id="glSoft" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle body (macOS 824px grid), same as ClickType -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#glBody)" filter="url(#glShadow)"/>
+
+  <g clip-path="url(#glSquircle)">
+    <g transform="translate(0 -14)">
+    <!-- Neighbouring columns, cut off by the edge: the strip keeps going -->
+    <g filter="url(#glSoft)">
+      <rect x="20" y="236" width="230" height="500" rx="44" fill="url(#glSide)"/>
+      <rect x="774" y="236" width="230" height="500" rx="44" fill="url(#glSide)"/>
+    </g>
+    <rect x="20" y="236" width="230" height="74" rx="44" fill="#FFFFFF" fill-opacity="0.08"/>
+    <rect x="774" y="236" width="230" height="74" rx="44" fill="#FFFFFF" fill-opacity="0.08"/>
+
+    <!-- Focused column -->
+    <g filter="url(#glSoft)">
+      <rect x="292" y="210" width="440" height="552" rx="52" fill="url(#glFocus)"/>
+    </g>
+    <path d="M292 262 a52 52 0 0 1 52 -52 h336 a52 52 0 0 1 52 52 v34 h-440 z" fill="#D9DEE8"/>
+    <circle cx="346" cy="254" r="15" fill="#1B1F2B" fill-opacity="0.28"/>
+    <circle cx="392" cy="254" r="15" fill="#1B1F2B" fill-opacity="0.28"/>
+    <circle cx="438" cy="254" r="15" fill="#1B1F2B" fill-opacity="0.28"/>
+    <rect x="342" y="360" width="250" height="26" rx="13" fill="#1B1F2B" fill-opacity="0.16"/>
+    <rect x="342" y="418" width="330" height="26" rx="13" fill="#1B1F2B" fill-opacity="0.12"/>
+    <rect x="342" y="476" width="290" height="26" rx="13" fill="#1B1F2B" fill-opacity="0.12"/>
+
+    <!-- Scroll track and thumb: where you are on the strip -->
+    <rect x="100" y="816" width="824" height="16" rx="8" fill="#FFFFFF" fill-opacity="0.12"/>
+    <rect x="292" y="806" width="440" height="36" rx="18" fill="#FF9F43"/>
+    </g>
+  </g>
+
+  <rect x="101.5" y="101.5" width="821" height="821" rx="183.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="3"/>
+</svg>
