@@ -176,3 +176,60 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertEqual(ws.scrollOffset, 0)
     }
 }
+
+final class CustomWidthTests: XCTestCase {
+    private let viewport = CGRect(x: 0, y: 40, width: 1212, height: 800)
+
+    /// Two ½ columns; presets are 388, 588, 788 and 1188 wide.
+    private func workspace() -> Workspace {
+        Workspace(strip: Strip(columns: [Column(windows: [1], widthIndex: 1), Column(windows: [2], widthIndex: 1)]), viewport: viewport)
+    }
+
+    func testCustomWidthReplacesThePreset() {
+        var ws = workspace()
+        XCTAssertTrue(ws.strip.setCustomWidth(700, forColumnOf: 1))
+        XCTAssertEqual(ws.width(ofColumn: 0), 700)
+        XCTAssertEqual(ws.placements().first { $0.window == 2 }?.frame.minX, 12 + 700 + 12, "Later columns shift along")
+        ws.strip.setCustomWidth(5000, forColumnOf: 1)
+        XCTAssertEqual(ws.width(ofColumn: 0), ws.usableWidth, "Never wider than the screen")
+    }
+
+    func testCyclingFromACustomWidthGoesToTheNextPresetThatWay() {
+        var ws = workspace()
+        ws.strip.setCustomWidth(700, forColumnOf: 1)
+        XCTAssertTrue(ws.perform(.cycleColumnWidth))
+        XCTAssertEqual(ws.width(ofColumn: 0), 788)
+        XCTAssertNil(ws.strip.columns[0].customWidth)
+
+        ws.strip.setCustomWidth(700, forColumnOf: 1)
+        ws.perform(.cycleColumnWidthBackward)
+        XCTAssertEqual(ws.width(ofColumn: 0), 588)
+
+        ws.strip.setCustomWidth(1190, forColumnOf: 1)
+        ws.perform(.cycleColumnWidth)
+        XCTAssertEqual(ws.width(ofColumn: 0), 388, "Wraps past the widest preset")
+    }
+
+    func testFullWidthOverridesAndRestoresTheCustomWidth() {
+        var ws = workspace()
+        ws.strip.setCustomWidth(700, forColumnOf: 1)
+        ws.perform(.toggleFullWidth)
+        XCTAssertEqual(ws.width(ofColumn: 0), 1188)
+        ws.perform(.toggleFullWidth)
+        XCTAssertEqual(ws.width(ofColumn: 0), 700)
+    }
+
+    func testCustomWidthSurvivesSnapshotsAndHiding() throws {
+        var set = WorkspaceSet(viewport: viewport)
+        set.active.strip = workspace().strip
+        set.active.strip.setCustomWidth(640, forColumnOf: 2)
+        let snapshot = StripSnapshot(workspaces: set, userFloating: [], userTiled: [], bootTime: Date(timeIntervalSince1970: 0))
+        let decoded = try JSONDecoder().decode(StripSnapshot.self, from: JSONEncoder().encode(snapshot))
+        XCTAssertEqual(decoded.restore(windows: [1, 2], widthIndex: 1, presetCount: 4).columns[1].customWidth, 640)
+
+        let departure = set.departure(of: 2)!
+        set.remove(2)
+        set.rejoin(2, from: departure, focus: false)
+        XCTAssertEqual(set.active.strip.columns[1].customWidth, 640)
+    }
+}

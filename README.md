@@ -10,6 +10,7 @@ Status: early development (milestone 1: one display).
 
 - Each standard window is a **column** on the strip. New windows open to the right of the focused column and take focus.
 - Columns use preset widths (⅓, ½, ⅔, full) and fill the screen height, minus a gap (12 pt by default). A column can stack several windows vertically.
+- **Resize with the mouse:** drag a tiled window's edge and its column keeps the new width; the strip reflows around it. ⌃⌥R / ⌃⌥⇧R then step to the next preset in that direction. Dragging a tiled window (rather than its edge) still snaps it back into its slot.
 - Glide keeps the focused column fully on screen, scrolling the strip as little as possible. macOS doesn't let windows sit entirely off screen, so columns scrolled out of view are parked as 4 pt slivers at the left and right screen edges.
 - A column can also be **tabbed** (⌃⌥W): it shows one window at full height under a tab bar, and the others wait as tabs. ⌃⌥↑/↓ switch tabs, ⌃⌥⇧↑/↓ reorder them, clicking a tab selects it, and consume/expel (⌃⌥[ / ⌃⌥]) adds or removes tabs. Tabs can be windows of different apps. macOS won't let a window go fully off screen, so hidden tabs wait in the bottom-right corner with a point showing.
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.

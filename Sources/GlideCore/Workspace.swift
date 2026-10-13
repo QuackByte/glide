@@ -84,9 +84,14 @@ public struct Workspace: Equatable, Sendable {
         let column = strip.columns[index]
         let presets = settings.widthPresets
         let fraction = column.isFullWidth ? 1 : presets[min(max(column.widthIndex, 0), presets.count - 1)]
-        let preset = ((viewport.width - settings.gap) * fraction - settings.gap).rounded()
+        let preset = column.isFullWidth ? presetWidth(fraction) : column.customWidth?.rounded() ?? presetWidth(fraction)
         let minimum = column.windows.compactMap { minimumWidths[$0] }.max() ?? 0
         return min(max(preset, minimum), usableWidth)
+    }
+
+    /// Preset fractions are of the whole viewport, so two ½ columns exactly fill it, gaps included.
+    public func presetWidth(_ fraction: CGFloat) -> CGFloat {
+        ((viewport.width - settings.gap) * fraction - settings.gap).rounded()
     }
 
     /// The strip coordinate of each column's left edge.
@@ -212,8 +217,8 @@ public struct Workspace: Equatable, Sendable {
         case .moveWindowDown: changed = strip.moveWindow(.down)
         case .consumeOrExpelLeft: changed = strip.consumeOrExpel(.left)
         case .consumeOrExpelRight: changed = strip.consumeOrExpel(.right)
-        case .cycleColumnWidth: changed = strip.cycleWidth(presetCount: settings.widthPresets.count)
-        case .cycleColumnWidthBackward: changed = strip.cycleWidth(presetCount: settings.widthPresets.count, forward: false)
+        case .cycleColumnWidth: changed = cycleWidth(forward: true)
+        case .cycleColumnWidthBackward: changed = cycleWidth(forward: false)
         case .toggleFullWidth: changed = strip.toggleFullWidth()
         case .toggleTabbed: changed = strip.toggleTabbed()
         case .centerColumn:
@@ -234,6 +239,20 @@ public struct Workspace: Equatable, Sendable {
             }
         }
         return changed
+    }
+
+    /// From a custom width, cycling moves to the next preset in that direction (wrapping);
+    /// otherwise it steps through the presets.
+    private mutating func cycleWidth(forward: Bool) -> Bool {
+        guard let column = strip.focusedColumn else { return false }
+        guard let custom = column.customWidth, !column.isFullWidth else {
+            return strip.cycleWidth(presetCount: settings.widthPresets.count, forward: forward)
+        }
+        let widths = settings.widthPresets.map(presetWidth)
+        let index = forward
+            ? widths.firstIndex { $0 > custom + 1 } ?? 0
+            : widths.lastIndex { $0 < custom - 1 } ?? widths.count - 1
+        return strip.setWidthIndex(index)
     }
 
     // MARK: Placement

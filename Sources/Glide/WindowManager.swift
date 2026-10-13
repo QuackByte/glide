@@ -53,6 +53,8 @@ final class WindowManager {
     private var workspaceSwitchLock: Date?
     /// Where windows were when their app was hidden or they were minimized, so they return there.
     private var departures: [WindowID: WorkspaceSet.Departure] = [:]
+    /// Tiled windows the user resized with the mouse since the last snap-back.
+    private var userResized: Set<WindowID> = []
 
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
     var rules = AppRules()
@@ -348,6 +350,9 @@ final class WindowManager {
             syncFocus()
         case kAXWindowMovedNotification, kAXWindowResizedNotification:
             // The ring can't follow a drag smoothly; hide it until the window snaps back.
+            if notification == kAXWindowResizedNotification, NSEvent.pressedMouseButtons != 0, let id = element.windowID {
+                userResized.insert(id)
+            }
             if NSEvent.pressedMouseButtons != 0, element.windowID == decorations.target {
                 decorations.hide()
                 tabBars.hide()
@@ -992,16 +997,33 @@ final class WindowManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
     }
 
+    /// A window the user dragged snaps back to its slot. One the user resized keeps its new
+    /// width: its column takes that width and the strip reflows around it.
     private func reassert() {
         var moved = false
+        var resized = false
+        defer { userResized = [] }
         for id in workspace.strip.windows {
             guard let window = windows[id], let actual = window.element.frame else { continue }
+            if userResized.contains(id), !hiddenWindows.contains(id), let applied = lastApplied[id], abs(actual.width - applied.width) > 2,
+               let (column, _) = workspace.strip.location(of: id) {
+                workspace.strip.setCustomWidth(actual.width, forColumnOf: id)
+                for sibling in workspace.strip.columns[column].windows { lastApplied[sibling] = nil }
+                resized = true
+                moved = true
+                continue
+            }
             if let observed = lastObserved[id], Self.roughlyEqual(observed, actual) { continue }
             lastApplied[id] = nil
             moved = true
         }
+        if resized {
+            log.debug("adopted a resized width: \(self.stripDescription, privacy: .public)")
+            workspace.ensureFocusedVisible()
+        }
         if moved { applyLayout() }
         refreshOverlays()
+        if resized { didChange() }
     }
 
     private static func roughlyEqual(_ a: CGRect, _ b: CGRect) -> Bool {
