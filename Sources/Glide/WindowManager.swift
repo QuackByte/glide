@@ -559,6 +559,12 @@ final class WindowManager {
     // MARK: Focus
 
     private func focusedWindowElement() -> AXUIElement? {
+        // The system-wide focused application can stay nil for apps that just launched (seen
+        // with Chrome and Electron apps), so ask the frontmost app first.
+        if let pid = NSWorkspace.shared.frontmostApplication?.processIdentifier,
+           let window: AXUIElement = AXUIElementCreateApplication(pid).value(kAXFocusedWindowAttribute) {
+            return window
+        }
         let system = AXUIElementCreateSystemWide()
         guard let app: AXUIElement = system.value(kAXFocusedApplicationAttribute) else { return nil }
         return app.value(kAXFocusedWindowAttribute)
