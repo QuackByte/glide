@@ -7,7 +7,7 @@ import QuartzCore
 private let log = Logger(subsystem: "dev.quackbyte.glide", category: "windows")
 
 /// Connects the pure layout engine to real windows: tracks windows through the AX API and
-/// NSWorkspace, feeds membership and focus changes into the `Workspace`, and applies its frames.
+/// NSWorkspace, feeds membership and focus changes into the workspaces, and applies their frames.
 final class WindowManager {
     private struct TrackedWindow {
         let id: WindowID
@@ -16,7 +16,13 @@ final class WindowManager {
     }
 
     private(set) var isEnabled = false
-    private var workspace = Workspace(viewport: .zero)
+    private var spaces = WorkspaceSet(viewport: .zero)
+    /// The active workspace. Everything on screen belongs to it; the windows of the other
+    /// workspaces wait hidden in the corner.
+    private var workspace: Workspace {
+        get { spaces.active }
+        set { spaces.active = newValue }
+    }
     /// Every managed window, tiled or floating. The strip says which ones are tiled.
     private var windows: [WindowID: TrackedWindow] = [:]
     /// Windows the user floated, and floating-by-default windows the user tiled.
@@ -39,8 +45,14 @@ final class WindowManager {
     static let snapshotKey = "stripSnapshot"
     private let decorations = FocusDecorations()
     private let tabBars = TabBarOverlay()
-    /// Tabs that aren't showing; they jump in and out of place rather than sliding.
-    private var hiddenTabs: Set<WindowID> = []
+    /// Hidden tabs and the windows of inactive workspaces. They jump into place rather than
+    /// sliding in from the corner they wait in.
+    private var hiddenWindows: Set<WindowID> = []
+    /// Ignores focus that lands on another workspace's window just after switching, since apps
+    /// report the old focus late.
+    private var workspaceSwitchLock: Date?
+    /// Where windows were when their app was hidden or they were minimized, so they return there.
+    private var departures: [WindowID: WorkspaceSet.Departure] = [:]
 
     /// Called after the layout or window membership changes.
     var onChange: (() -> Void)?
@@ -56,7 +68,7 @@ final class WindowManager {
         guard !isEnabled, AXIsProcessTrusted() else { return }
         isEnabled = true
         AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 1)
-        workspace = Workspace(viewport: ScreenGeometry.primaryViewport() ?? .zero, settings: LayoutSettings(gap: Appearance.gap))
+        spaces = WorkspaceSet(viewport: ScreenGeometry.primaryViewport() ?? .zero, settings: LayoutSettings(gap: Appearance.gap))
         loadSnapshot()
         tabBars.onSelect = { [weak self] window in self?.selectTab(window) }
         observeWorkspace()
@@ -69,7 +81,8 @@ final class WindowManager {
     func stop() {
         guard isEnabled else { return }
         finishAnimations()
-        let ordered = workspace.strip.windows.compactMap { id in
+        // Every workspace's windows: the hidden ones come back on screen too.
+        let ordered = spaces.allWindows.compactMap { id in
             windows[id].flatMap { window in window.element.frame.map { (window, $0) } }
         }
         let restored = RestorePlanner.restoredFrames(for: ordered.map { ($0.0.id, $0.1) }, in: workspace.viewport)
@@ -80,7 +93,8 @@ final class WindowManager {
         saveSnapshot()
         decorations.hide()
         tabBars.hide()
-        hiddenTabs = []
+        hiddenWindows = []
+        departures = [:]
         isEnabled = false
         reassertWork?.cancel()
         for observer in observers.values {
@@ -98,7 +112,7 @@ final class WindowManager {
         lastApplied = [:]
         lastObserved = [:]
         pendingReconcile = []
-        workspace = Workspace(viewport: .zero)
+        spaces = WorkspaceSet(viewport: .zero)
         onChange?()
     }
 
@@ -116,7 +130,7 @@ final class WindowManager {
     private func saveSnapshot() {
         saveWork?.cancel()
         guard isEnabled, let bootTime = Self.bootTime else { return }
-        let snapshot = StripSnapshot(strip: workspace.strip, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
+        let snapshot = StripSnapshot(workspaces: spaces, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
         self.snapshot = snapshot
         if let data = try? JSONEncoder().encode(snapshot) {
             UserDefaults.standard.set(data, forKey: Self.snapshotKey)
@@ -146,8 +160,8 @@ final class WindowManager {
     /// Applies changed gap, focus ring and dimming settings.
     func appearanceChanged() {
         guard isEnabled else { return }
-        if workspace.settings.gap != Appearance.gap {
-            workspace.settings.gap = Appearance.gap
+        if spaces.settings.gap != Appearance.gap {
+            spaces.settings.gap = Appearance.gap
             workspace.minimumWidths = [:]
             workspace.settleScroll()
             applyLayout()
@@ -160,6 +174,10 @@ final class WindowManager {
 
     func perform(_ action: Action) {
         guard isEnabled else { return }
+        if let command = action.workspaceCommand {
+            performWorkspace(command.target, movesColumn: command.movesColumn)
+            return
+        }
         if action == .toggleFloating {
             toggleFloating()
             return
@@ -264,10 +282,12 @@ final class WindowManager {
 
     private func screenParametersChanged() {
         guard isEnabled, let viewport = ScreenGeometry.primaryViewport(), viewport != workspace.viewport else { return }
-        workspace.viewport = viewport
+        spaces.viewport = viewport
         workspace.settleScroll()
         lastApplied = [:]
         applyLayout()
+        // The corner hidden windows wait in has moved.
+        hide(inactiveWindows)
     }
 
     private static let appNotifications = [
@@ -381,6 +401,8 @@ final class WindowManager {
 
             for window in windows.values where window.pid == pid
                 && (present[window.id] == nil || (stripOnScreen && !onScreen.contains(window.id))) {
+                // Hidden and minimized windows come back with the same ID; closed ones never do.
+                if let departure = spaces.departure(of: window.id) { departures[window.id] = departure }
                 forget(window.id)
                 changed = true
             }
@@ -399,7 +421,9 @@ final class WindowManager {
         if adopting {
             let ordered = newTiles.sorted { $0.x < $1.x }.map(\.id)
             if let snapshot {
-                workspace.strip = snapshot.restore(windows: ordered, widthIndex: width, presetCount: workspace.settings.widthPresets.count)
+                let restored = snapshot.restoreWorkspaces(windows: ordered, widthIndex: width, presetCount: workspace.settings.widthPresets.count)
+                spaces.restore(strips: restored.strips, activeIndex: restored.active)
+                hide(inactiveWindows)
             } else {
                 for id in ordered {
                     workspace.strip.insert(id, widthIndex: width, at: workspace.strip.columns.count, focus: false)
@@ -407,8 +431,14 @@ final class WindowManager {
             }
         } else {
             for tile in newTiles.sorted(by: { $0.x < $1.x }) {
-                workspace.strip.insert(tile.id, widthIndex: width, focus: tile.id == focusedID)
+                if let departure = departures.removeValue(forKey: tile.id) {
+                    let landed = spaces.rejoin(tile.id, from: departure, focus: tile.id == focusedID)
+                    if landed != spaces.activeIndex { hide([tile.id]) }
+                } else {
+                    workspace.strip.insert(tile.id, widthIndex: width, focus: tile.id == focusedID)
+                }
             }
+            if departures.count > 500 { departures = [:] }
         }
 
         if let focusedID, workspace.strip.contains(focusedID) {
@@ -432,15 +462,14 @@ final class WindowManager {
     }
 
     private func forget(_ id: WindowID) {
-        workspace.strip.remove(id)
+        spaces.remove(id)
         windows[id] = nil
         userFloating.remove(id)
         userTiled.remove(id)
         lastApplied[id] = nil
         lastObserved[id] = nil
         motions[id] = nil
-        hiddenTabs.remove(id)
-        workspace.minimumWidths[id] = nil
+        hiddenWindows.remove(id)
     }
 
     private func onScreenWindowIDs() -> Set<WindowID> {
@@ -464,6 +493,12 @@ final class WindowManager {
         defer { refreshOverlays() }
         guard let id = focusedWindowID() else { return }
         if let lock = focusLock, Date() < lock.until, lock.window != id { return }
+        // ⌘-Tab, the Dock or a click on a notification focused a window on another workspace.
+        if let index = spaces.index(of: id), index != spaces.activeIndex {
+            if let lock = workspaceSwitchLock, Date() < lock { return }
+            switchWorkspace(to: index, focusing: id)
+            return
+        }
         guard workspace.strip.contains(id) else {
             if windows[id] == nil, let pid = focusedWindowElement()?.pid { scheduleReconcile(pid) }
             return
@@ -483,6 +518,75 @@ final class WindowManager {
         refreshOverlays()
         // Apps raise windows asynchronously; restack once the raise has landed.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.refreshOverlays() }
+    }
+
+    // MARK: Workspaces
+
+    var activeWorkspaceNumber: Int { spaces.activeIndex + 1 }
+
+    /// Workspaces holding windows, plus the active one, with how many windows each has.
+    var workspaceSummary: [(number: Int, windowCount: Int, isActive: Bool)] {
+        spaces.workspaces.indices.compactMap { index in
+            let count = spaces.workspaces[index].strip.windows.count
+            guard count > 0 || index == spaces.activeIndex else { return nil }
+            return (index + 1, count, index == spaces.activeIndex)
+        }
+    }
+
+    private var inactiveWindows: [WindowID] {
+        spaces.workspaces.indices.filter { $0 != spaces.activeIndex }.flatMap { spaces.workspaces[$0].strip.windows }
+    }
+
+    private func performWorkspace(_ target: WorkspaceTarget, movesColumn: Bool) {
+        guard let index = spaces.resolve(target) else { return }
+        if movesColumn {
+            guard let moved = workspace.strip.focusedColumn?.windows, spaces.moveFocusedColumn(to: index) else { return }
+            log.debug("moved column to workspace \(index + 1): \(self.stripDescription, privacy: .public)")
+            hide(moved)
+            applyLayout()
+            if let next = workspace.strip.focusedWindow { focus(next) }
+            didChange()
+        } else {
+            switchWorkspace(to: index, focusing: nil)
+        }
+    }
+
+    /// Shows another workspace: hides the current one's windows and lays out the new one.
+    private func switchWorkspace(to index: Int, focusing target: WindowID?) {
+        let leaving = workspace.strip.windows
+        guard spaces.activate(index) else { return }
+        workspaceSwitchLock = Date().addingTimeInterval(0.6)
+        finishAnimations()
+        if let target {
+            workspace.strip.focus(target)
+            workspace.ensureFocusedVisible()
+        }
+        // Bring the new workspace in before hiding the old one, so the screen is never empty.
+        applyLayout()
+        hide(leaving)
+        if let focused = workspace.strip.focusedWindow, focused != focusedWindowID() { focus(focused) }
+        log.debug("workspace \(index + 1): \(self.stripDescription, privacy: .public)")
+        refreshOverlays()
+        didChange()
+    }
+
+    /// Moves windows to the corner hidden windows wait in, each app's on its own thread.
+    private func hide(_ ids: [WindowID]) {
+        let origin = workspace.hiddenOrigin
+        var moves: [pid_t: [AXUIElement]] = [:]
+        for id in ids {
+            guard let window = windows[id] else { continue }
+            motions[id] = nil
+            hiddenWindows.insert(id)
+            let size = lastApplied[id]?.size ?? window.element.size ?? .zero
+            guard lastApplied[id] != CGRect(origin: origin, size: size) else { continue }
+            lastApplied[id] = CGRect(origin: origin, size: size)
+            moves[window.pid, default: []].append(window.element)
+        }
+        let groups = Array(moves.values)
+        DispatchQueue.concurrentPerform(iterations: groups.count) { index in
+            for element in groups[index] { element.setPosition(origin) }
+        }
     }
 
     // MARK: Focus ring, dimming and tab bars
@@ -582,7 +686,7 @@ final class WindowManager {
         for placement in workspace.placements() {
             let id = placement.window
             let hidden = placement.visibility == .hiddenTab
-            let wasHidden = hidden ? !hiddenTabs.insert(id).inserted : hiddenTabs.remove(id) != nil
+            let wasHidden = hidden ? !hiddenWindows.insert(id).inserted : hiddenWindows.remove(id) != nil
             guard let window = windows[id], lastApplied[id] != placement.frame else { continue }
             let from = motions[id].map { $0.frame(at: now) }
                 ?? lastApplied[id]

@@ -75,6 +75,10 @@ public struct Workspace: Equatable, Sendable {
 
     public var usableWidth: CGFloat { max(viewport.width - 2 * settings.gap, 0) }
 
+    /// Where hidden windows wait: hidden tabs, and every window of an inactive workspace.
+    /// macOS keeps part of a window on screen, so this leaves about a point showing.
+    public var hiddenOrigin: CGPoint { CGPoint(x: viewport.maxX - 1, y: viewport.maxY - 1) }
+
     /// Preset fractions are of the whole viewport, so two ½ columns exactly fill it, gaps included.
     public func width(ofColumn index: Int) -> CGFloat {
         let column = strip.columns[index]
@@ -218,6 +222,9 @@ public struct Workspace: Equatable, Sendable {
             return scrollOffset != before
         case .toggleFloating, .toggleTiling:
             return false
+        default:
+            // Workspace actions act on the whole `WorkspaceSet`.
+            return false
         }
         if changed {
             if action == .consumeOrExpelLeft || action == .consumeOrExpelRight {
@@ -248,7 +255,7 @@ public struct Workspace: Equatable, Sendable {
                     if row == column.focusedRow {
                         result.append(WindowPlacement(window: window, frame: shown, visibility: visibility))
                     } else {
-                        let hidden = CGRect(origin: CGPoint(x: viewport.maxX - 1, y: viewport.maxY - 1), size: shown.size)
+                        let hidden = CGRect(origin: hiddenOrigin, size: shown.size)
                         result.append(WindowPlacement(window: window, frame: hidden, visibility: .hiddenTab))
                     }
                 }

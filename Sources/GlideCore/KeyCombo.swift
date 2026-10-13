@@ -74,6 +74,8 @@ public enum KeyCode {
     public static let w: UInt32 = 13
 
     public static let arrows: Set<UInt32> = [leftArrow, rightArrow, downArrow, upArrow]
+    /// The number row, 1 through 9.
+    public static let digits: [UInt32] = [18, 19, 20, 21, 23, 22, 26, 28, 25]
 
     static let functionKeys: [UInt32: String] = [
         122: "F1", 120: "F2", 99: "F3", 118: "F4", 96: "F5", 97: "F6", 98: "F7", 100: "F8",

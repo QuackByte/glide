@@ -13,7 +13,8 @@ Status: early development (milestone 1: one display).
 - Glide keeps the focused column fully on screen, scrolling the strip as little as possible. macOS doesn't let windows sit entirely off screen, so columns scrolled out of view are parked as 4 pt slivers at the left and right screen edges.
 - A column can also be **tabbed** (⌃⌥W): it shows one window at full height under a tab bar, and the others wait as tabs. ⌃⌥↑/↓ switch tabs, ⌃⌥⇧↑/↓ reorder them, clicking a tab selects it, and consume/expel (⌃⌥[ / ⌃⌥]) adds or removes tabs. Tabs can be windows of different apps. macOS won't let a window go fully off screen, so hidden tabs wait in the bottom-right corner with a point showing.
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.
-- Closing, minimizing or hiding a window removes it from the strip; restoring it brings it back next to the focused column.
+- Closing, minimizing or hiding a window removes it from the strip. A minimized window, or one whose app was hidden, returns to the spot it left: same workspace, same width, and back into its stack or tabs if they're still there.
+- **Workspaces:** nine of them, each its own strip with its own scroll position. ⌃⌥1…9 switch workspaces and ⌃⌥⇧1…9 send the focused column to one. ⌃⌥PgUp/PgDn (fn⌃⌥↑/↓ on a laptop) step to the previous or next workspace, and adding ⇧ takes the column along. The menu bar icon shows the active workspace's number, and the menu lists the occupied ones. Inactive workspaces' windows wait in the bottom-right corner like hidden tabs, since macOS Spaces can't be driven reliably from outside. Focusing a window on another workspace (⌘-Tab, the Dock, a notification) switches to it. New windows open on the active workspace.
 - Layout changes slide into place in about 120 ms (ease-out). Turn this off under **Settings › Animate window movement**.
 - A **focus ring** outlines the focused window (your accent color, or any color you pick). Optionally, Glide **dims every other window**. Both are click-through overlay windows stacked just above and just below the focused window, since macOS doesn't let one app restyle another's windows. They hide while a floating window or Glide's own Settings has focus. The ring and tab bars disappear while windows slide and fade back in once they settle: each app redraws a moved window on its own schedule, so an overlay moved alongside would drift away from it.
 - Set the **gap** between windows (0–40 pt), the ring color, and the dimming amount under **Settings › Appearance**. Changes apply immediately.
@@ -43,6 +44,10 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Toggle full width | ⌃⌥F |
 | Toggle tabbed column | ⌃⌥W |
 | Center focused column | ⌃⌥C |
+| Switch to workspace 1…9 | ⌃⌥1 … ⌃⌥9 |
+| Send focused column to workspace 1…9 | ⌃⌥⇧1 … ⌃⌥⇧9 |
+| Previous / next workspace | ⌃⌥PgUp / ⌃⌥PgDn (fn⌃⌥↑ / fn⌃⌥↓ on laptops) |
+| Send column to previous / next workspace | ⌃⌥⇧PgUp / ⌃⌥⇧PgDn |
 | Toggle floating for the focused window | ⌃⌥V |
 | Enable or disable tiling | ⌃⌥⇧T |
 
@@ -55,6 +60,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 - **They don't steal text editing.** ⌥←/→ (word), ⌘←/→ (line), their ⇧ variants (selection), and ⌃A/E are untouched. Glide never binds a single modifier with an arrow.
 - **They don't touch macOS.** ⌃←/→ (switch Spaces), ⌃↑/↓ (Mission Control / App Exposé), ⌘Space / ⌥⌘Space (Spotlight), ⌃Space / ⌃⌥Space (input sources), and the Globe-key window tiling shortcuts (🌐⌃ + arrows and friends) are all left alone. Glide also reads the system's enabled shortcuts at launch and flags any collision.
 - **Mnemonic letters** for the rest: **R**esize, **F**ull, **C**enter, **T**iling. Tabs use ⌃⌥W like niri; ⌃⌥T would sit one ⇧ away from turning tiling off. Floating uses ⌃⌥V, the same key niri uses. **[** and **]** point at the side the window goes to.
+- **Workspaces on the number row.** ⌃⌥ + digit leaves ⌃1…9 (macOS "Switch to Desktop N") and AeroSpace's ⌥1…9 alone.
 - **Other window managers.** AeroSpace's defaults use ⌥ alone (⌥H/J/K/L, ⌥1…), so the two don't collide. Raycast ships no window shortcuts by default. Rectangle-style apps default to ⌃⌥ + arrows/letters; if you still run one, rebind one of them (Glide is meant to replace them).
 - **Terminal caveat:** in a terminal with "Option as Meta", ⌃⌥ letters are Emacs C-M- chords (C-M-f, C-M-r, …). If you live in Emacs, rebind those in Settings.
 
@@ -88,7 +94,7 @@ The checked-in Xcode project is generated from [`project.yml`](project.yml) with
 
 ### Layout
 
-- `Sources/GlideCore`: the pure-Swift layout engine (strip model, column widths, scroll offset, visibility and parking rules, keymap, restore planner). It only imports CoreGraphics, has no AppKit or Accessibility code, and is fully unit-tested in `Tests/GlideCoreTests`.
+- `Sources/GlideCore`: the pure-Swift layout engine (strip model, workspaces, column widths, scroll offset, visibility and parking rules, keymap, restore planner). It only imports CoreGraphics, has no AppKit or Accessibility code, and is fully unit-tested in `Tests/GlideCoreTests`.
 - `Design/glide-icon.svg`: the app icon source. Re-render the asset catalog with `for n in 16 32 64 128 256 512 1024; do rsvg-convert -w $n -h $n Design/glide-icon.svg -o Assets.xcassets/AppIcon.appiconset/icon_$n.png; done`.
 - `Sources/Glide`: the app: AX window tracking (`WindowManager`, `AXWindow`), Carbon hotkeys (`HotkeyCenter`), the menu bar item, the settings and onboarding windows.
 

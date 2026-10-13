@@ -74,6 +74,38 @@ public struct Strip: Equatable, Sendable {
         }
     }
 
+    /// Adds a whole column (e.g. one moved from another workspace). By default it goes right of
+    /// the focused column.
+    public mutating func insert(_ column: Column, at index: Int? = nil, focus: Bool = true) {
+        let target = min(max(index ?? (columns.isEmpty ? 0 : focusedColumnIndex + 1), 0), columns.count)
+        columns.insert(column, at: target)
+        if focus || columns.count == 1 {
+            focusedColumnIndex = target
+        } else if target <= focusedColumnIndex {
+            focusedColumnIndex += 1
+        }
+    }
+
+    /// Adds a window to the bottom of (or as the last tab in) the column holding `sibling`.
+    @discardableResult
+    public mutating func join(_ window: WindowID, columnOf sibling: WindowID, focus: Bool = true) -> Bool {
+        guard !contains(window), let (index, _) = location(of: sibling) else { return false }
+        columns[index].windows.append(window)
+        if focus {
+            columns[index].focusedRow = columns[index].windows.count - 1
+            focusedColumnIndex = index
+        }
+        return true
+    }
+
+    /// Takes the focused column out of the strip; focus moves to its left neighbour.
+    public mutating func removeFocusedColumn() -> Column? {
+        guard !columns.isEmpty else { return nil }
+        let column = columns.remove(at: focusedColumnIndex)
+        focusedColumnIndex = columns.isEmpty ? 0 : max(min(focusedColumnIndex - 1, columns.count - 1), 0)
+        return column
+    }
+
     /// Removes a window. An emptied column disappears and focus moves to its left neighbour.
     @discardableResult
     public mutating func remove(_ window: WindowID) -> Bool {

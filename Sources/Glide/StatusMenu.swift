@@ -27,7 +27,10 @@ final class StatusMenu: NSObject, NSMenuDelegate {
             symbol = "rectangle.split.3x1"
         }
         button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Glide")
-        button.toolTip = controller.windowManager.isEnabled ? "Glide: tiling" : "Glide: paused"
+        button.imagePosition = .imageLeading
+        let manager = controller.windowManager
+        button.title = manager.isEnabled ? " \(manager.activeWorkspaceNumber)" : ""
+        button.toolTip = manager.isEnabled ? "Glide: workspace \(manager.activeWorkspaceNumber)" : "Glide: paused"
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -50,6 +53,17 @@ final class StatusMenu: NSObject, NSMenuDelegate {
             var summary = "\(manager.tiledWindowCount) windows in \(columns) column\(columns == 1 ? "" : "s")"
             if manager.floatingWindowCount > 0 { summary += ", \(manager.floatingWindowCount) floating" }
             menu.addItem(disabled(summary))
+
+            menu.addItem(.separator())
+            menu.addItem(NSMenuItem.sectionHeader(title: "Workspaces"))
+            for entry in manager.workspaceSummary {
+                let action = Action(rawValue: "focusWorkspace\(entry.number)")
+                let windows = "\(entry.windowCount) window\(entry.windowCount == 1 ? "" : "s")"
+                let switchItem = item("Workspace \(entry.number) — \(windows)", #selector(performAction(_:)), combo: action.flatMap(keymap.combo(for:)))
+                switchItem.representedObject = action?.rawValue
+                switchItem.state = entry.isActive ? .on : .off
+                menu.addItem(switchItem)
+            }
         }
 
         if !problems.isEmpty {

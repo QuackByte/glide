@@ -26,6 +26,7 @@
 		5BF428AD4310B57D10EE8AA9 /* OnboardingWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05D0AFF5FCB944F55C17F2DB /* OnboardingWindow.swift */; };
 		5D6B74505C439B0419733952 /* StripSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81C06183F18F46F0E197D11 /* StripSnapshot.swift */; };
 		6336834BF168EB783F12E62C /* KeyCombo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211731250170AA7196708655 /* KeyCombo.swift */; };
+		6772F5E84831025E6B9D494E /* WorkspaceSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53F3C7F12550C9F2EBD2630 /* WorkspaceSetTests.swift */; };
 		778B8C4027B61ACADD384C58 /* TrackpadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73EB183C8C8029224335660D /* TrackpadMonitor.swift */; };
 		7DA6B81D65AEC85B7209AC22 /* TabTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B209FFB1B066001F2B114E /* TabTests.swift */; };
 		83397809128CF693A2954850 /* GlideCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -37,6 +38,7 @@
 		B43D06626F88A29E9F6C511E /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */; };
 		BE717C6D231512529E2BC0DE /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A78F29015300266375FF59E /* Action.swift */; };
 		CDE703CBDFAC970353EE4CFB /* AccessibilityPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */; };
+		D5BF014404C5C81A43FC2089 /* WorkspaceSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1DAFAB441E17A99F3AC4E9 /* WorkspaceSet.swift */; };
 		E8C8A02BDD4E3C29C27EC33C /* FrameAnimationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B33FD4253A18B35308DCF6 /* FrameAnimationTests.swift */; };
 		F10682418406DA343212A609 /* StatusMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */; };
 		F255AEECF2965E1D44FFD06B /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B932133198BF26973212958C /* WindowManager.swift */; };
@@ -100,6 +102,7 @@
 		59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutStore.swift; sourceTree = "<group>"; };
 		6A78F29015300266375FF59E /* Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Action.swift; sourceTree = "<group>"; };
 		6D0B438DF90FEDB0793748C3 /* GlideCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GlideCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D1DAFAB441E17A99F3AC4E9 /* WorkspaceSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSet.swift; sourceTree = "<group>"; };
 		73EB183C8C8029224335660D /* TrackpadMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackpadMonitor.swift; sourceTree = "<group>"; };
 		7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityPermission.swift; sourceTree = "<group>"; };
 		7ECA03FC26B7820A6830B7D2 /* StripTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripTests.swift; sourceTree = "<group>"; };
@@ -113,6 +116,7 @@
 		C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenu.swift; sourceTree = "<group>"; };
 		C9E398FD0B43B3340D4B1921 /* SwipeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeTests.swift; sourceTree = "<group>"; };
 		CBFB3B94681949181BB10AE9 /* TabBarOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarOverlay.swift; sourceTree = "<group>"; };
+		D53F3C7F12550C9F2EBD2630 /* WorkspaceSetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSetTests.swift; sourceTree = "<group>"; };
 		D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
 		DD74BF51238E38CE7484D1F6 /* GlideCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GlideCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DEA2E89E28846A56010FD3FD /* StripSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripSnapshotTests.swift; sourceTree = "<group>"; };
@@ -176,6 +180,7 @@
 				A81C06183F18F46F0E197D11 /* StripSnapshot.swift */,
 				E0218104AF30AC3A25988DD7 /* SwipeTracker.swift */,
 				FFD1ADCA9153C04F07A3271E /* Workspace.swift */,
+				6D1DAFAB441E17A99F3AC4E9 /* WorkspaceSet.swift */,
 			);
 			name = GlideCore;
 			path = Sources/GlideCore;
@@ -191,6 +196,7 @@
 				7ECA03FC26B7820A6830B7D2 /* StripTests.swift */,
 				C9E398FD0B43B3340D4B1921 /* SwipeTests.swift */,
 				F4B209FFB1B066001F2B114E /* TabTests.swift */,
+				D53F3C7F12550C9F2EBD2630 /* WorkspaceSetTests.swift */,
 				855D351DAF3428DE0F359ACF /* WorkspaceTests.swift */,
 			);
 			name = GlideCoreTests;
@@ -348,6 +354,7 @@
 				5D6B74505C439B0419733952 /* StripSnapshot.swift in Sources */,
 				06BD64AC4BB36B7D23006468 /* SwipeTracker.swift in Sources */,
 				94B380400A200760117CEDF7 /* Workspace.swift in Sources */,
+				D5BF014404C5C81A43FC2089 /* WorkspaceSet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,6 +389,7 @@
 				47DFC044C64B0DD3B4BEBECE /* StripTests.swift in Sources */,
 				30590D9CE31593CF304E70F0 /* SwipeTests.swift in Sources */,
 				7DA6B81D65AEC85B7209AC22 /* TabTests.swift in Sources */,
+				6772F5E84831025E6B9D494E /* WorkspaceSetTests.swift in Sources */,
 				468E6CB8186840D9CBD39703 /* WorkspaceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

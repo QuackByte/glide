@@ -4,7 +4,7 @@ public struct Keymap: Equatable, Sendable {
     public static let defaults: [Action: KeyCombo] = {
         let hyper: KeyModifiers = [.control, .option]
         let move: KeyModifiers = [.control, .option, .shift]
-        return [
+        var map: [Action: KeyCombo] = [
             .focusColumnLeft: KeyCombo(KeyCode.leftArrow, hyper),
             .focusColumnRight: KeyCombo(KeyCode.rightArrow, hyper),
             .focusWindowUp: KeyCombo(KeyCode.upArrow, hyper),
@@ -24,7 +24,18 @@ public struct Keymap: Equatable, Sendable {
             .centerColumn: KeyCombo(KeyCode.c, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
             .toggleTiling: KeyCombo(KeyCode.t, move),
+            .focusPreviousWorkspace: KeyCombo(KeyCode.pageUp, hyper),
+            .focusNextWorkspace: KeyCombo(KeyCode.pageDown, hyper),
+            .moveColumnToPreviousWorkspace: KeyCombo(KeyCode.pageUp, move),
+            .moveColumnToNextWorkspace: KeyCombo(KeyCode.pageDown, move),
         ]
+        // ⌃⌥1…9 switch workspaces; ⌃⌥⇧1…9 send the focused column there.
+        for (index, key) in KeyCode.digits.enumerated() {
+            let number = index + 1
+            if let focus = Action(rawValue: "focusWorkspace\(number)") { map[focus] = KeyCombo(key, hyper) }
+            if let send = Action(rawValue: "moveColumnToWorkspace\(number)") { map[send] = KeyCombo(key, move) }
+        }
+        return map
     }()
 
     /// Overrides of the defaults. A nil value means the user removed the shortcut.
