@@ -84,3 +84,62 @@ final class OverviewTests: XCTestCase {
         XCTAssertEqual(overview.location(of: 12)?.row, 1)
     }
 }
+
+final class OverviewFilterTests: XCTestCase {
+    private func overview() -> Overview {
+        var set = WorkspaceSet(viewport: CGRect(x: 0, y: 40, width: 1212, height: 800))
+        set.active.strip = Strip(columns: [Column(windows: [1], widthIndex: 1), Column(windows: [2, 3], widthIndex: 1)])
+        set.activate(1)
+        set.active.strip = Strip(columns: [Column(windows: [4], widthIndex: 1)])
+        set.activate(0)
+        return Overview(spaces: set)
+    }
+
+    private let text: [WindowID: String] = [
+        1: "Safari Glide pull request",
+        2: "Ghostty ~/Developer/glide",
+        3: "Ghostty ~/Developer/minimal-watchface",
+        4: "Mail Résumé draft",
+    ]
+
+    func testEveryWordMustMatchIgnoringCaseAndAccents() {
+        var overview = overview()
+        overview.filter("ghostty GLIDE", searchText: text)
+        XCTAssertEqual(overview.matches, [2])
+        XCTAssertEqual(overview.selection, 2)
+        overview.filter("resume", searchText: text)
+        XCTAssertEqual(overview.matches, [4], "Matches across workspaces, accents ignored")
+        XCTAssertFalse(overview.isMatch(1))
+    }
+
+    func testArrowsStepThroughMatchesOnly() {
+        var overview = overview()
+        overview.filter("glide", searchText: text)
+        XCTAssertEqual(overview.matches, [1, 2])
+        XCTAssertEqual(overview.selection, 1)
+        XCTAssertTrue(overview.move(.down))
+        XCTAssertEqual(overview.selection, 2)
+        XCTAssertFalse(overview.move(.right))
+        overview.move(.up)
+        XCTAssertEqual(overview.selection, 1)
+        XCTAssertFalse(overview.select(3), "Can't select a window that doesn't match")
+    }
+
+    func testNoMatchSelectsNothingAndClearingRestores() {
+        var overview = overview()
+        overview.filter("zzz", searchText: text)
+        XCTAssertEqual(overview.matches, [])
+        XCTAssertNil(overview.selection)
+        XCTAssertFalse(overview.move(.right))
+        overview.filter("", searchText: text)
+        XCTAssertNil(overview.matches)
+        XCTAssertEqual(overview.selection, 1)
+    }
+
+    func testTheSelectionStaysWhileItStillMatches() {
+        var overview = overview()
+        overview.select(3)
+        overview.filter("ghostty", searchText: text)
+        XCTAssertEqual(overview.selection, 3)
+    }
+}

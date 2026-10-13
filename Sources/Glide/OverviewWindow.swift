@@ -9,6 +9,8 @@ final class OverviewModel {
     var thumbnails: [WindowID: NSImage] = [:]
     let titles: [WindowID: String]
     let pids: [WindowID: pid_t]
+    /// App name and title, what typing filters on.
+    let searchText: [WindowID: String]
     let activeWorkspace: Int
     let viewportSize: CGSize
     let gap: CGFloat
@@ -18,6 +20,10 @@ final class OverviewModel {
         self.overview = overview
         self.titles = titles
         self.pids = pids
+        searchText = titles.reduce(into: [:]) { text, entry in
+            let app = pids[entry.key].flatMap { NSRunningApplication(processIdentifier: $0)?.localizedName } ?? ""
+            text[entry.key] = "\(app) \(entry.value)"
+        }
         self.activeWorkspace = activeWorkspace
         self.viewportSize = viewportSize
         self.gap = gap
@@ -98,11 +104,26 @@ final class OverviewController {
         case 124: model.overview.move(.right)
         case 125: model.overview.move(.down)
         case 126: model.overview.move(.up)
-        case 36, 76: close(goingTo: model.overview.selection)
-        case 53: close(goingTo: nil)
-        default: return false
+        case 36, 76: if let selection = model.overview.selection { close(goingTo: selection) }
+        case 53:
+            // Esc clears a filter first, then closes.
+            if model.overview.query.isEmpty { close(goingTo: nil) } else { filter("") }
+        case 51:
+            guard !model.overview.query.isEmpty else { return true }
+            filter(String(model.overview.query.dropLast()))
+        default:
+            guard event.modifierFlags.intersection([.command, .control]).isEmpty,
+                  let typed = event.characters, !typed.isEmpty,
+                  typed.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) && !(0xF700...0xF8FF).contains($0.value) })
+            else { return false }
+            filter(model.overview.query + typed)
         }
         return true
+    }
+
+    private func filter(_ query: String) {
+        guard let model else { return }
+        model.overview.filter(query, searchText: model.searchText)
     }
 }
 
@@ -133,16 +154,20 @@ private struct OverviewView: View {
     private let padding: CGFloat = 72
     private let rowSpacing: CGFloat = 44
     private let footerHeight: CGFloat = 40
+    private let searchHeight: CGFloat = 40
 
     var body: some View {
         GeometryReader { geometry in
             let rows = model.overview.rows
             let count = CGFloat(max(rows.count, 1))
-            let available = geometry.size.height - 2 * padding - footerHeight - rowSpacing * count
+            let available = geometry.size.height - 2 * padding - footerHeight - searchHeight - rowSpacing * (count + 1)
             let rowHeight = max(min(available / count, geometry.size.height * 0.34), 60)
             let scale = rowHeight / max(model.viewportSize.height, 1)
 
             VStack(alignment: .leading, spacing: rowSpacing) {
+                search
+                    .frame(maxWidth: .infinity)
+                    .frame(height: searchHeight)
                 Spacer(minLength: 0)
                 ForEach(rows.indices, id: \.self) { index in
                     OverviewRowView(model: model, rowIndex: index, height: rowHeight, scale: scale, go: go)
@@ -161,8 +186,29 @@ private struct OverviewView: View {
         }
     }
 
+    private var search: some View {
+        let overview = model.overview
+        return HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            Text(overview.query.isEmpty ? "Type to filter windows" : overview.query)
+                .foregroundStyle(overview.query.isEmpty ? .secondary : .primary)
+                .lineLimit(1)
+            if let matches = overview.matches {
+                Text(matches.isEmpty ? "No match" : "\(matches.count) match\(matches.count == 1 ? "" : "es")")
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, 6)
+            }
+        }
+        .font(.title3)
+        .padding(.horizontal, 16)
+        .frame(minWidth: 320, maxHeight: .infinity)
+        .background(.regularMaterial, in: Capsule())
+    }
+
     private var footer: some View {
         HStack(spacing: 18) {
+            hint("abc", "Filter")
             hint("← → ↑ ↓", "Select")
             hint("⏎", "Go")
             hint("esc", "Close")
@@ -276,6 +322,8 @@ private struct OverviewRowView: View {
             isSelected: model.overview.selection == window,
             ringColor: ringColor
         )
+        .opacity(model.overview.isMatch(window) ? 1 : 0.22)
+        .animation(.easeOut(duration: 0.12), value: model.overview.isMatch(window))
         .id(window)
         .onTapGesture { go(window) }
         .onHover { hovering in
