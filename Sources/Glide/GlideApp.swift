@@ -1,5 +1,6 @@
 import AppKit
 import GlideCore
+import ServiceManagement
 import SwiftUI
 
 @main
@@ -117,6 +118,26 @@ final class AppController {
             // The grant was revoked: AX calls now fail, so stop cleanly and explain.
             windowManager.stop()
             showOnboarding()
+        }
+        stateChanged()
+    }
+
+    // MARK: Login item
+
+    var opensAtLogin: Bool { SMAppService.mainApp.status == .enabled }
+
+    /// macOS registered the login item but wants the user to allow it in System Settings.
+    var loginItemNeedsApproval: Bool { SMAppService.mainApp.status == .requiresApproval }
+
+    func setOpensAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            NSLog("Glide: couldn't \(enabled ? "add" : "remove") the login item: \(error.localizedDescription)")
         }
         stateChanged()
     }

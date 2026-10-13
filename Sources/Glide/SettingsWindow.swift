@@ -1,5 +1,6 @@
 import AppKit
 import GlideCore
+import ServiceManagement
 import SwiftUI
 
 final class SettingsWindowController: NSObject, NSWindowDelegate {
@@ -109,6 +110,18 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 12) {
             Form {
                 Section("General") {
+                    Toggle("Open at login", isOn: Binding(
+                        get: { controller.opensAtLogin || controller.loginItemNeedsApproval },
+                        set: { controller.setOpensAtLogin($0) }
+                    ))
+                    if controller.loginItemNeedsApproval {
+                        HStack(alignment: .firstTextBaseline) {
+                            Label("macOS needs you to allow Glide under Login Items.", systemImage: "exclamationmark.triangle.fill")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                            Button("Login Items…") { SMAppService.openSystemSettingsLoginItems() }
+                        }
+                    }
                     Toggle("Tile windows", isOn: Binding(
                         get: { controller.isTilingPreferred && controller.windowManager.isEnabled },
                         set: { controller.setTiling($0) }

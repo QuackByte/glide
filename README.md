@@ -68,7 +68,7 @@ If a shortcut can't be registered, the menu bar icon turns into a warning triang
 Requires macOS 27 or later (Glide follows the current Xcode 27 project defaults).
 
 1. Build from source (below) or download a release once they exist.
-2. Launch Glide. It lives in the menu bar (no Dock icon).
+2. Launch Glide. It lives in the menu bar (no Dock icon). Turn on **Settings › Open at login** to start it with your Mac.
 3. Grant **Accessibility** access when asked: **System Settings › Privacy & Security › Accessibility**, turn on Glide. Glide notices the grant within a second and starts tiling without a relaunch. If the permission is revoked later, Glide stops and asks again.
 
 Glide uses Accessibility only to read window positions and move, resize and focus windows. It has no network code.
