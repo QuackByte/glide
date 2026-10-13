@@ -8,13 +8,19 @@ public struct LayoutSettings: Equatable, Sendable {
     /// Fractions of the viewport a column can take, cycled in order.
     public var widthPresets: [CGFloat]
     public var defaultWidthIndex: Int
+    /// Height of a tabbed column's tab bar; the window sits `tabBarSpacing` below it.
+    public var tabBarHeight: CGFloat
+    public var tabBarSpacing: CGFloat
 
-    public init(gap: CGFloat = 12, sliver: CGFloat = 4, widthPresets: [CGFloat] = [1.0 / 3, 0.5, 2.0 / 3, 1], defaultWidthIndex: Int = 1) {
+    public init(gap: CGFloat = 12, sliver: CGFloat = 4, widthPresets: [CGFloat] = [1.0 / 3, 0.5, 2.0 / 3, 1], defaultWidthIndex: Int = 1,
+                tabBarHeight: CGFloat = 28, tabBarSpacing: CGFloat = 4) {
         precondition(!widthPresets.isEmpty, "At least one width preset is required")
         self.gap = gap
         self.sliver = sliver
         self.widthPresets = widthPresets
         self.defaultWidthIndex = min(max(defaultWidthIndex, 0), widthPresets.count - 1)
+        self.tabBarHeight = tabBarHeight
+        self.tabBarSpacing = tabBarSpacing
     }
 
     public static let standard = LayoutSettings()
@@ -28,12 +34,24 @@ public enum Visibility: Equatable, Sendable {
     /// Entirely off screen: parked as a sliver at the left or right screen edge.
     case parkedLeft
     case parkedRight
+    /// A tab that isn't showing. macOS won't put a window wholly off screen, so it waits in the
+    /// bottom-right corner with a point or so showing.
+    case hiddenTab
 }
 
 public struct WindowPlacement: Equatable, Sendable {
     public var window: WindowID
     public var frame: CGRect
     public var visibility: Visibility
+}
+
+/// The tab bar above a tabbed column that is at least partly on screen.
+public struct TabBarPlacement: Equatable, Sendable {
+    public var column: Int
+    public var frame: CGRect
+    public var windows: [WindowID]
+    public var activeIndex: Int
+    public var activeWindow: WindowID { windows[activeIndex] }
 }
 
 /// A strip plus the geometry needed to lay it out: the viewport, the scroll position, and
@@ -193,6 +211,7 @@ public struct Workspace: Equatable, Sendable {
         case .cycleColumnWidth: changed = strip.cycleWidth(presetCount: settings.widthPresets.count)
         case .cycleColumnWidthBackward: changed = strip.cycleWidth(presetCount: settings.widthPresets.count, forward: false)
         case .toggleFullWidth: changed = strip.toggleFullWidth()
+        case .toggleTabbed: changed = strip.toggleTabbed()
         case .centerColumn:
             let before = scrollOffset
             centerFocusedColumn()
@@ -214,26 +233,26 @@ public struct Workspace: Equatable, Sendable {
 
     public func placements() -> [WindowPlacement] {
         let gap = settings.gap
-        let offsets = columnOffsets()
-        let top = viewport.minY + gap
         let columnHeight = max(viewport.height - 2 * gap, 0)
         var result: [WindowPlacement] = []
 
         for (index, column) in strip.columns.enumerated() {
+            let (x, visibility) = position(ofColumn: index)
             let width = width(ofColumn: index)
-            var x = viewport.minX + gap + offsets[index] - scrollOffset
-            let overlap = min(x + width, viewport.maxX) - max(x, viewport.minX)
-            let visibility: Visibility
-            if x >= viewport.minX - 0.5, x + width <= viewport.maxX + 0.5 {
-                visibility = .visible
-            } else if overlap >= settings.sliver {
-                visibility = .partial
-            } else if x + width / 2 < viewport.midX {
-                visibility = .parkedLeft
-                x = viewport.minX - width + settings.sliver
-            } else {
-                visibility = .parkedRight
-                x = viewport.maxX - settings.sliver
+            let top = viewport.minY + gap
+
+            if column.isTabbed {
+                let reserved = settings.tabBarHeight + settings.tabBarSpacing
+                let shown = CGRect(x: x.rounded(), y: top + reserved, width: width, height: max(columnHeight - reserved, 0))
+                for (row, window) in column.windows.enumerated() {
+                    if row == column.focusedRow {
+                        result.append(WindowPlacement(window: window, frame: shown, visibility: visibility))
+                    } else {
+                        let hidden = CGRect(origin: CGPoint(x: viewport.maxX - 1, y: viewport.maxY - 1), size: shown.size)
+                        result.append(WindowPlacement(window: window, frame: hidden, visibility: .hiddenTab))
+                    }
+                }
+                continue
             }
 
             let count = CGFloat(column.windows.count)
@@ -244,5 +263,32 @@ public struct Workspace: Equatable, Sendable {
             }
         }
         return result
+    }
+
+    /// Tab bars for the tabbed columns that are at least partly on screen.
+    public func tabBars() -> [TabBarPlacement] {
+        strip.columns.indices.compactMap { index in
+            let column = strip.columns[index]
+            let (x, visibility) = position(ofColumn: index)
+            guard column.isTabbed, visibility == .visible || visibility == .partial else { return nil }
+            let frame = CGRect(x: x.rounded(), y: viewport.minY + settings.gap, width: width(ofColumn: index), height: settings.tabBarHeight)
+            return TabBarPlacement(column: index, frame: frame, windows: column.windows, activeIndex: column.focusedRow)
+        }
+    }
+
+    /// A column's left edge on screen, and whether it is visible or parked at an edge.
+    private func position(ofColumn index: Int) -> (x: CGFloat, visibility: Visibility) {
+        let width = width(ofColumn: index)
+        let x = viewport.minX + settings.gap + columnOffsets()[index] - scrollOffset
+        let overlap = min(x + width, viewport.maxX) - max(x, viewport.minX)
+        if x >= viewport.minX - 0.5, x + width <= viewport.maxX + 0.5 {
+            return (x, .visible)
+        } else if overlap >= settings.sliver {
+            return (x, .partial)
+        } else if x + width / 2 < viewport.midX {
+            return (viewport.minX - width + settings.sliver, .parkedLeft)
+        } else {
+            return (viewport.maxX - settings.sliver, .parkedRight)
+        }
     }
 }

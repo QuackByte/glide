@@ -38,6 +38,9 @@ final class WindowManager {
     private var saveWork: DispatchWorkItem?
     private static let snapshotKey = "stripSnapshot"
     private let decorations = FocusDecorations()
+    private let tabBars = TabBarOverlay()
+    /// Tabs that aren't showing; they jump in and out of place rather than sliding.
+    private var hiddenTabs: Set<WindowID> = []
 
     /// Called after the layout or window membership changes.
     var onChange: (() -> Void)?
@@ -55,6 +58,7 @@ final class WindowManager {
         AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 1)
         workspace = Workspace(viewport: ScreenGeometry.primaryViewport() ?? .zero, settings: LayoutSettings(gap: Appearance.gap))
         loadSnapshot()
+        tabBars.onSelect = { [weak self] window in self?.selectTab(window) }
         observeWorkspace()
         let apps = NSWorkspace.shared.runningApplications.filter(isManageable)
         for app in apps { observe(app) }
@@ -75,6 +79,8 @@ final class WindowManager {
 
         saveSnapshot()
         decorations.hide()
+        tabBars.hide()
+        hiddenTabs = []
         isEnabled = false
         reassertWork?.cancel()
         for observer in observers.values {
@@ -146,7 +152,8 @@ final class WindowManager {
             workspace.settleScroll()
             applyLayout()
         }
-        refreshDecorations()
+        tabBars.invalidate()
+        refreshOverlays()
     }
 
     // MARK: Actions
@@ -240,7 +247,7 @@ final class WindowManager {
         on(NSWorkspace.didDeactivateApplicationNotification) { [weak self] app in
             // Catches windows that disappear when their app loses focus.
             self?.scheduleReconcile(app.processIdentifier, retries: [0.3])
-            self?.refreshDecorations()
+            self?.refreshOverlays()
         }
         on(NSWorkspace.didHideApplicationNotification) { [weak self] app in
             self?.scheduleReconcile(app.processIdentifier)
@@ -270,6 +277,7 @@ final class WindowManager {
     ]
     private static let windowNotifications = [
         kAXUIElementDestroyedNotification, kAXWindowMiniaturizedNotification, kAXWindowMovedNotification, kAXWindowResizedNotification,
+        kAXTitleChangedNotification,
     ]
 
     private func observe(_ app: NSRunningApplication, attempt: Int = 0) {
@@ -301,7 +309,7 @@ final class WindowManager {
         workspace.settleScroll()
         applyLayout()
         syncFocus()
-        refreshDecorations()
+        refreshOverlays()
         didChange()
     }
 
@@ -314,8 +322,13 @@ final class WindowManager {
             syncFocus()
         case kAXWindowMovedNotification, kAXWindowResizedNotification:
             // The ring can't follow a drag smoothly; hide it until the window snaps back.
-            if NSEvent.pressedMouseButtons != 0, element.windowID == decorations.target { decorations.hide() }
+            if NSEvent.pressedMouseButtons != 0, element.windowID == decorations.target {
+                decorations.hide()
+                tabBars.hide()
+            }
             scheduleReassert()
+        case kAXTitleChangedNotification:
+            if motions.isEmpty, !isSwiping, workspace.strip.columns.contains(where: \.isTabbed) { refreshTabBars() }
         default:
             scheduleReconcile(pid)
         }
@@ -405,7 +418,7 @@ final class WindowManager {
         log.debug("reconciled \(pids.count) apps: \(self.stripDescription, privacy: .public)")
         workspace.settleScroll()
         applyLayout()
-        refreshDecorations()
+        refreshOverlays()
         didChange()
     }
 
@@ -426,6 +439,7 @@ final class WindowManager {
         lastApplied[id] = nil
         lastObserved[id] = nil
         motions[id] = nil
+        hiddenTabs.remove(id)
         workspace.minimumWidths[id] = nil
     }
 
@@ -447,7 +461,7 @@ final class WindowManager {
     /// Follows focus changes made outside Glide (clicks, ⌘-Tab, new windows) and scrolls to them.
     private func syncFocus() {
         guard isEnabled else { return }
-        defer { refreshDecorations() }
+        defer { refreshOverlays() }
         guard let id = focusedWindowID() else { return }
         if let lock = focusLock, Date() < lock.until, lock.window != id { return }
         guard workspace.strip.contains(id) else {
@@ -466,32 +480,77 @@ final class WindowManager {
         AXUIElementCreateApplication(window.pid).set(kAXFrontmostAttribute, kCFBooleanTrue)
         window.element.set(kAXMainAttribute, kCFBooleanTrue)
         AXUIElementPerformAction(window.element, kAXRaiseAction as CFString)
-        refreshDecorations()
+        refreshOverlays()
         // Apps raise windows asynchronously; restack once the raise has landed.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.refreshDecorations() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.refreshOverlays() }
     }
 
-    // MARK: Focus ring and dimming
+    // MARK: Focus ring, dimming and tab bars
+
+    /// Puts the focus ring, dimming and tab bars where windows have come to rest. While windows
+    /// move, the ring and tab bars are hidden: an overlay can't keep pace with another app's
+    /// window mid-flight, so it would drift away from it.
+    private func refreshOverlays() {
+        guard isEnabled else {
+            decorations.hide()
+            tabBars.hide()
+            return
+        }
+        if isSwiping || !motions.isEmpty {
+            decorations.hideRing()
+            tabBars.hide()
+            return
+        }
+        let systemFocus = focusedWindowID()
+        refreshDecorations(systemFocus: systemFocus)
+        refreshTabBars(systemFocus: systemFocus)
+    }
 
     /// Decorates the focused tiled window, restacking the overlays around it. Hides them when
     /// something else has focus: a floating window, another Space, or Glide's own windows.
-    private func refreshDecorations() {
-        guard isEnabled, Appearance.showsFocusRing || Appearance.dimsUnfocusedWindows,
-              let id = workspace.strip.focusedWindow, let frame = currentFrame(of: id) else { return decorations.hide() }
-        let locked = focusLock.map { $0.window == id && Date() < $0.until } ?? false
-        guard locked || focusedWindowID() == id else { return decorations.hide() }
+    private func refreshDecorations(systemFocus: WindowID?) {
+        guard Appearance.showsFocusRing || Appearance.dimsUnfocusedWindows,
+              let id = workspace.strip.focusedWindow, var frame = lastObserved[id] ?? lastApplied[id] else { return decorations.hide() }
+        guard isFocusedNow(id, systemFocus: systemFocus) else { return decorations.hide() }
+        // A tabbed column's ring takes in its tab bar.
+        if let bar = workspace.tabBars().first(where: { $0.activeWindow == id }) { frame = frame.union(bar.frame) }
         decorations.show(around: id, frame: frame)
     }
 
-    /// Moves the ring along with its window during animations and swipes.
-    private func moveDecorations() {
-        guard let id = decorations.target, let frame = currentFrame(of: id) else { return }
-        decorations.move(to: frame)
+    private func refreshTabBars(systemFocus: WindowID? = nil) {
+        let systemFocus = systemFocus ?? focusedWindowID()
+        let bars = workspace.tabBars().map { bar in
+            TabBarOverlay.Bar(
+                frame: bar.frame,
+                tabs: bar.windows.map(tab(for:)),
+                activeIndex: bar.activeIndex,
+                isFocused: isFocusedNow(bar.activeWindow, systemFocus: systemFocus)
+            )
+        }
+        tabBars.show(bars)
     }
 
-    /// Where a window is now, mid-animation included.
-    private func currentFrame(of id: WindowID) -> CGRect? {
-        motions[id].map { $0.frame(at: CACurrentMediaTime()) } ?? lastObserved[id] ?? lastApplied[id]
+    private func tab(for id: WindowID) -> TabBarOverlay.Tab {
+        let window = windows[id]
+        let title: String? = window?.element.value(kAXTitleAttribute)
+        let appName = window.flatMap { NSRunningApplication(processIdentifier: $0.pid)?.localizedName }
+        return TabBarOverlay.Tab(window: id, title: title.flatMap { $0.isEmpty ? nil : $0 } ?? appName ?? "Window", pid: window?.pid)
+    }
+
+    /// Whether `id` has keyboard focus, counting a focus change Glide just asked for.
+    private func isFocusedNow(_ id: WindowID, systemFocus: WindowID?) -> Bool {
+        let locked = focusLock.map { $0.window == id && Date() < $0.until } ?? false
+        return locked || systemFocus == id
+    }
+
+    /// Switches a tabbed column to the tab clicked in its tab bar.
+    private func selectTab(_ id: WindowID) {
+        guard isEnabled, workspace.strip.contains(id) else { return }
+        workspace.strip.focus(id)
+        workspace.ensureFocusedVisible()
+        applyLayout()
+        focus(id)
+        didChange()
     }
 
     /// e.g. "[Ghostty#2208] [*Safari#31 Safari#40] scroll 600" with * marking focus.
@@ -522,11 +581,14 @@ final class WindowManager {
         var learnedMinimum = false
         for placement in workspace.placements() {
             let id = placement.window
+            let hidden = placement.visibility == .hiddenTab
+            let wasHidden = hidden ? !hiddenTabs.insert(id).inserted : hiddenTabs.remove(id) != nil
             guard let window = windows[id], lastApplied[id] != placement.frame else { continue }
             let from = motions[id].map { $0.frame(at: now) }
                 ?? lastApplied[id]
             lastApplied[id] = placement.frame
-            if animate, let from, FrameAnimation.shouldAnimate(from: from, to: placement.frame, in: workspace.viewport) {
+            // Tabs switch in place: sliding in from the corner they wait in would look odd.
+            if animate, !hidden, !wasHidden, let from, FrameAnimation.shouldAnimate(from: from, to: placement.frame, in: workspace.viewport) {
                 if motions[id] == nil || motions[id]?.to.size != placement.frame.size {
                     // Resize once up front, then only move: see FrameAnimation.frame.
                     window.element.setSize(placement.frame.size)
@@ -538,8 +600,9 @@ final class WindowManager {
                 learnedMinimum = settle(window, at: placement.frame) || learnedMinimum
             }
         }
+        // Before the first animation step, so the ring is gone before anything moves.
+        refreshOverlays()
         if !motions.isEmpty { startAnimationTimer() }
-        moveDecorations()
         if learnedMinimum, pass < 2 {
             workspace.ensureFocusedVisible()
             applyLayout(pass: pass + 1)
@@ -569,6 +632,7 @@ final class WindowManager {
         guard isEnabled, !workspace.strip.isEmpty else { return }
         finishAnimations()
         isSwiping = true
+        refreshOverlays()
         log.debug("swipe began")
     }
 
@@ -618,7 +682,6 @@ final class WindowManager {
             for (element, origin) in groups[index] { element.setPosition(origin) }
         }
         for (window, frame) in resized { setFrame(frame, of: window) }
-        moveDecorations()
     }
 
     // MARK: Animation
@@ -643,8 +706,9 @@ final class WindowManager {
             MainActor.assumeIsolated { self?.animationTick() }
         }
         RunLoop.main.add(timer, forMode: .common)
+        // The first step waits for the timer (≤ 8 ms) so the run loop can first take the ring
+        // and tab bars off screen; AX calls would otherwise block until windows had moved.
         animationTimer = timer
-        animationTick()
     }
 
     /// Time-based, so a slow AX call skips frames instead of stretching the animation.
@@ -677,10 +741,10 @@ final class WindowManager {
             setFrame(frame, of: window)
             learnedMinimum = settle(window, at: frame) || learnedMinimum
         }
-        moveDecorations()
         if motions.isEmpty {
             animationTimer?.invalidate()
             animationTimer = nil
+            refreshOverlays()
         }
         if learnedMinimum {
             workspace.ensureFocusedVisible()
@@ -731,7 +795,7 @@ final class WindowManager {
             moved = true
         }
         if moved { applyLayout() }
-        refreshDecorations()
+        refreshOverlays()
     }
 
     private static func roughlyEqual(_ a: CGRect, _ b: CGRect) -> Bool {

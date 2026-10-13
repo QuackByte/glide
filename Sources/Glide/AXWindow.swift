@@ -124,4 +124,10 @@ enum ScreenGeometry {
         let visible = primary.visibleFrame
         return CGRect(x: visible.minX, y: primary.frame.maxY - visible.maxY, width: visible.width, height: visible.height)
     }
+
+    /// Converts a rect in AX coordinates (top-left origin) to Cocoa screen coordinates.
+    static func cocoa(_ rect: CGRect) -> CGRect {
+        let height = NSScreen.screens.first?.frame.maxY ?? 0
+        return CGRect(x: rect.minX, y: height - rect.maxY, width: rect.width, height: rect.height)
+    }
 }

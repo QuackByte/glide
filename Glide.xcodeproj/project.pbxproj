@@ -26,11 +26,13 @@
 		5D6B74505C439B0419733952 /* StripSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81C06183F18F46F0E197D11 /* StripSnapshot.swift */; };
 		6336834BF168EB783F12E62C /* KeyCombo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211731250170AA7196708655 /* KeyCombo.swift */; };
 		778B8C4027B61ACADD384C58 /* TrackpadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73EB183C8C8029224335660D /* TrackpadMonitor.swift */; };
+		7DA6B81D65AEC85B7209AC22 /* TabTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B209FFB1B066001F2B114E /* TabTests.swift */; };
 		83397809128CF693A2954850 /* GlideCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		94B380400A200760117CEDF7 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD1ADCA9153C04F07A3271E /* Workspace.swift */; };
 		9752D2DB073C18961DD26742 /* RestorePlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55E3468B2292B798242FE4E /* RestorePlannerTests.swift */; };
 		9DC758C127A17141F074A152 /* AXWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7723B886DE20AE2F7F7E0E /* AXWindow.swift */; };
 		A4779587F5BFED2CB2E60FC9 /* StripSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA2E89E28846A56010FD3FD /* StripSnapshotTests.swift */; };
+		A6874CD705A2296E0E92C5E6 /* TabBarOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBFB3B94681949181BB10AE9 /* TabBarOverlay.swift */; };
 		B43D06626F88A29E9F6C511E /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */; };
 		BE717C6D231512529E2BC0DE /* Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A78F29015300266375FF59E /* Action.swift */; };
 		CDE703CBDFAC970353EE4CFB /* AccessibilityPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EB9518715CCEA7C54408F11 /* AccessibilityPermission.swift */; };
@@ -108,11 +110,13 @@
 		C8DC58FA05CD84A7E6606359 /* GlideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlideApp.swift; sourceTree = "<group>"; };
 		C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenu.swift; sourceTree = "<group>"; };
 		C9E398FD0B43B3340D4B1921 /* SwipeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeTests.swift; sourceTree = "<group>"; };
+		CBFB3B94681949181BB10AE9 /* TabBarOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarOverlay.swift; sourceTree = "<group>"; };
 		D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
 		DD74BF51238E38CE7484D1F6 /* GlideCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GlideCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DEA2E89E28846A56010FD3FD /* StripSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripSnapshotTests.swift; sourceTree = "<group>"; };
 		E0218104AF30AC3A25988DD7 /* SwipeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeTracker.swift; sourceTree = "<group>"; };
 		E1D5BCF04C2F6A9E0B7A39A5 /* HotkeyCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCenter.swift; sourceTree = "<group>"; };
+		F4B209FFB1B066001F2B114E /* TabTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabTests.swift; sourceTree = "<group>"; };
 		F55E3468B2292B798242FE4E /* RestorePlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorePlannerTests.swift; sourceTree = "<group>"; };
 		FFD1ADCA9153C04F07A3271E /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -149,6 +153,7 @@
 				D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */,
 				59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */,
 				C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */,
+				CBFB3B94681949181BB10AE9 /* TabBarOverlay.swift */,
 				73EB183C8C8029224335660D /* TrackpadMonitor.swift */,
 				B932133198BF26973212958C /* WindowManager.swift */,
 			);
@@ -182,6 +187,7 @@
 				DEA2E89E28846A56010FD3FD /* StripSnapshotTests.swift */,
 				7ECA03FC26B7820A6830B7D2 /* StripTests.swift */,
 				C9E398FD0B43B3340D4B1921 /* SwipeTests.swift */,
+				F4B209FFB1B066001F2B114E /* TabTests.swift */,
 				855D351DAF3428DE0F359ACF /* WorkspaceTests.swift */,
 			);
 			name = GlideCoreTests;
@@ -355,6 +361,7 @@
 				B43D06626F88A29E9F6C511E /* SettingsWindow.swift in Sources */,
 				FBDA779A3D9620B228EE028F /* ShortcutStore.swift in Sources */,
 				F10682418406DA343212A609 /* StatusMenu.swift in Sources */,
+				A6874CD705A2296E0E92C5E6 /* TabBarOverlay.swift in Sources */,
 				778B8C4027B61ACADD384C58 /* TrackpadMonitor.swift in Sources */,
 				F255AEECF2965E1D44FFD06B /* WindowManager.swift in Sources */,
 			);
@@ -370,6 +377,7 @@
 				A4779587F5BFED2CB2E60FC9 /* StripSnapshotTests.swift in Sources */,
 				47DFC044C64B0DD3B4BEBECE /* StripTests.swift in Sources */,
 				30590D9CE31593CF304E70F0 /* SwipeTests.swift in Sources */,
+				7DA6B81D65AEC85B7209AC22 /* TabTests.swift in Sources */,
 				468E6CB8186840D9CBD39703 /* WorkspaceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -20,6 +20,7 @@ public struct Keymap: Equatable, Sendable {
             .cycleColumnWidth: KeyCombo(KeyCode.r, hyper),
             .cycleColumnWidthBackward: KeyCombo(KeyCode.r, move),
             .toggleFullWidth: KeyCombo(KeyCode.f, hyper),
+            .toggleTabbed: KeyCombo(KeyCode.w, hyper),
             .centerColumn: KeyCombo(KeyCode.c, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
             .toggleTiling: KeyCombo(KeyCode.t, move),

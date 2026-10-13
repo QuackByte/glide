@@ -8,6 +8,8 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
         public var focusedRow: Int
         public var widthIndex: Int
         public var isFullWidth: Bool
+        /// Optional so snapshots saved before tabs existed still load.
+        public var isTabbed: Bool?
     }
 
     public var columns: [ColumnState]
@@ -20,7 +22,7 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
 
     public init(strip: Strip, userFloating: Set<WindowID>, userTiled: Set<WindowID>, bootTime: Date) {
         columns = strip.columns.map {
-            ColumnState(windows: $0.windows, focusedRow: $0.focusedRow, widthIndex: $0.widthIndex, isFullWidth: $0.isFullWidth)
+            ColumnState(windows: $0.windows, focusedRow: $0.focusedRow, widthIndex: $0.widthIndex, isFullWidth: $0.isFullWidth, isTabbed: $0.isTabbed)
         }
         focusedWindow = strip.focusedWindow
         self.userFloating = userFloating.sorted()
@@ -43,7 +45,7 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
             let previouslyFocused = saved.windows[min(max(saved.focusedRow, 0), saved.windows.count - 1)]
             let row = windows.firstIndex(of: previouslyFocused) ?? 0
             let width = (0..<presetCount).contains(saved.widthIndex) ? saved.widthIndex : widthIndex
-            restored.append(Column(windows: windows, focusedRow: row, widthIndex: width, isFullWidth: saved.isFullWidth))
+            restored.append(Column(windows: windows, focusedRow: row, widthIndex: width, isFullWidth: saved.isFullWidth, isTabbed: saved.isTabbed ?? false))
         }
         for window in available where !placed.contains(window) {
             restored.append(Column(windows: [window], widthIndex: widthIndex))

@@ -47,6 +47,9 @@ enum Appearance {
 /// Click-through overlay windows that mark the focused window: a ring stacked just above it,
 /// and a translucent sheet over the whole screen stacked just below it, which darkens every
 /// window behind. Other apps' windows can't be restyled, but overlays can be stacked between them.
+///
+/// The ring only appears once windows are at rest. Each app redraws a moved window on its own
+/// schedule, so an overlay moved alongside drifts hundreds of points off mid-animation.
 final class FocusDecorations {
     static let ringWidth: CGFloat = 4
     /// Roughly the corner radius of a standard macOS window.
@@ -56,8 +59,9 @@ final class FocusDecorations {
     private(set) var target: WindowID?
     private lazy var ring = Self.overlay()
     private lazy var dim = Self.overlay()
+    private var ringShown = false
 
-    /// Decorates `window`, whose frame is in AX coordinates, and restacks the overlays around it.
+    /// Decorates `window` (`frame` in AX coordinates) and restacks the overlays around it.
     func show(around window: WindowID, frame: CGRect) {
         target = window
         if Appearance.showsFocusRing {
@@ -66,10 +70,14 @@ final class FocusDecorations {
             layer?.borderColor = (Appearance.focusRingColor ?? .controlAccentColor).cgColor
             layer?.cornerRadius = Self.windowCornerRadius + Self.ringWidth
             layer?.cornerCurve = .continuous
-            move(to: frame)
+            ring.setFrame(ScreenGeometry.cocoa(frame).insetBy(dx: -Self.ringWidth, dy: -Self.ringWidth), display: true)
             ring.order(.above, relativeTo: Int(window))
+            if !ringShown {
+                ringShown = true
+                ring.fadeIn()
+            }
         } else {
-            ring.orderOut(nil)
+            hideRing()
         }
         if Appearance.dimsUnfocusedWindows, let screen = NSScreen.screens.first {
             dim.setFrame(screen.frame, display: false)
@@ -80,32 +88,46 @@ final class FocusDecorations {
         }
     }
 
-    /// Follows the decorated window as it moves, without restacking.
-    func move(to frame: CGRect) {
-        guard target != nil, Appearance.showsFocusRing, let primary = NSScreen.screens.first else { return }
-        let cocoa = CGRect(x: frame.minX, y: primary.frame.maxY - frame.maxY, width: frame.width, height: frame.height)
-        ring.setFrame(cocoa.insetBy(dx: -Self.ringWidth, dy: -Self.ringWidth), display: true)
+    /// Hides the ring while windows move; dimming stays, since it doesn't depend on position.
+    func hideRing() {
+        ringShown = false
+        ring.orderOut(nil)
     }
 
     func hide() {
         target = nil
-        ring.orderOut(nil)
+        hideRing()
         dim.orderOut(nil)
     }
 
     private static func overlay() -> NSWindow {
         let window = NSWindow(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: true)
-        window.isOpaque = false
-        window.backgroundColor = .clear
-        window.hasShadow = false
+        window.configureAsOverlay()
         window.ignoresMouseEvents = true
-        window.isReleasedWhenClosed = false
-        window.animationBehavior = .none
-        // Keep out of Mission Control, ⌘` and full-screen spaces.
-        window.collectionBehavior = [.transient, .ignoresCycle, .fullScreenNone]
         let view = NSView()
         view.wantsLayer = true
         window.contentView = view
         return window
+    }
+}
+
+extension NSWindow {
+    /// A borderless, transparent window that stays out of Mission Control, ⌘` and full-screen spaces.
+    func configureAsOverlay() {
+        isOpaque = false
+        backgroundColor = .clear
+        hasShadow = false
+        isReleasedWhenClosed = false
+        animationBehavior = .none
+        collectionBehavior = [.transient, .ignoresCycle, .fullScreenNone]
+    }
+
+    /// Shows an overlay that was just ordered in with a quick fade.
+    func fadeIn(duration: TimeInterval = 0.1) {
+        alphaValue = 0
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            animator().alphaValue = 1
+        }
     }
 }

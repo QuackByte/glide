@@ -11,10 +11,11 @@ Status: early development (milestone 1: one display).
 - Each standard window is a **column** on the strip. New windows open to the right of the focused column and take focus.
 - Columns use preset widths (⅓, ½, ⅔, full) and fill the screen height, minus a gap (12 pt by default). A column can stack several windows vertically.
 - Glide keeps the focused column fully on screen, scrolling the strip as little as possible. macOS doesn't let windows sit entirely off screen, so columns scrolled out of view are parked as 4 pt slivers at the left and right screen edges.
+- A column can also be **tabbed** (⌃⌥W): it shows one window at full height under a tab bar, and the others wait as tabs. ⌃⌥↑/↓ switch tabs, ⌃⌥⇧↑/↓ reorder them, clicking a tab selects it, and consume/expel (⌃⌥[ / ⌃⌥]) adds or removes tabs. Tabs can be windows of different apps. macOS won't let a window go fully off screen, so hidden tabs wait in the bottom-right corner with a point showing.
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.
 - Closing, minimizing or hiding a window removes it from the strip; restoring it brings it back next to the focused column.
 - Layout changes slide into place in about 120 ms (ease-out). Turn this off under **Settings › Animate window movement**.
-- A **focus ring** outlines the focused window (your accent color, or any color you pick). Optionally, Glide **dims every other window**. Both are click-through overlay windows stacked just above and just below the focused window, since macOS doesn't let one app restyle another's windows. They hide while a floating window or Glide's own Settings has focus.
+- A **focus ring** outlines the focused window (your accent color, or any color you pick). Optionally, Glide **dims every other window**. Both are click-through overlay windows stacked just above and just below the focused window, since macOS doesn't let one app restyle another's windows. They hide while a floating window or Glide's own Settings has focus. The ring and tab bars disappear while windows slide and fade back in once they settle: each app redraws a moved window on its own schedule, so an overlay moved alongside would drift away from it.
 - Set the **gap** between windows (0–40 pt), the ring color, and the dimming amount under **Settings › Appearance**. Changes apply immediately.
 - Glide remembers the layout (column order, stacks, widths, and windows you floated or tiled by hand) when you quit it or turn tiling off. Windows that are still open come back exactly as they were. The layout resets after a restart, because macOS window IDs only last until then.
 - Turning tiling off (or quitting Glide) moves every window to a sensible spot on screen, so nothing stays parked at the edges.
@@ -32,13 +33,14 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Action | Shortcut |
 | --- | --- |
 | Focus column left / right | ⌃⌥← / ⌃⌥→ |
-| Focus window up / down (within a column) | ⌃⌥↑ / ⌃⌥↓ |
+| Focus window up / down (within a column, or switch tabs) | ⌃⌥↑ / ⌃⌥↓ |
 | Focus first / last column | ⌃⌥Home / ⌃⌥End (fn⌃⌥← / fn⌃⌥→ on laptops) |
 | Move column left / right | ⌃⌥⇧← / ⌃⌥⇧→ |
-| Move window up / down (within a column) | ⌃⌥⇧↑ / ⌃⌥⇧↓ |
+| Move window up / down (within a column, or reorder tabs) | ⌃⌥⇧↑ / ⌃⌥⇧↓ |
 | Consume or expel window left / right | ⌃⌥[ / ⌃⌥] |
 | Cycle column width (⅓ → ½ → ⅔ → full) | ⌃⌥R (⌃⌥⇧R cycles backward) |
 | Toggle full width | ⌃⌥F |
+| Toggle tabbed column | ⌃⌥W |
 | Center focused column | ⌃⌥C |
 | Toggle floating for the focused window | ⌃⌥V |
 | Enable or disable tiling | ⌃⌥⇧T |
@@ -51,7 +53,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 - **Arrows, not letters, for direction.** Arrows need no vim knowledge, work on every keyboard layout, and are where your hand already is for navigation.
 - **They don't steal text editing.** ⌥←/→ (word), ⌘←/→ (line), their ⇧ variants (selection), and ⌃A/E are untouched. Glide never binds a single modifier with an arrow.
 - **They don't touch macOS.** ⌃←/→ (switch Spaces), ⌃↑/↓ (Mission Control / App Exposé), ⌘Space / ⌥⌘Space (Spotlight), ⌃Space / ⌃⌥Space (input sources), and the Globe-key window tiling shortcuts (🌐⌃ + arrows and friends) are all left alone. Glide also reads the system's enabled shortcuts at launch and flags any collision.
-- **Mnemonic letters** for the rest: **R**esize, **F**ull, **C**enter, **T**iling. Floating uses ⌃⌥V, the same key niri uses. **[** and **]** point at the side the window goes to.
+- **Mnemonic letters** for the rest: **R**esize, **F**ull, **C**enter, **T**iling. Tabs use ⌃⌥W like niri; ⌃⌥T would sit one ⇧ away from turning tiling off. Floating uses ⌃⌥V, the same key niri uses. **[** and **]** point at the side the window goes to.
 - **Other window managers.** AeroSpace's defaults use ⌥ alone (⌥H/J/K/L, ⌥1…), so the two don't collide. Raycast ships no window shortcuts by default. Rectangle-style apps default to ⌃⌥ + arrows/letters; if you still run one, rebind one of them (Glide is meant to replace them).
 - **Terminal caveat:** in a terminal with "Option as Meta", ⌃⌥ letters are Emacs C-M- chords (C-M-f, C-M-r, …). If you live in Emacs, rebind those in Settings.
 

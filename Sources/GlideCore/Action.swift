@@ -15,6 +15,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case cycleColumnWidth
     case cycleColumnWidthBackward
     case toggleFullWidth
+    case toggleTabbed
     case centerColumn
     case toggleFloating
     case toggleTiling
@@ -43,6 +44,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .cycleColumnWidth: "Cycle Column Width"
         case .cycleColumnWidthBackward: "Cycle Column Width Backward"
         case .toggleFullWidth: "Toggle Full Width"
+        case .toggleTabbed: "Toggle Tabbed Column"
         case .centerColumn: "Center Column"
         case .toggleFloating: "Toggle Floating"
         case .toggleTiling: "Enable or Disable Tiling"
@@ -55,7 +57,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
             .focus
         case .moveColumnLeft, .moveColumnRight, .moveWindowUp, .moveWindowDown, .consumeOrExpelLeft, .consumeOrExpelRight:
             .move
-        case .cycleColumnWidth, .cycleColumnWidthBackward, .toggleFullWidth, .centerColumn:
+        case .cycleColumnWidth, .cycleColumnWidthBackward, .toggleFullWidth, .toggleTabbed, .centerColumn:
             .column
         case .toggleFloating, .toggleTiling:
             .general

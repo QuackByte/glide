@@ -11,7 +11,8 @@ public enum VerticalDirection: Sendable {
     case up, down
 }
 
-/// A column on the strip: one or more windows stacked vertically, sharing one width.
+/// A column on the strip: one or more windows stacked vertically, sharing one width. A tabbed
+/// column shows only its focused window, full height, with the others as tabs.
 public struct Column: Equatable, Sendable {
     public internal(set) var windows: [WindowID]
     public internal(set) var focusedRow: Int
@@ -19,13 +20,15 @@ public struct Column: Equatable, Sendable {
     public internal(set) var widthIndex: Int
     /// Overrides `widthIndex` with the full viewport width until toggled off.
     public internal(set) var isFullWidth: Bool
+    public internal(set) var isTabbed: Bool
 
-    public init(windows: [WindowID], focusedRow: Int = 0, widthIndex: Int, isFullWidth: Bool = false) {
+    public init(windows: [WindowID], focusedRow: Int = 0, widthIndex: Int, isFullWidth: Bool = false, isTabbed: Bool = false) {
         precondition(!windows.isEmpty, "A column needs at least one window")
         self.windows = windows
         self.focusedRow = min(max(focusedRow, 0), windows.count - 1)
         self.widthIndex = widthIndex
         self.isFullWidth = isFullWidth
+        self.isTabbed = isTabbed
     }
 
     public var focusedWindow: WindowID { windows[focusedRow] }
@@ -201,6 +204,16 @@ public struct Strip: Equatable, Sendable {
     public mutating func toggleFullWidth() -> Bool {
         guard !columns.isEmpty else { return false }
         columns[focusedColumnIndex].isFullWidth.toggle()
+        return true
+    }
+
+    // MARK: Tabs
+
+    /// Switches the focused column between stacked windows and tabs.
+    @discardableResult
+    public mutating func toggleTabbed() -> Bool {
+        guard !columns.isEmpty else { return false }
+        columns[focusedColumnIndex].isTabbed.toggle()
         return true
     }
 }

@@ -71,6 +71,7 @@ public enum KeyCode {
     public static let r: UInt32 = 15
     public static let t: UInt32 = 17
     public static let v: UInt32 = 9
+    public static let w: UInt32 = 13
 
     public static let arrows: Set<UInt32> = [leftArrow, rightArrow, downArrow, upArrow]
 
