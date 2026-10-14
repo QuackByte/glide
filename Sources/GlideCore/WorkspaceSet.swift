@@ -22,9 +22,19 @@ public struct WorkspaceSet: Equatable, Sendable {
         set { for index in workspaces.indices { workspaces[index].viewport = newValue } }
     }
 
+    public var hiddenCorner: HiddenCorner {
+        get { active.hiddenCorner }
+        set { for index in workspaces.indices { workspaces[index].hiddenCorner = newValue } }
+    }
+
     public var settings: LayoutSettings {
         get { active.settings }
         set { for index in workspaces.indices { workspaces[index].settings = newValue } }
+    }
+
+    /// Keeps every workspace's scroll in range, e.g. after the viewport changes.
+    public mutating func settleScroll() {
+        for index in workspaces.indices { workspaces[index].settleScroll() }
     }
 
     /// Tiled windows on every workspace, workspace by workspace.

@@ -39,6 +39,11 @@ public enum Visibility: Equatable, Sendable {
     case hiddenTab
 }
 
+public enum HiddenCorner: Equatable, Sendable {
+    case bottomRight
+    case bottomLeft
+}
+
 public struct WindowPlacement: Equatable, Sendable {
     public var window: WindowID
     public var frame: CGRect
@@ -64,6 +69,8 @@ public struct Workspace: Equatable, Sendable {
     public private(set) var scrollOffset: CGFloat = 0
     /// Widths that apps refused to shrink below, keyed by window.
     public var minimumWidths: [WindowID: CGFloat] = [:]
+    /// Which bottom corner hidden windows wait in: the one with no other display beyond it.
+    public var hiddenCorner: HiddenCorner = .bottomRight
 
     public init(strip: Strip = Strip(), viewport: CGRect, settings: LayoutSettings = .standard) {
         self.strip = strip
@@ -75,9 +82,12 @@ public struct Workspace: Equatable, Sendable {
 
     public var usableWidth: CGFloat { max(viewport.width - 2 * settings.gap, 0) }
 
-    /// Where hidden windows wait: hidden tabs, and every window of an inactive workspace.
-    /// macOS keeps part of a window on screen, so this leaves about a point showing.
-    public var hiddenOrigin: CGPoint { CGPoint(x: viewport.maxX - 1, y: viewport.maxY - 1) }
+    /// Where a hidden window of `size` waits: hidden tabs, and every window of an inactive
+    /// workspace. macOS keeps part of a window on screen, so this leaves about a point showing.
+    public func hiddenFrame(size: CGSize) -> CGRect {
+        let x = hiddenCorner == .bottomRight ? viewport.maxX - 1 : viewport.minX - size.width + 1
+        return CGRect(origin: CGPoint(x: x, y: viewport.maxY - 1), size: size)
+    }
 
     /// Preset fractions are of the whole viewport, so two ½ columns exactly fill it, gaps included.
     public func width(ofColumn index: Int) -> CGFloat {
@@ -274,8 +284,7 @@ public struct Workspace: Equatable, Sendable {
                     if row == column.focusedRow {
                         result.append(WindowPlacement(window: window, frame: shown, visibility: visibility))
                     } else {
-                        let hidden = CGRect(origin: hiddenOrigin, size: shown.size)
-                        result.append(WindowPlacement(window: window, frame: hidden, visibility: .hiddenTab))
+                        result.append(WindowPlacement(window: window, frame: hiddenFrame(size: shown.size), visibility: .hiddenTab))
                     }
                 }
                 continue

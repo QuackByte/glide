@@ -39,6 +39,10 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case moveColumnToWorkspace7
     case moveColumnToWorkspace8
     case moveColumnToWorkspace9
+    case focusDisplayLeft
+    case focusDisplayRight
+    case moveColumnToDisplayLeft
+    case moveColumnToDisplayRight
     case toggleOverview
     case toggleFloating
     case toggleTiling
@@ -48,6 +52,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case move = "Move"
         case column = "Columns"
         case workspaces = "Workspaces"
+        case displays = "Displays"
         case general = "General"
     }
 
@@ -92,6 +97,10 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .moveColumnToWorkspace7: "Move Column to Workspace 7"
         case .moveColumnToWorkspace8: "Move Column to Workspace 8"
         case .moveColumnToWorkspace9: "Move Column to Workspace 9"
+        case .focusDisplayLeft: "Focus Display Left"
+        case .focusDisplayRight: "Focus Display Right"
+        case .moveColumnToDisplayLeft: "Move Column to Display Left"
+        case .moveColumnToDisplayRight: "Move Column to Display Right"
         case .toggleOverview: "Show or Hide Overview"
         case .toggleFloating: "Toggle Floating"
         case .toggleTiling: "Enable or Disable Tiling"
@@ -106,6 +115,8 @@ public enum Action: String, CaseIterable, Codable, Sendable {
             .move
         case .cycleColumnWidth, .cycleColumnWidthBackward, .toggleFullWidth, .toggleTabbed, .centerColumn:
             .column
+        case .focusDisplayLeft, .focusDisplayRight, .moveColumnToDisplayLeft, .moveColumnToDisplayRight:
+            .displays
         case .toggleOverview, .toggleFloating, .toggleTiling:
             .general
         default:
@@ -138,6 +149,19 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .moveColumnToWorkspace7: (.index(6), true)
         case .moveColumnToWorkspace8: (.index(7), true)
         case .moveColumnToWorkspace9: (.index(8), true)
+        default: nil
+        }
+    }
+}
+
+extension Action {
+    /// For display actions: which way (-1 left, +1 right), and whether the focused column goes along.
+    public var displayCommand: (direction: Int, movesColumn: Bool)? {
+        switch self {
+        case .focusDisplayLeft: (-1, false)
+        case .focusDisplayRight: (1, false)
+        case .moveColumnToDisplayLeft: (-1, true)
+        case .moveColumnToDisplayRight: (1, true)
         default: nil
         }
     }

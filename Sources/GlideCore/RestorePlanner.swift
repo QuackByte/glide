@@ -35,4 +35,16 @@ public enum RestorePlanner {
         }
         return result
     }
+
+    /// The same for several displays: each window comes back on the display holding most of it
+    /// (hidden windows keep a point on theirs), or on the first display if it's on none.
+    public static func restoredFrames(for frames: [(window: WindowID, frame: CGRect)], displays: [(frame: CGRect, viewport: CGRect)]) -> [WindowID: CGRect] {
+        guard !displays.isEmpty else { return [:] }
+        let groups = Dictionary(grouping: frames) { DisplayGeometry.display(containing: $0.frame, in: displays.map(\.frame)) ?? 0 }
+        var result: [WindowID: CGRect] = [:]
+        for (index, group) in groups {
+            result.merge(restoredFrames(for: group, in: displays[index].viewport)) { $1 }
+        }
+        return result
+    }
 }

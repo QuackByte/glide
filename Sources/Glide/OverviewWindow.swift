@@ -50,7 +50,7 @@ final class OverviewController {
     }
 
     func show() {
-        guard !isShown, let overview = manager.makeOverview(), let screen = NSScreen.screens.first else { return NSSound.beep() }
+        guard !isShown, let overview = manager.makeOverview(), let screen = manager.focusedScreen ?? NSScreen.screens.first else { return NSSound.beep() }
         let ids = overview.rows.flatMap { $0.columns.flatMap(\.windows) }
         var titles: [WindowID: String] = [:]
         var pids: [WindowID: pid_t] = [:]
