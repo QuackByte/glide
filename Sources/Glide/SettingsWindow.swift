@@ -155,6 +155,13 @@ struct SettingsView: View {
                         Text("Off").tag(HorizontalWheelMode.off)
                     }
                     .help("Tilting the mouse wheel (or a thumb wheel) glides the strip. ⌃⌥ with the wheel always does, whatever this is set to.")
+                    Toggle("Apps reopen where you keep them", isOn: Binding(
+                        get: { WindowManager.remembersApps },
+                        set: { WindowManager.remembersApps = $0 }
+                    ))
+                    LabeledContent("Remembered places") {
+                        Button("Forget") { controller.windowManager.forgetRememberedApps() }
+                    }
                 }
 
                 Section("Updates") {
