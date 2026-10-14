@@ -4,7 +4,7 @@ A scrolling window manager for macOS. Windows are laid out as columns on an endl
 
 Keyboard-first: every action has a default shortcut out of the box, and every shortcut can be rebound.
 
-Status: early development (milestone 1: one display).
+Status: early development (milestone 1: one display). There's also [Glide for Windows](https://github.com/QuackByte/glide-windows); [quackbyte.dev/glide](https://quackbyte.dev/glide/#platforms) shows what each one does.
 
 ## How it works
 
@@ -79,11 +79,15 @@ If a shortcut can't be registered, the menu bar icon turns into a warning triang
 
 Requires macOS 27 or later (Glide follows the current Xcode 27 project defaults).
 
-1. Build from source (below) or download a release once they exist.
+1. Download the [latest release](https://github.com/QuackByte/glide/releases/latest) (or from [quackbyte.dev/glide](https://quackbyte.dev/glide/)), unzip it and move **Glide.app** to Applications. Or build from source (below).
 2. Launch Glide. It lives in the menu bar (no Dock icon). Turn on **Settings › Open at login** to start it with your Mac.
 3. Grant **Accessibility** access when asked: **System Settings › Privacy & Security › Accessibility**, turn on Glide. Glide notices the grant within a second and starts tiling without a relaunch. If the permission is revoked later, Glide stops and asks again.
 
-Glide uses Accessibility only to read window positions and move, resize and focus windows. Screen Recording is optional and only used to draw window previews in the overview. It has no network code.
+Glide uses Accessibility only to read window positions and move, resize and focus windows. Screen Recording is optional and only used to draw window previews in the overview.
+
+## Updates
+
+Glide updates itself with [Sparkle](https://sparkle-project.org). Once a day it reads `appcast.xml` from this repository's latest release, and offers a newer version (or installs it, with **Settings › Updates › Download and install updates automatically**). Every update is notarized by Apple and EdDSA-signed; Glide checks the signature against the public key in `Sources/Glide/Info.plist` before installing. **Check for Updates…** in the menu checks right away. That request is Glide's only network access, and it sends nothing but the request itself.
 
 ## Build from source
 
@@ -102,6 +106,13 @@ The checked-in Xcode project is generated from [`project.yml`](project.yml) with
 - `Sources/GlideCore`: the pure-Swift layout engine (strip model, workspaces, column widths, scroll offset, visibility and parking rules, keymap, restore planner). It only imports CoreGraphics, has no AppKit or Accessibility code, and is fully unit-tested in `Tests/GlideCoreTests`.
 - `Design/glide-icon.svg`: the app icon source. Re-render the asset catalog with `for n in 16 32 64 128 256 512 1024; do rsvg-convert -w $n -h $n Design/glide-icon.svg -o Assets.xcassets/AppIcon.appiconset/icon_$n.png; done`.
 - `Sources/Glide`: the app: AX window tracking (`WindowManager`, `AXWindow`), Carbon hotkeys (`HotkeyCenter`), the menu bar item, the settings and onboarding windows.
+
+### Releasing
+
+Push a tag like `v0.2.0` on `main`. `.github/workflows/ci-release.yml` builds, signs with the Developer ID, notarizes, and publishes a release with `Glide-<version>-macOS.zip` and the `appcast.xml` that existing copies update from. It uses:
+
+- QuackByte organization secrets shared with this repository: `APPLE_API_KEY_ID`, `APPLE_API_ISSUER` and `APPLE_API_KEY_P8` (base64; App Store Connect API key, for notarization), and `MAC_CSC_LINK` and `MAC_CSC_KEY_PASSWORD` (the Developer ID Application certificate as base64 .p12, and its password).
+- Repository secret `SPARKLE_PRIVATE_KEY`: Sparkle's EdDSA private key, kept in the maintainer's login keychain under the account `dev.quackbyte.glide`. Export it with Sparkle's `generate_keys --account dev.quackbyte.glide -x <file>`. If it's lost, existing copies can't verify updates any more, so keep a backup.
 
 Debug logging of the strip after every action: `log stream --level debug --predicate 'subsystem == "dev.quackbyte.glide"'`.
 

@@ -47,6 +47,7 @@ final class AppController {
     @ObservationIgnored let permission = AccessibilityPermission()
     @ObservationIgnored private let trackpad = TrackpadMonitor()
     @ObservationIgnored private var swipeTracker = SwipeTracker(fingerCount: 3)
+    @ObservationIgnored let updates = Updates()
     let shortcuts = ShortcutStore()
     let appRules = RuleStore()
     /// Bumped whenever tiling or hotkey state changes, so SwiftUI views refresh.
@@ -70,6 +71,7 @@ final class AppController {
 
     func launch() {
         watchdog = CrashWatchdog.launch()
+        updates.start()
         statusMenu = StatusMenu(controller: self)
         hotkeys.onAction = { [weak self] action in self?.perform(action) }
         shortcuts.onChange = { [weak self] in self?.registerHotkeys() }
@@ -176,6 +178,24 @@ final class AppController {
             NSLog("Glide: couldn't \(enabled ? "add" : "remove") the login item: \(error.localizedDescription)")
         }
         stateChanged()
+    }
+
+    // MARK: Updates
+
+    var checksForUpdates: Bool {
+        get { updates.checksAutomatically }
+        set {
+            updates.checksAutomatically = newValue
+            stateChanged()
+        }
+    }
+
+    var installsUpdates: Bool {
+        get { updates.installsAutomatically }
+        set {
+            updates.installsAutomatically = newValue
+            stateChanged()
+        }
     }
 
     // MARK: Trackpad
