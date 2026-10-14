@@ -302,6 +302,15 @@ public struct Workspace: Equatable, Sendable {
         }
     }
 
+    /// The window a dragged window joins when it is dropped at `point`: the active tab of a tab bar
+    /// under the point, or the window under the point. nil when neither is there.
+    public func dropTarget(at point: CGPoint, dragging window: WindowID) -> WindowID? {
+        if let bar = tabBars().first(where: { $0.frame.contains(point) }) { return bar.activeWindow }
+        return placements().first { placement in
+            placement.window != window && (placement.visibility == .visible || placement.visibility == .partial) && placement.frame.contains(point)
+        }?.window
+    }
+
     /// A column's left edge on screen, and whether it is visible or parked at an edge.
     private func position(ofColumn index: Int) -> (x: CGFloat, visibility: Visibility) {
         let width = width(ofColumn: index)

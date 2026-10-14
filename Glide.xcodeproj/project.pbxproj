@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		00C3E0C2456EA04C1BA5D2A6 /* GlideCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; };
+		05EABA58F843FB05AA29F043 /* DropTargetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F286D1BB0A539F05483F1556 /* DropTargetTests.swift */; };
 		06BD64AC4BB36B7D23006468 /* SwipeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0218104AF30AC3A25988DD7 /* SwipeTracker.swift */; };
 		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
 		15E9FA80D8D9DB5E14C69285 /* KeymapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1529283E97AE33824F61C0A5 /* KeymapTests.swift */; };
@@ -150,6 +151,7 @@
 		E0218104AF30AC3A25988DD7 /* SwipeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeTracker.swift; sourceTree = "<group>"; };
 		E1D5BCF04C2F6A9E0B7A39A5 /* HotkeyCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCenter.swift; sourceTree = "<group>"; };
 		EB824727C276DAC656A7D6C8 /* WhatsNewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsNewWindow.swift; sourceTree = "<group>"; };
+		F286D1BB0A539F05483F1556 /* DropTargetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropTargetTests.swift; sourceTree = "<group>"; };
 		F4B209FFB1B066001F2B114E /* TabTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabTests.swift; sourceTree = "<group>"; };
 		F55E3468B2292B798242FE4E /* RestorePlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorePlannerTests.swift; sourceTree = "<group>"; };
 		FFD1ADCA9153C04F07A3271E /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 			children = (
 				7EA952993265962A300C3389 /* AppRuleTests.swift */,
 				0D3D1EAF622CF929EF911931 /* ChangelogTests.swift */,
+				F286D1BB0A539F05483F1556 /* DropTargetTests.swift */,
 				25B33FD4253A18B35308DCF6 /* FrameAnimationTests.swift */,
 				1529283E97AE33824F61C0A5 /* KeymapTests.swift */,
 				73891196AB0F372406F0213D /* OverviewTests.swift */,
@@ -441,6 +444,7 @@
 			files = (
 				6C1175CF3ABEE2F1C1F27802 /* AppRuleTests.swift in Sources */,
 				B58A015F50FA1FA718A3558B /* ChangelogTests.swift in Sources */,
+				05EABA58F843FB05AA29F043 /* DropTargetTests.swift in Sources */,
 				E8C8A02BDD4E3C29C27EC33C /* FrameAnimationTests.swift in Sources */,
 				15E9FA80D8D9DB5E14C69285 /* KeymapTests.swift in Sources */,
 				B275455F096DE049625B288F /* OverviewTests.swift in Sources */,
