@@ -87,6 +87,16 @@ public struct WorkspaceSet: Equatable, Sendable {
         return target
     }
 
+    /// Adds a column on a workspace (the active one by default), at column `index` or right of its
+    /// focused column. Returns the workspace it joined.
+    @discardableResult
+    public mutating func insertColumn(_ column: Column, workspace: Int? = nil, at index: Int? = nil, focus: Bool) -> Int {
+        let target = workspace.flatMap { workspaces.indices.contains($0) ? $0 : nil } ?? activeIndex
+        workspaces[target].strip.insert(column, at: index, focus: focus)
+        if target == activeIndex || focus { workspaces[target].ensureFocusedVisible() }
+        return target
+    }
+
     // MARK: Windows that leave and come back
 
     /// Where a window was, so it can return there after its app is hidden or it is minimized.
