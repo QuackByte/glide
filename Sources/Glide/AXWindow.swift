@@ -125,11 +125,37 @@ enum WindowClassifier {
 
 /// Screen geometry in AX coordinates.
 enum ScreenGeometry {
-    /// The visible frame (minus menu bar and Dock) of the primary display, flipped to AX coordinates.
-    static func primaryViewport() -> CGRect? {
-        guard let primary = NSScreen.screens.first else { return nil }
-        let visible = primary.visibleFrame
-        return CGRect(x: visible.minX, y: primary.frame.maxY - visible.maxY, width: visible.width, height: visible.height)
+    /// A display Glide tiles: a stable ID, its whole frame, and its visible frame (minus menu
+    /// bar and Dock), both in AX coordinates.
+    struct Screen: Equatable {
+        let id: String
+        let frame: CGRect
+        let viewport: CGRect
+    }
+
+    /// Every display, the main one (with the menu bar) first.
+    static func screens() -> [Screen] {
+        NSScreen.screens.map { screen in
+            Screen(id: id(of: screen), frame: ax(screen.frame), viewport: ax(screen.visibleFrame))
+        }
+    }
+
+    static func screen(withID id: String) -> NSScreen? {
+        NSScreen.screens.first { self.id(of: $0) == id }
+    }
+
+    /// The display's UUID, which stays the same across reconnects and restarts.
+    private static func id(of screen: NSScreen) -> String {
+        guard let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else { return screen.localizedName }
+        guard let uuid = CGDisplayCreateUUIDFromDisplayID(number.uint32Value)?.takeRetainedValue(),
+              let string = CFUUIDCreateString(nil, uuid) as String? else { return "display-\(number)" }
+        return string
+    }
+
+    /// Converts a rect in Cocoa screen coordinates to AX coordinates (top-left origin).
+    private static func ax(_ rect: CGRect) -> CGRect {
+        let height = NSScreen.screens.first?.frame.maxY ?? 0
+        return CGRect(x: rect.minX, y: height - rect.maxY, width: rect.width, height: rect.height)
     }
 
     /// Converts a rect in AX coordinates (top-left origin) to Cocoa screen coordinates.

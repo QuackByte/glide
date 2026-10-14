@@ -74,7 +74,8 @@ final class FocusDecorations {
     private var ringShown = false
 
     /// Decorates `window` (`frame` in AX coordinates) and restacks the overlays around it.
-    func show(around window: WindowID, frame: CGRect) {
+    /// Dimming covers `screen`, the window's display (AX coordinates too).
+    func show(around window: WindowID, frame: CGRect, screen: CGRect) {
         target = window
         if Appearance.showsFocusRing {
             let width = Appearance.focusRingWidth
@@ -92,8 +93,8 @@ final class FocusDecorations {
         } else {
             hideRing()
         }
-        if Appearance.dimsUnfocusedWindows, let screen = NSScreen.screens.first {
-            dim.setFrame(screen.frame, display: false)
+        if Appearance.dimsUnfocusedWindows {
+            dim.setFrame(ScreenGeometry.cocoa(screen), display: false)
             dim.contentView?.layer?.backgroundColor = NSColor.black.withAlphaComponent(Appearance.dimAmount).cgColor
             dim.order(.below, relativeTo: Int(window))
         } else {

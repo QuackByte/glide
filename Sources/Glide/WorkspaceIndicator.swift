@@ -55,8 +55,8 @@ final class WorkspaceHUD {
     private var panel: NSPanel?
     private var hideWork: DispatchWorkItem?
 
-    func show(entries: [WorkspaceIndicator.Entry], message: String) {
-        guard let screen = NSScreen.screens.first else { return }
+    func show(entries: [WorkspaceIndicator.Entry], message: String, on screen: NSScreen?) {
+        guard let screen = screen ?? NSScreen.screens.first else { return }
         let panel = self.panel ?? makePanel()
         self.panel = panel
         let hosting = NSHostingView(rootView: HUDView(entries: entries, message: message))

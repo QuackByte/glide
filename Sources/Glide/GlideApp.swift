@@ -157,7 +157,8 @@ final class AppController {
 
     private func showWorkspaceHUD(_ message: String) {
         guard Appearance.showsWorkspaceHUD else { return }
-        workspaceHUD.show(entries: windowManager.workspaceSummary.map { .init(number: $0.number, isActive: $0.isActive) }, message: message)
+        workspaceHUD.show(entries: windowManager.workspaceSummary.map { .init(number: $0.number, isActive: $0.isActive) }, message: message,
+                          on: windowManager.focusedScreen)
     }
 
     /// Tells the watchdog this is a clean quit, so it doesn't step in.

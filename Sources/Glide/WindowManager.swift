@@ -8,6 +8,11 @@ private let log = Logger(subsystem: "dev.quackbyte.glide", category: "windows")
 
 /// Connects the pure layout engine to real windows: tracks windows through the AX API and
 /// NSWorkspace, feeds membership and focus changes into the workspaces, and applies their frames.
+///
+/// Each display has its own strip and its own nine workspaces. Shortcuts act on the focused
+/// display (the focused window's, else the pointer's); new windows join the display they open
+/// on. Nothing is left showing on a neighbouring display: columns that would park or peek across
+/// a shared edge wait hidden instead.
 final class WindowManager {
     private struct TrackedWindow {
         let id: WindowID
@@ -15,10 +20,29 @@ final class WindowManager {
         let element: AXUIElement
     }
 
+    /// One display: where it is, and its workspaces.
+    private struct Display {
+        let id: String
+        /// The whole display, in AX coordinates.
+        var frame: CGRect
+        var spaces: WorkspaceSet
+    }
+
     private(set) var isEnabled = false
-    private var spaces = WorkspaceSet(viewport: .zero)
-    /// The active workspace. Everything on screen belongs to it; the windows of the other
-    /// workspaces wait hidden in the corner.
+    /// Never empty: while tiling is off it holds a placeholder.
+    private var displays = [Display(id: "", frame: .zero, spaces: WorkspaceSet(viewport: .zero))]
+    /// The display shortcuts act on.
+    private var focusedDisplay = 0
+    /// A display the user moved to with a shortcut, and the window that had focus then. It stays
+    /// focused, even with nothing on it, until focus moves.
+    private var chosenDisplay: (index: Int, focus: WindowID?)?
+    /// The focused display's workspaces; most actions work on them.
+    private var spaces: WorkspaceSet {
+        get { displays[focusedDisplay].spaces }
+        set { displays[focusedDisplay].spaces = newValue }
+    }
+    /// The focused display's active workspace. Everything on that display belongs to it; the
+    /// windows of the other workspaces wait hidden in a corner.
     private var workspace: Workspace {
         get { spaces.active }
         set { spaces.active = newValue }
@@ -51,8 +75,9 @@ final class WindowManager {
     /// Ignores focus that lands on another workspace's window just after switching, since apps
     /// report the old focus late.
     private var workspaceSwitchLock: Date?
-    /// Where windows were when their app was hidden or they were minimized, so they return there.
-    private var departures: [WindowID: WorkspaceSet.Departure] = [:]
+    /// Where windows were when their app was hidden or they were minimized, so they return there:
+    /// the display's ID, and the place on it.
+    private var departures: [WindowID: (display: String, departure: WorkspaceSet.Departure)] = [:]
     /// Tiled windows the user resized with the mouse since the last snap-back.
     private var userResized: Set<WindowID> = []
     /// The window the user is dragging with the mouse, until they let go.
@@ -66,11 +91,63 @@ final class WindowManager {
     /// Called after switching workspaces or sending a column to one, with a description.
     var onWorkspaceEvent: ((String) -> Void)?
 
-    var tiledWindowCount: Int { workspace.strip.windows.count }
-    var viewportWidth: CGFloat { workspace.viewport.width }
+    var tiledWindowCount: Int { displays.reduce(0) { $0 + $1.spaces.active.strip.windows.count } }
+    /// The width of the display a swipe moves, or will move: the one under the pointer.
+    var viewportWidth: CGFloat { displays[isSwiping ? swipeDisplay : pointerDisplay].spaces.viewport.width }
     var viewportSize: CGSize { workspace.viewport.size }
-    var columnCount: Int { workspace.strip.columns.count }
-    var floatingWindowCount: Int { windows.count - tiledWindowCount }
+    var columnCount: Int { displays.reduce(0) { $0 + $1.spaces.active.strip.columns.count } }
+    var floatingWindowCount: Int { windows.count - displays.reduce(0) { $0 + $1.spaces.allWindows.count } }
+    /// The screen of the focused display, for the overview and the workspace HUD.
+    var focusedScreen: NSScreen? { ScreenGeometry.screen(withID: displays[focusedDisplay].id) }
+
+    // MARK: Displays
+
+    private var displayFrames: [CGRect] { displays.map(\.frame) }
+
+    /// The display holding a tiled window, on any of its workspaces.
+    private func displayIndex(of id: WindowID) -> Int? {
+        displays.indices.first { displays[$0].spaces.index(of: id) != nil }
+    }
+
+    /// The display a window is on now, judged by its frame.
+    private func displayIndex(onScreen element: AXUIElement) -> Int {
+        element.frame.flatMap { DisplayGeometry.display(containing: $0, in: displayFrames) } ?? focusedDisplay
+    }
+
+    private var pointerDisplay: Int {
+        DisplayGeometry.display(at: ScreenGeometry.axPoint(fromCocoa: NSEvent.mouseLocation), in: displayFrames) ?? focusedDisplay
+    }
+
+    /// Matches displays to screens by ID: new displays get empty workspaces, and the windows of a
+    /// display that's gone move to the main one, workspace by workspace.
+    private func updateDisplays() {
+        let screens = ScreenGeometry.screens()
+        guard !screens.isEmpty else { return }
+        let previous = isEnabled ? displays.filter { !$0.id.isEmpty } : []
+        let focusedID = displays[focusedDisplay].id
+        let frames = screens.map(\.frame)
+        var next = screens.enumerated().map { index, screen in
+            var display = previous.first { $0.id == screen.id }
+                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: LayoutSettings(gap: Appearance.gap)))
+            display.frame = screen.frame
+            display.spaces.viewport = screen.viewport
+            display.spaces.hiddenCorner = DisplayGeometry.hiddenCorner(of: index, in: frames)
+            return display
+        }
+        for gone in previous where !next.contains(where: { $0.id == gone.id }) {
+            for (index, workspace) in gone.spaces.workspaces.enumerated() {
+                for column in workspace.strip.columns {
+                    next[0].spaces.insertColumn(column, workspace: index, at: next[0].spaces.workspaces[index].strip.columns.count, focus: false)
+                }
+            }
+            for (id, left) in departures where left.display == gone.id { departures[id] = (next[0].id, left.departure) }
+            log.debug("display \(gone.id, privacy: .public) went away; its windows moved to the main display")
+        }
+        for index in next.indices { next[index].spaces.settleScroll() }
+        displays = next
+        focusedDisplay = displays.firstIndex { $0.id == focusedID } ?? 0
+        chosenDisplay = nil
+    }
 
     // MARK: Lifecycle
 
@@ -78,7 +155,8 @@ final class WindowManager {
         guard !isEnabled, AXIsProcessTrusted() else { return }
         isEnabled = true
         AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 1)
-        spaces = WorkspaceSet(viewport: ScreenGeometry.primaryViewport() ?? .zero, settings: LayoutSettings(gap: Appearance.gap))
+        updateDisplays()
+        focusedDisplay = pointerDisplay
         loadSnapshot()
         tabBars.onSelect = { [weak self] window in self?.selectTab(window) }
         observeWorkspace()
@@ -92,10 +170,11 @@ final class WindowManager {
         guard isEnabled else { return }
         finishAnimations()
         // Every workspace's windows: the hidden ones come back on screen too.
-        let ordered = spaces.allWindows.compactMap { id in
+        let ordered = displays.flatMap(\.spaces.allWindows).compactMap { id in
             windows[id].flatMap { window in window.element.frame.map { (window, $0) } }
         }
-        let restored = RestorePlanner.restoredFrames(for: ordered.map { ($0.0.id, $0.1) }, in: workspace.viewport)
+        let restored = RestorePlanner.restoredFrames(for: ordered.map { ($0.0.id, $0.1) },
+                                                     displays: displays.map { ($0.frame, $0.spaces.viewport) })
         for (window, _) in ordered {
             if let frame = restored[window.id] { window.element.setFrame(frame) }
         }
@@ -122,7 +201,9 @@ final class WindowManager {
         lastApplied = [:]
         lastObserved = [:]
         pendingReconcile = []
-        spaces = WorkspaceSet(viewport: .zero)
+        displays = [Display(id: "", frame: .zero, spaces: WorkspaceSet(viewport: .zero))]
+        focusedDisplay = 0
+        chosenDisplay = nil
         onChange?()
     }
 
@@ -141,7 +222,7 @@ final class WindowManager {
     private func saveSnapshot() {
         saveWork?.cancel()
         guard isEnabled, let bootTime = Self.bootTime else { return }
-        let snapshot = StripSnapshot(workspaces: spaces, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
+        let snapshot = StripSnapshot(displays: displays.map { ($0.id, $0.spaces) }, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
         self.snapshot = snapshot
         if let data = try? JSONEncoder().encode(snapshot) {
             UserDefaults.standard.set(data, forKey: Self.snapshotKey)
@@ -172,9 +253,11 @@ final class WindowManager {
     func appearanceChanged() {
         guard isEnabled else { return }
         if spaces.settings.gap != Appearance.gap {
-            spaces.settings.gap = Appearance.gap
-            workspace.minimumWidths = [:]
-            workspace.settleScroll()
+            for index in displays.indices {
+                displays[index].spaces.settings.gap = Appearance.gap
+                displays[index].spaces.active.minimumWidths = [:]
+                displays[index].spaces.settleScroll()
+            }
             applyLayout()
         }
         tabBars.invalidate()
@@ -185,6 +268,11 @@ final class WindowManager {
 
     func perform(_ action: Action) {
         guard isEnabled else { return }
+        syncFocusedDisplay()
+        if let command = action.displayCommand {
+            performDisplay(direction: command.direction, movesColumn: command.movesColumn)
+            return
+        }
         if let command = action.workspaceCommand {
             performWorkspace(command.target, movesColumn: command.movesColumn)
             return
@@ -192,10 +280,6 @@ final class WindowManager {
         if action == .toggleFloating {
             toggleFloating()
             return
-        }
-        // Start from the window the user is actually in, in case a notification was missed.
-        if let focused = focusedWindowID(), workspace.strip.contains(focused) {
-            workspace.strip.focus(focused)
         }
         guard workspace.perform(action) else {
             log.debug("\(action.rawValue, privacy: .public): no change. \(self.stripDescription, privacy: .public)")
@@ -217,19 +301,20 @@ final class WindowManager {
         }
         guard let window = windows[id] else { return NSSound.beep() }
 
-        if workspace.strip.contains(id) {
-            workspace.strip.remove(id)
+        if let display = displayIndex(of: id) {
+            displays[display].spaces.remove(id)
             userTiled.remove(id)
             userFloating.insert(id)
             lastApplied[id] = nil
-            workspace.settleScroll()
             applyLayout()
-            window.element.setFrame(floatingFrame(for: window.element))
+            window.element.setFrame(floatingFrame(for: window.element, on: display))
             focus(id)
         } else {
             guard window.element.isSettable(kAXSizeAttribute) else { return NSSound.beep() }
             userFloating.remove(id)
             userTiled.insert(id)
+            // It tiles on the display it floats over.
+            focusedDisplay = displayIndex(onScreen: window.element)
             workspace.strip.insert(id, widthIndex: workspace.settings.defaultWidthIndex)
             workspace.ensureFocusedVisible()
             applyLayout()
@@ -237,9 +322,9 @@ final class WindowManager {
         didChange()
     }
 
-    /// A floated window keeps its size (up to 70% of the screen) and moves to the center.
-    private func floatingFrame(for element: AXUIElement) -> CGRect {
-        let viewport = workspace.viewport
+    /// A floated window keeps its size (up to 70% of the screen) and moves to the center of its display.
+    private func floatingFrame(for element: AXUIElement, on display: Int) -> CGRect {
+        let viewport = displays[display].spaces.viewport
         let current = element.size ?? CGSize(width: viewport.width / 2, height: viewport.height / 2)
         let size = CGSize(width: min(current.width, viewport.width * 0.7), height: min(current.height, viewport.height * 0.7))
         return CGRect(x: (viewport.midX - size.width / 2).rounded(), y: (viewport.midY - size.height / 2).rounded(), width: size.width, height: size.height)
@@ -291,14 +376,20 @@ final class WindowManager {
         })
     }
 
+    /// A display was added, removed, rearranged or resized, or the Dock moved.
     private func screenParametersChanged() {
-        guard isEnabled, let viewport = ScreenGeometry.primaryViewport(), viewport != workspace.viewport else { return }
-        spaces.viewport = viewport
-        workspace.settleScroll()
+        guard isEnabled else { return }
+        let screens = ScreenGeometry.screens()
+        guard !screens.isEmpty, screens.map(\.id) != displays.map(\.id)
+                || zip(screens, displays).contains(where: { $0.frame != $1.frame || $0.viewport != $1.spaces.viewport }) else { return }
+        finishAnimations()
+        updateDisplays()
         lastApplied = [:]
         applyLayout()
-        // The corner hidden windows wait in has moved.
+        // The corners hidden windows wait in have moved.
         hide(inactiveWindows)
+        refreshOverlays()
+        didChange()
     }
 
     private static let appNotifications = [
@@ -337,7 +428,6 @@ final class WindowManager {
         let gone = windows.values.filter { $0.pid == pid }.map(\.id)
         guard !gone.isEmpty else { return }
         gone.forEach(forget)
-        workspace.settleScroll()
         applyLayout()
         syncFocus()
         refreshOverlays()
@@ -367,7 +457,7 @@ final class WindowManager {
             }
             scheduleReassert()
         case kAXTitleChangedNotification:
-            if motions.isEmpty, !isSwiping, workspace.strip.columns.contains(where: \.isTabbed) { refreshTabBars() }
+            if motions.isEmpty, !isSwiping, displays.contains(where: { $0.spaces.active.strip.columns.contains(where: \.isTabbed) }) { refreshTabBars() }
         default:
             scheduleReconcile(pid)
         }
@@ -400,11 +490,12 @@ final class WindowManager {
         let onScreen = onScreenWindowIDs()
         let focusedID = focusedWindowID()
         var changed = false
-        var newTiles: [(id: WindowID, x: CGFloat)] = []
+        var newTiles: [(id: WindowID, x: CGFloat, display: Int)] = []
         // Some apps order windows out without minimizing or hiding (e.g. windows that close on
-        // deactivate); AX still lists them. Treat those as gone, unless the whole strip is off
-        // screen, which means the user switched to another Space.
-        let stripOnScreen = workspace.strip.windows.contains(where: onScreen.contains)
+        // deactivate); AX still lists them. Treat those as gone, unless their display's whole
+        // strip is off screen, which means the user switched that display to another Space.
+        let showing = Set(displays.indices.filter { displays[$0].spaces.active.strip.windows.contains(where: onScreen.contains) })
+        func spaceShowing(_ id: WindowID) -> Bool { displayIndex(of: id).map(showing.contains) ?? !showing.isEmpty }
 
         for pid in pids {
             let app = NSRunningApplication(processIdentifier: pid)
@@ -419,9 +510,11 @@ final class WindowManager {
             }
 
             for window in windows.values where window.pid == pid
-                && (present[window.id] == nil || (stripOnScreen && !onScreen.contains(window.id))) {
+                && (present[window.id] == nil || (!onScreen.contains(window.id) && spaceShowing(window.id))) {
                 // Hidden and minimized windows come back with the same ID; closed ones never do.
-                if let departure = spaces.departure(of: window.id) { departures[window.id] = departure }
+                if let display = displayIndex(of: window.id), let departure = displays[display].spaces.departure(of: window.id) {
+                    departures[window.id] = (displays[display].id, departure)
+                }
                 forget(window.id)
                 changed = true
             }
@@ -432,43 +525,51 @@ final class WindowManager {
                 track(id, pid: pid, element: entry.element)
                 changed = true
                 if shouldTile(id, pid: pid, element: entry.element, kind: entry.kind) {
-                    newTiles.append((id, entry.element.position?.x ?? 0))
+                    newTiles.append((id, entry.element.position?.x ?? 0, displayIndex(onScreen: entry.element)))
                 }
             }
         }
 
         let width = workspace.settings.defaultWidthIndex
         if adopting {
-            let ordered = newTiles.sorted { $0.x < $1.x }.map(\.id)
+            let ordered = newTiles.sorted { $0.x < $1.x }
             if let snapshot {
-                let restored = snapshot.restoreWorkspaces(windows: ordered, widthIndex: width, presetCount: workspace.settings.widthPresets.count)
-                spaces.restore(strips: restored.strips, activeIndex: restored.active)
+                let restored = snapshot.restoreDisplays(windows: ordered.map { ($0.id, displays[$0.display].id) }, displays: displays.map(\.id),
+                                                        widthIndex: width, presetCount: workspace.settings.widthPresets.count)
+                for index in displays.indices {
+                    if let layout = restored[displays[index].id] { displays[index].spaces.restore(strips: layout.strips, activeIndex: layout.active) }
+                }
                 hide(inactiveWindows)
             } else {
-                for id in ordered {
-                    let landed = addTile(id, focus: false, atEnd: true)
-                    if landed != spaces.activeIndex { hide([id]) }
+                for tile in ordered {
+                    let landed = addTile(tile.id, on: tile.display, focus: false, atEnd: true)
+                    if !isActive(landed) { hide([tile.id]) }
                 }
             }
         } else {
             for tile in newTiles.sorted(by: { $0.x < $1.x }) {
-                if let departure = departures.removeValue(forKey: tile.id) {
-                    let landed = spaces.rejoin(tile.id, from: departure, focus: tile.id == focusedID)
-                    if landed != spaces.activeIndex { hide([tile.id]) }
+                if let left = departures.removeValue(forKey: tile.id) {
+                    let display = displays.firstIndex { $0.id == left.display } ?? tile.display
+                    let workspace = displays[display].spaces.rejoin(tile.id, from: left.departure, focus: tile.id == focusedID)
+                    if !isActive((display, workspace)) { hide([tile.id]) }
                 } else {
-                    let landed = addTile(tile.id, focus: tile.id == focusedID, atEnd: false)
-                    if landed != spaces.activeIndex { hide([tile.id]) }
+                    let landed = addTile(tile.id, on: tile.display, focus: tile.id == focusedID, atEnd: false)
+                    if !isActive(landed) { hide([tile.id]) }
                 }
             }
             if departures.count > 500 { departures = [:] }
         }
 
-        if let focusedID, workspace.strip.contains(focusedID) {
-            changed = workspace.strip.focus(focusedID) || changed
-        } else if !adopting, let focusedID, let index = spaces.index(of: focusedID), index != spaces.activeIndex {
-            // A new window a rule sent to another workspace has focus: follow it there.
-            switchWorkspace(to: index, focusing: focusedID)
-            return
+        if let focusedID, let display = displayIndex(of: focusedID) {
+            if displays[display].spaces.active.strip.contains(focusedID) {
+                focusedDisplay = display
+                changed = workspace.strip.focus(focusedID) || changed
+            } else if !adopting, let index = displays[display].spaces.index(of: focusedID) {
+                // A new window a rule sent to another workspace has focus: follow it there.
+                focusedDisplay = display
+                switchWorkspace(to: index, focusing: focusedID)
+                return
+            }
         }
         guard changed || adopting else { return }
         log.debug("reconciled \(pids.count) apps: \(self.stripDescription, privacy: .public)")
@@ -502,17 +603,20 @@ final class WindowManager {
         return saved
     }()
 
-    /// Adds a new tiled window. Its rule comes first; a remembered place fills in what the rule
-    /// leaves open. Otherwise it goes right of the focused column, or at the end when adopting.
-    private func addTile(_ id: WindowID, focus: Bool, atEnd: Bool) -> Int {
+    /// Adds a new tiled window to the display it opened on. Its rule comes first; a remembered
+    /// place (display included) fills in what the rule leaves open. Otherwise it goes right of the
+    /// focused column, or at the end when adopting. Returns the display and workspace it joined.
+    private func addTile(_ id: WindowID, on opened: Int, focus: Bool, atEnd: Bool) -> (display: Int, workspace: Int) {
         let rule = rule(for: id)
-        let presets = workspace.settings.widthPresets.indices
-        let ruleWidth = rule?.widthIndex.flatMap { presets.contains($0) ? $0 : nil }
         let remembered = Self.remembersApps ? bundleID(of: id).flatMap { memory.place(for: $0) } : nil
+        let display = remembered?.display.flatMap { id in displays.firstIndex { $0.id == id } } ?? opened
+        let spaces = displays[display].spaces
+        let presets = spaces.settings.widthPresets.indices
+        let ruleWidth = rule?.widthIndex.flatMap { presets.contains($0) ? $0 : nil }
         let target = rule?.workspace ?? remembered?.workspace ?? spaces.activeIndex
         let shape = ruleWidth == nil ? remembered : nil
         let column = Column(
-            windows: [id], widthIndex: ruleWidth ?? shape?.widthIndex ?? workspace.settings.defaultWidthIndex,
+            windows: [id], widthIndex: ruleWidth ?? shape?.widthIndex ?? spaces.settings.defaultWidthIndex,
             isFullWidth: shape?.isFullWidth ?? false, customWidth: shape?.customWidth
         )
 
@@ -523,13 +627,21 @@ final class WindowManager {
         if index == nil, atEnd, spaces.workspaces.indices.contains(target) {
             index = spaces.workspaces[target].strip.columns.count
         }
-        return spaces.insertColumn(column, workspace: target, at: index, focus: focus)
+        return (display, displays[display].spaces.insertColumn(column, workspace: target, at: index, focus: focus))
+    }
+
+    /// Whether a display's workspace is the one showing there.
+    private func isActive(_ place: (display: Int, workspace: Int)) -> Bool {
+        displays[place.display].spaces.activeIndex == place.workspace
     }
 
     /// Remembers where each app's tiled windows are, once the layout has changed.
     private func rememberPlaces() {
         guard Self.remembersApps else { return }
-        let places = spaces.rememberedPlaces(bundleID: bundleID(of:))
+        var places: [String: RememberedPlace] = [:]
+        for display in displays {
+            places.merge(display.spaces.rememberedPlaces(display: display.id, bundleID: bundleID(of:))) { $1 }
+        }
         guard memory.update(places), let data = try? JSONEncoder().encode(memory) else { return }
         UserDefaults.standard.set(data, forKey: Self.memoryKey)
     }
@@ -568,22 +680,22 @@ final class WindowManager {
             let kind = WindowClassifier.classify(window.element)
             guard kind != .ignored else { continue }
             let tile = shouldTile(window.id, pid: window.pid, element: window.element, kind: kind)
-            let tiled = spaces.index(of: window.id) != nil
-            if tiled, !tile {
-                spaces.remove(window.id)
+            let display = displayIndex(of: window.id)
+            if let display, !tile {
+                displays[display].spaces.remove(window.id)
                 lastApplied[window.id] = nil
                 hiddenWindows.remove(window.id)
-                window.element.setFrame(floatingFrame(for: window.element))
+                window.element.setFrame(floatingFrame(for: window.element, on: display))
                 changed = true
-            } else if !tiled, tile {
+            } else if display == nil, tile {
                 let rule = rules.rule(for: bundleID)
-                let landed = spaces.insert(window.id, widthIndex: widthIndex(for: rule), workspace: rule?.workspace, focus: false)
-                if landed != spaces.activeIndex { hide([window.id]) }
+                let display = displayIndex(onScreen: window.element)
+                let landed = displays[display].spaces.insert(window.id, widthIndex: widthIndex(for: rule), workspace: rule?.workspace, focus: false)
+                if !isActive((display, landed)) { hide([window.id]) }
                 changed = true
             }
         }
         guard changed else { return }
-        workspace.settleScroll()
         applyLayout()
         refreshOverlays()
         didChange()
@@ -599,7 +711,7 @@ final class WindowManager {
     }
 
     private func forget(_ id: WindowID) {
-        spaces.remove(id)
+        if let display = displayIndex(of: id) { displays[display].spaces.remove(id) }
         windows[id] = nil
         userFloating.remove(id)
         userTiled.remove(id)
@@ -636,16 +748,20 @@ final class WindowManager {
         defer { refreshOverlays() }
         guard let id = focusedWindowID() else { return }
         if let lock = focusLock, Date() < lock.until, lock.window != id { return }
-        // ⌘-Tab, the Dock or a click on a notification focused a window on another workspace.
-        if let index = spaces.index(of: id), index != spaces.activeIndex {
-            if let lock = workspaceSwitchLock, Date() < lock { return }
-            switchWorkspace(to: index, focusing: id)
-            return
-        }
-        guard workspace.strip.contains(id) else {
+        guard let display = displayIndex(of: id), let index = displays[display].spaces.index(of: id) else {
             if windows[id] == nil, let pid = focusedWindowElement()?.pid { scheduleReconcile(pid) }
             return
         }
+        // ⌘-Tab, the Dock or a click on a notification focused a window on another workspace.
+        if index != displays[display].spaces.activeIndex {
+            if let lock = workspaceSwitchLock, Date() < lock { return }
+            focusedDisplay = display
+            switchWorkspace(to: index, focusing: id)
+            return
+        }
+        if chosenDisplay?.focus != id { chosenDisplay = nil }
+        if chosenDisplay == nil { focusedDisplay = display }
+        guard focusedDisplay == display else { return }
         workspace.strip.focus(id)
         workspace.ensureFocusedVisible()
         applyLayout()
@@ -677,7 +793,61 @@ final class WindowManager {
     }
 
     private var inactiveWindows: [WindowID] {
-        spaces.workspaces.indices.filter { $0 != spaces.activeIndex }.flatMap { spaces.workspaces[$0].strip.windows }
+        displays.flatMap { display in
+            display.spaces.workspaces.indices.filter { $0 != display.spaces.activeIndex }.flatMap { display.spaces.workspaces[$0].strip.windows }
+        }
+    }
+
+    /// Acts where the user is: on the focused tiled window's display, else on a floating focused
+    /// window's, else on the pointer's. A display chosen with a shortcut stays until focus moves.
+    private func syncFocusedDisplay() {
+        let focused = focusedWindowID()
+        if let chosen = chosenDisplay, chosen.focus == focused, displays.indices.contains(chosen.index) {
+            focusedDisplay = chosen.index
+            return
+        }
+        chosenDisplay = nil
+        if let focused, let display = displayIndex(of: focused), displays[display].spaces.active.strip.contains(focused) {
+            focusedDisplay = display
+            // Start from the window the user is actually in, in case a notification was missed.
+            workspace.strip.focus(focused)
+        } else if let focused, let window = windows[focused] {
+            focusedDisplay = displayIndex(onScreen: window.element)
+        } else {
+            focusedDisplay = pointerDisplay
+        }
+    }
+
+    /// Moves to the next display that way, or sends the focused column there, where it lands
+    /// right of the focused column and keeps focus.
+    private func performDisplay(direction: Int, movesColumn: Bool) {
+        guard let target = DisplayGeometry.neighbour(of: focusedDisplay, direction: direction, in: displayFrames) else { return }
+        if movesColumn {
+            guard let column = workspace.strip.removeFocusedColumn() else { return }
+            workspace.settleScroll()
+            focusedDisplay = target
+            workspace.strip.insert(column)
+            workspace.ensureFocusedVisible()
+            // They jump across rather than slide.
+            for id in column.windows { lastApplied[id] = nil }
+            chosenDisplay = nil
+            log.debug("moved column to display \(target + 1): \(self.stripDescription, privacy: .public)")
+            applyLayout()
+            if let focused = workspace.strip.focusedWindow { focus(focused) }
+            didChange()
+        } else {
+            focusedDisplay = target
+            if let focused = workspace.strip.focusedWindow {
+                chosenDisplay = nil
+                focus(focused)
+            } else {
+                // Nothing to focus there: remember the choice so the next shortcut acts on it.
+                chosenDisplay = (target, focusedWindowID())
+            }
+            refreshOverlays()
+            onChange?()
+            onWorkspaceEvent?(workspace.strip.isEmpty ? "Workspace \(spaces.activeIndex + 1) is empty" : "Workspace \(spaces.activeIndex + 1)")
+        }
     }
 
     private func performWorkspace(_ target: WorkspaceTarget, movesColumn: Bool) {
@@ -717,8 +887,10 @@ final class WindowManager {
 
     // MARK: Overview
 
+    /// The focused display's workspaces.
     func makeOverview() -> Overview? {
         guard isEnabled else { return nil }
+        syncFocusedDisplay()
         return Overview(spaces: spaces)
     }
 
@@ -729,7 +901,9 @@ final class WindowManager {
 
     /// Goes to a window chosen in the overview, switching workspace if needed.
     func focusFromOverview(_ id: WindowID) {
-        guard isEnabled, let index = spaces.index(of: id) else { return }
+        guard isEnabled, let display = displayIndex(of: id), let index = displays[display].spaces.index(of: id) else { return }
+        focusedDisplay = display
+        chosenDisplay = nil
         if index != spaces.activeIndex {
             switchWorkspace(to: index, focusing: id)
             return
@@ -741,22 +915,22 @@ final class WindowManager {
         didChange()
     }
 
-    /// Moves windows to the corner hidden windows wait in, each app's on its own thread.
+    /// Moves windows to the corner hidden windows wait in on their display, each app's on its own thread.
     private func hide(_ ids: [WindowID]) {
-        let origin = workspace.hiddenOrigin
-        var moves: [pid_t: [AXUIElement]] = [:]
+        var moves: [pid_t: [(AXUIElement, CGPoint)]] = [:]
         for id in ids {
             guard let window = windows[id] else { continue }
             motions[id] = nil
             hiddenWindows.insert(id)
             let size = lastApplied[id]?.size ?? window.element.size ?? .zero
-            guard lastApplied[id] != CGRect(origin: origin, size: size) else { continue }
-            lastApplied[id] = CGRect(origin: origin, size: size)
-            moves[window.pid, default: []].append(window.element)
+            let frame = displays[displayIndex(of: id) ?? focusedDisplay].spaces.active.hiddenFrame(size: size)
+            guard lastApplied[id] != frame else { continue }
+            lastApplied[id] = frame
+            moves[window.pid, default: []].append((window.element, frame.origin))
         }
         let groups = Array(moves.values)
         DispatchQueue.concurrentPerform(iterations: groups.count) { index in
-            for element in groups[index] { element.setPosition(origin) }
+            for (element, origin) in groups[index] { element.setPosition(origin) }
         }
     }
 
@@ -789,12 +963,12 @@ final class WindowManager {
         guard isFocusedNow(id, systemFocus: systemFocus) else { return decorations.hide() }
         // A tabbed column's ring takes in its tab bar.
         if let bar = workspace.tabBars().first(where: { $0.activeWindow == id }) { frame = frame.union(bar.frame) }
-        decorations.show(around: id, frame: frame)
+        decorations.show(around: id, frame: frame, screen: displays[focusedDisplay].frame)
     }
 
     private func refreshTabBars(systemFocus: WindowID? = nil) {
         let systemFocus = systemFocus ?? focusedWindowID()
-        let bars = workspace.tabBars().map { bar in
+        let bars = displays.flatMap { $0.spaces.active.tabBars() }.map { bar in
             TabBarOverlay.Bar(
                 frame: bar.frame,
                 tabs: bar.windows.map(tab(for:)),
@@ -820,7 +994,9 @@ final class WindowManager {
 
     /// Switches a tabbed column to the tab clicked in its tab bar.
     private func selectTab(_ id: WindowID) {
-        guard isEnabled, workspace.strip.contains(id) else { return }
+        guard isEnabled, let display = displayIndex(of: id), displays[display].spaces.active.strip.contains(id) else { return }
+        focusedDisplay = display
+        chosenDisplay = nil
         workspace.strip.focus(id)
         workspace.ensureFocusedVisible()
         applyLayout()
@@ -838,7 +1014,8 @@ final class WindowManager {
             }
             return "[" + names.joined(separator: " ") + "]"
         }
-        return columns.joined(separator: " ") + " scroll \(Int(workspace.scrollOffset))"
+        let prefix = displays.count > 1 ? "display \(focusedDisplay + 1): " : ""
+        return prefix + columns.joined(separator: " ") + " scroll \(Int(workspace.scrollOffset))"
     }
 
     // MARK: Applying frames
@@ -849,37 +1026,53 @@ final class WindowManager {
         set { UserDefaults.standard.set(newValue, forKey: "animateWindows") }
     }
 
+    /// Where each window of every display's active workspace goes now. Columns that would park or
+    /// peek across a shared edge onto another display wait hidden instead.
+    private func targets() -> [(display: Int, window: WindowID, frame: CGRect, hidden: Bool)] {
+        let frames = displayFrames
+        return displays.indices.flatMap { index in
+            let workspace = displays[index].spaces.active
+            return workspace.placements().map { placement in
+                if placement.visibility == .hiddenTab { return (index, placement.window, placement.frame, true) }
+                if frames.count > 1, placement.visibility != .visible, DisplayGeometry.showsOnAnother(placement.frame, own: index, in: frames) {
+                    return (index, placement.window, workspace.hiddenFrame(size: placement.frame.size), true)
+                }
+                return (index, placement.window, placement.frame, false)
+            }
+        }
+    }
+
     private func applyLayout(pass: Int = 0, duration: Double = FrameAnimation.defaultDuration) {
         guard isEnabled else { return }
         let animate = Self.animatesWindows
         let now = CACurrentMediaTime()
-        var learnedMinimum = false
-        for placement in workspace.placements() {
-            let id = placement.window
-            let hidden = placement.visibility == .hiddenTab
-            let wasHidden = hidden ? !hiddenWindows.insert(id).inserted : hiddenWindows.remove(id) != nil
-            guard let window = windows[id], lastApplied[id] != placement.frame else { continue }
+        var learnedMinimum: Set<Int> = []
+        for target in targets() {
+            let id = target.window
+            let wasHidden = target.hidden ? !hiddenWindows.insert(id).inserted : hiddenWindows.remove(id) != nil
+            guard let window = windows[id], lastApplied[id] != target.frame else { continue }
             let from = motions[id].map { $0.frame(at: now) }
                 ?? lastApplied[id]
-            lastApplied[id] = placement.frame
+            lastApplied[id] = target.frame
             // Tabs switch in place: sliding in from the corner they wait in would look odd.
-            if animate, !hidden, !wasHidden, let from, FrameAnimation.shouldAnimate(from: from, to: placement.frame, in: workspace.viewport) {
-                if motions[id] == nil || motions[id]?.to.size != placement.frame.size {
+            if animate, !target.hidden, !wasHidden, let from,
+               FrameAnimation.shouldAnimate(from: from, to: target.frame, in: displays[target.display].spaces.viewport) {
+                if motions[id] == nil || motions[id]?.to.size != target.frame.size {
                     // Resize once up front, then only move: see FrameAnimation.frame.
-                    window.element.setSize(placement.frame.size)
+                    window.element.setSize(target.frame.size)
                 }
-                motions[id] = Motion(from: from, to: placement.frame, start: now, duration: duration)
+                motions[id] = Motion(from: from, to: target.frame, start: now, duration: duration)
             } else {
                 motions[id] = nil
-                setFrame(placement.frame, of: window)
-                learnedMinimum = settle(window, at: placement.frame) || learnedMinimum
+                setFrame(target.frame, of: window)
+                if settle(window, at: target.frame) { learnedMinimum.insert(target.display) }
             }
         }
         // Before the first animation step, so the ring is gone before anything moves.
         refreshOverlays()
         if !motions.isEmpty { startAnimationTimer() }
-        if learnedMinimum, pass < 2 {
-            workspace.ensureFocusedVisible()
+        if !learnedMinimum.isEmpty, pass < 2 {
+            for display in learnedMinimum { displays[display].spaces.active.ensureFocusedVisible() }
             applyLayout(pass: pass + 1)
         }
     }
@@ -889,8 +1082,9 @@ final class WindowManager {
     private func settle(_ window: TrackedWindow, at frame: CGRect) -> Bool {
         let actual = window.element.frame
         lastObserved[window.id] = actual
-        guard let actual, actual.width > frame.width + 2, actual.width > workspace.minimumWidths[window.id] ?? 0 else { return false }
-        workspace.minimumWidths[window.id] = actual.width
+        guard let actual, let display = displayIndex(of: window.id), actual.width > frame.width + 2,
+              actual.width > displays[display].spaces.active.minimumWidths[window.id] ?? 0 else { return false }
+        displays[display].spaces.active.minimumWidths[window.id] = actual.width
         return true
     }
 
@@ -898,13 +1092,21 @@ final class WindowManager {
 
     private(set) var isSwiping = false
     private var swipeApplyScheduled = false
+    /// The display a swipe moves: the one under the pointer when it began.
+    private var swipeDisplay = 0
+    private var swipeWorkspace: Workspace {
+        get { displays[swipeDisplay].spaces.active }
+        set { displays[swipeDisplay].spaces.active = newValue }
+    }
 
     /// How far momentum carries the strip after release: seconds of travel at release speed.
     private static let momentum: Double = 0.35
     private static let settleDuration: Double = 0.25
 
     func beginSwipe() {
-        guard isEnabled, !workspace.strip.isEmpty else { return }
+        guard isEnabled else { return }
+        swipeDisplay = pointerDisplay
+        guard !swipeWorkspace.strip.isEmpty else { return }
         finishAnimations()
         isSwiping = true
         refreshOverlays()
@@ -914,8 +1116,8 @@ final class WindowManager {
     /// Moves the strip by `delta` points while the fingers move. Updates are coalesced so a
     /// slow app can't queue up a backlog of frames.
     func swipe(by delta: CGFloat) {
-        guard isSwiping else { return }
-        workspace.scroll(by: delta)
+        guard isSwiping, displays.indices.contains(swipeDisplay) else { return }
+        swipeWorkspace.scroll(by: delta)
         guard !swipeApplyScheduled else { return }
         swipeApplyScheduled = true
         DispatchQueue.main.async { [weak self] in
@@ -929,8 +1131,13 @@ final class WindowManager {
     func endSwipe(velocity: CGFloat) {
         guard isSwiping else { return }
         isSwiping = false
-        let projected = workspace.scrollOffset + velocity * Self.momentum
-        let focusMoved = workspace.settleSwipe(projectedOffset: projected)
+        guard displays.indices.contains(swipeDisplay) else { return }
+        let projected = swipeWorkspace.scrollOffset + velocity * Self.momentum
+        let focusMoved = swipeWorkspace.settleSwipe(projectedOffset: projected)
+        if focusMoved {
+            focusedDisplay = swipeDisplay
+            chosenDisplay = nil
+        }
         log.debug("swipe ended at velocity \(Int(velocity)) pt/s: \(self.stripDescription, privacy: .public)")
         applyLayout(duration: Self.settleDuration)
         if focusMoved, let target = workspace.strip.focusedWindow { focus(target) }
@@ -941,15 +1148,16 @@ final class WindowManager {
     private func applyLayoutImmediately() {
         var resized: [(TrackedWindow, CGRect)] = []
         var moves: [pid_t: [(AXUIElement, CGPoint)]] = [:]
-        for placement in workspace.placements() {
-            guard let window = windows[placement.window], let previous = lastApplied[placement.window],
-                  previous != placement.frame else { continue }
-            lastApplied[placement.window] = placement.frame
-            lastObserved[placement.window] = placement.frame
-            if previous.size == placement.frame.size {
-                moves[window.pid, default: []].append((window.element, placement.frame.origin))
+        for target in targets() where target.display == swipeDisplay {
+            if target.hidden { hiddenWindows.insert(target.window) } else { hiddenWindows.remove(target.window) }
+            guard let window = windows[target.window], let previous = lastApplied[target.window],
+                  previous != target.frame else { continue }
+            lastApplied[target.window] = target.frame
+            lastObserved[target.window] = target.frame
+            if previous.size == target.frame.size {
+                moves[window.pid, default: []].append((window.element, target.frame.origin))
             } else {
-                resized.append((window, placement.frame))
+                resized.append((window, target.frame))
             }
         }
         let groups = Array(moves.values)
@@ -966,9 +1174,10 @@ final class WindowManager {
     /// Moves the strip by mouse-wheel notches (positive: content moves right). Ticks that follow
     /// each other form one gesture; the strip snaps to a column once they stop.
     func scrollWheel(notches: Double) {
-        guard isEnabled, !workspace.strip.isEmpty else { return }
+        guard isEnabled else { return }
         if !isSwiping { beginSwipe() }
-        swipe(by: -CGFloat(notches) * workspace.viewport.width * Self.wheelNotchFraction)
+        guard isSwiping else { return }
+        swipe(by: -CGFloat(notches) * swipeWorkspace.viewport.width * Self.wheelNotchFraction)
         wheelSnapWork?.cancel()
         let work = DispatchWorkItem { [weak self] in self?.endSwipe(velocity: 0) }
         wheelSnapWork = work
@@ -1032,18 +1241,18 @@ final class WindowManager {
             for (element, origin) in groups[index] { element.setPosition(origin) }
         }
 
-        var learnedMinimum = false
+        var learnedMinimum: Set<Int> = []
         for (window, frame) in finished {
             setFrame(frame, of: window)
-            learnedMinimum = settle(window, at: frame) || learnedMinimum
+            if settle(window, at: frame), let display = displayIndex(of: window.id) { learnedMinimum.insert(display) }
         }
         if motions.isEmpty {
             animationTimer?.invalidate()
             animationTimer = nil
             refreshOverlays()
         }
-        if learnedMinimum {
-            workspace.ensureFocusedVisible()
+        if !learnedMinimum.isEmpty {
+            for display in learnedMinimum { displays[display].spaces.active.ensureFocusedVisible() }
             applyLayout(pass: 1)
         }
     }
@@ -1086,18 +1295,31 @@ final class WindowManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
     }
 
-    /// Puts a window the user dragged and released into the column under the pointer: on a tab bar
-    /// it becomes a tab there, on another window it stacks into that window's column. Returns false
-    /// when it was dropped anywhere else, so it snaps back.
+    /// Puts a window the user dragged and released where it was dropped: on a tab bar it becomes a
+    /// tab there, on another window it stacks into that window's column, on another display it
+    /// joins that display's strip near the pointer. Returns false when it was dropped anywhere
+    /// else, so it snaps back.
     private func drop(_ id: WindowID) -> Bool {
         guard isEnabled, windows[id] != nil, !userResized.contains(id), !hiddenWindows.contains(id) else { return false }
         let point = ScreenGeometry.axPoint(fromCocoa: NSEvent.mouseLocation)
-        guard let target = workspace.dropTarget(at: point, dragging: id) else { return false }
+        let home = displayIndex(of: id)
+        guard let (display, target) = displays.indices.lazy.compactMap({ index in
+            self.displays[index].spaces.active.dropTarget(at: point, dragging: id).map { (index, $0) }
+        }).first else {
+            if let home, let to = DisplayGeometry.display(at: point, in: displayFrames), to != home,
+               displays[to].spaces.viewport.contains(point) {
+                moveToDisplay(id, from: home, to: to, x: point.x)
+                return true
+            }
+            return false
+        }
+        focusedDisplay = display
+        chosenDisplay = nil
         guard let targetColumn = workspace.strip.location(of: target)?.column,
               workspace.strip.location(of: id)?.column != targetColumn else { return false }
 
         // A floating window dropped on a tile joins the tiles.
-        spaces.remove(id)
+        if let home { displays[home].spaces.remove(id) }
         userFloating.remove(id)
         userTiled.insert(id)
         guard workspace.strip.join(id, columnOf: target) else {
@@ -1113,29 +1335,49 @@ final class WindowManager {
         return true
     }
 
+    /// Moves a tiled window dragged to another display into that display's strip, as its own
+    /// column near where it was dropped.
+    private func moveToDisplay(_ id: WindowID, from: Int, to: Int, x: CGFloat) {
+        let departure = displays[from].spaces.departure(of: id)
+        displays[from].spaces.remove(id)
+        focusedDisplay = to
+        chosenDisplay = nil
+        let column = Column(windows: [id], widthIndex: departure?.widthIndex ?? workspace.settings.defaultWidthIndex,
+                            isFullWidth: departure?.isFullWidth ?? false)
+        workspace.strip.insert(column, at: workspace.dropIndex(atX: x), focus: true)
+        workspace.ensureFocusedVisible()
+        lastApplied[id] = nil
+        log.debug("moved \(id) to display \(to + 1): \(self.stripDescription, privacy: .public)")
+        applyLayout()
+        focus(id)
+        didChange()
+    }
+
     /// A window the user dragged snaps back to its slot. One the user resized keeps its new
     /// width: its column takes that width and the strip reflows around it.
     private func reassert() {
         var moved = false
         var resized = false
         defer { userResized = [] }
-        for id in workspace.strip.windows {
-            guard let window = windows[id], let actual = window.element.frame else { continue }
-            if userResized.contains(id), !hiddenWindows.contains(id), let applied = lastApplied[id], abs(actual.width - applied.width) > 2,
-               let (column, _) = workspace.strip.location(of: id) {
-                workspace.strip.setCustomWidth(actual.width, forColumnOf: id)
-                for sibling in workspace.strip.columns[column].windows { lastApplied[sibling] = nil }
-                resized = true
+        for display in displays.indices {
+            for id in displays[display].spaces.active.strip.windows {
+                guard let window = windows[id], let actual = window.element.frame else { continue }
+                if userResized.contains(id), !hiddenWindows.contains(id), let applied = lastApplied[id], abs(actual.width - applied.width) > 2,
+                   let (column, _) = displays[display].spaces.active.strip.location(of: id) {
+                    displays[display].spaces.active.strip.setCustomWidth(actual.width, forColumnOf: id)
+                    for sibling in displays[display].spaces.active.strip.columns[column].windows { lastApplied[sibling] = nil }
+                    displays[display].spaces.active.ensureFocusedVisible()
+                    resized = true
+                    moved = true
+                    continue
+                }
+                if let observed = lastObserved[id], Self.roughlyEqual(observed, actual) { continue }
+                lastApplied[id] = nil
                 moved = true
-                continue
             }
-            if let observed = lastObserved[id], Self.roughlyEqual(observed, actual) { continue }
-            lastApplied[id] = nil
-            moved = true
         }
         if resized {
             log.debug("adopted a resized width: \(self.stripDescription, privacy: .public)")
-            workspace.ensureFocusedVisible()
         }
         if moved { applyLayout() }
         refreshOverlays()

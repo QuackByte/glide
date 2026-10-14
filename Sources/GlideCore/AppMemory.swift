@@ -2,6 +2,8 @@ import CoreGraphics
 
 /// Where an app's window was on the strip, so it opens there again.
 public struct RememberedPlace: Codable, Equatable, Sendable {
+    /// The ID of the display it was on; nil in places remembered before Glide tiled every display.
+    public var display: String?
     public var workspace: Int
     public var widthIndex: Int
     public var isFullWidth: Bool
@@ -9,7 +11,8 @@ public struct RememberedPlace: Codable, Equatable, Sendable {
     /// The app whose column was just left of this one. nil means it was the first column.
     public var leftNeighbour: String?
 
-    public init(workspace: Int, widthIndex: Int, isFullWidth: Bool, customWidth: CGFloat?, leftNeighbour: String?) {
+    public init(display: String? = nil, workspace: Int, widthIndex: Int, isFullWidth: Bool, customWidth: CGFloat?, leftNeighbour: String?) {
+        self.display = display
         self.workspace = workspace
         self.widthIndex = widthIndex
         self.isFullWidth = isFullWidth
@@ -53,8 +56,9 @@ extension Strip {
 }
 
 extension WorkspaceSet {
-    /// The place of each app with a tiled window, for remembering. `bundleID` names a window's app.
-    public func rememberedPlaces(bundleID: (WindowID) -> String?) -> [String: RememberedPlace] {
+    /// The place of each app with a tiled window, for remembering. `bundleID` names a window's app;
+    /// `display` is the ID of the display these workspaces are on.
+    public func rememberedPlaces(display: String? = nil, bundleID: (WindowID) -> String?) -> [String: RememberedPlace] {
         var places: [String: RememberedPlace] = [:]
         for (index, workspace) in workspaces.enumerated() {
             let columns = workspace.strip.columns
@@ -63,7 +67,7 @@ extension WorkspaceSet {
                 for window in column.windows {
                     guard let app = bundleID(window) else { continue }
                     places[app] = RememberedPlace(
-                        workspace: index, widthIndex: column.widthIndex, isFullWidth: column.isFullWidth,
+                        display: display, workspace: index, widthIndex: column.widthIndex, isFullWidth: column.isFullWidth,
                         customWidth: column.customWidth, leftNeighbour: leftNeighbour
                     )
                 }

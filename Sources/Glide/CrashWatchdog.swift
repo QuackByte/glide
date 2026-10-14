@@ -61,7 +61,8 @@ enum CrashWatchdog {
     /// Moves every standard window that is off screen back on, like turning tiling off does.
     /// Windows in the saved layout come first so they cascade in strip order.
     private static func restoreWindows() {
-        guard let viewport = ScreenGeometry.primaryViewport() else { return }
+        let screens = ScreenGeometry.screens()
+        guard !screens.isEmpty else { return }
         AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 1)
         let ownPID = ProcessInfo.processInfo.processIdentifier
         var found: [WindowID: (element: AXUIElement, frame: CGRect)] = [:]
@@ -76,7 +77,7 @@ enum CrashWatchdog {
             .flatMap { try? JSONDecoder().decode(StripSnapshot.self, from: $0) }
         let savedOrder = saved?.allWindows ?? []
         let ordered = savedOrder.filter { found[$0] != nil } + found.keys.filter { !savedOrder.contains($0) }.sorted()
-        let restored = RestorePlanner.restoredFrames(for: ordered.map { ($0, found[$0]!.frame) }, in: viewport)
+        let restored = RestorePlanner.restoredFrames(for: ordered.map { ($0, found[$0]!.frame) }, displays: screens.map { ($0.frame, $0.viewport) })
         for id in ordered {
             if let frame = restored[id], frame != found[id]?.frame { found[id]?.element.setFrame(frame) }
         }

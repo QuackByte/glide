@@ -1,6 +1,7 @@
 /// Which shortcut triggers which action: the defaults plus any user overrides.
 public struct Keymap: Equatable, Sendable {
-    /// Defaults are ⌃⌥ for focus/commands and ⌃⌥⇧ for "move". See the README for the reasoning.
+    /// Defaults are ⌃⌥ for focus/commands and ⌃⌥⇧ for "move", plus ⌘ for displays. See the README
+    /// for the reasoning.
     public static let defaults: [Action: KeyCombo] = {
         let hyper: KeyModifiers = [.control, .option]
         let move: KeyModifiers = [.control, .option, .shift]
@@ -29,6 +30,10 @@ public struct Keymap: Equatable, Sendable {
             .focusNextWorkspace: KeyCombo(KeyCode.pageDown, hyper),
             .moveColumnToPreviousWorkspace: KeyCombo(KeyCode.pageUp, move),
             .moveColumnToNextWorkspace: KeyCombo(KeyCode.pageDown, move),
+            .focusDisplayLeft: KeyCombo(KeyCode.leftArrow, hyper.union(.command)),
+            .focusDisplayRight: KeyCombo(KeyCode.rightArrow, hyper.union(.command)),
+            .moveColumnToDisplayLeft: KeyCombo(KeyCode.leftArrow, move.union(.command)),
+            .moveColumnToDisplayRight: KeyCombo(KeyCode.rightArrow, move.union(.command)),
         ]
         // ⌃⌥1…9 switch workspaces; ⌃⌥⇧1…9 send the focused column there.
         for (index, key) in KeyCode.digits.enumerated() {
