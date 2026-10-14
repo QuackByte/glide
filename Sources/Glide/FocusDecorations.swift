@@ -6,6 +6,7 @@ enum Appearance {
     private static var defaults: UserDefaults { .standard }
 
     static let gapRange: ClosedRange<CGFloat> = 0...40
+    static let focusRingWidthRange: ClosedRange<CGFloat> = 1...12
     static let dimRange: ClosedRange<Double> = 0.1...0.7
 
     /// Space between columns, stacked windows and the screen edge.
@@ -17,6 +18,12 @@ enum Appearance {
     static var showsFocusRing: Bool {
         get { defaults.object(forKey: "focusRing") as? Bool ?? true }
         set { defaults.set(newValue, forKey: "focusRing") }
+    }
+
+    /// Thickness of the focus ring in points.
+    static var focusRingWidth: CGFloat {
+        get { (defaults.object(forKey: "focusRingWidth") as? Double).map { min(max(CGFloat($0), focusRingWidthRange.lowerBound), focusRingWidthRange.upperBound) } ?? 4 }
+        set { defaults.set(Double(newValue), forKey: "focusRingWidth") }
     }
 
     /// nil follows the system accent color.
@@ -57,7 +64,6 @@ enum Appearance {
 /// The ring only appears once windows are at rest. Each app redraws a moved window on its own
 /// schedule, so an overlay moved alongside drifts hundreds of points off mid-animation.
 final class FocusDecorations {
-    static let ringWidth: CGFloat = 4
     /// Roughly the corner radius of a standard macOS window.
     static let windowCornerRadius: CGFloat = 16
 
@@ -71,12 +77,13 @@ final class FocusDecorations {
     func show(around window: WindowID, frame: CGRect) {
         target = window
         if Appearance.showsFocusRing {
+            let width = Appearance.focusRingWidth
             let layer = ring.contentView?.layer
-            layer?.borderWidth = Self.ringWidth
+            layer?.borderWidth = width
             layer?.borderColor = (Appearance.focusRingColor ?? .controlAccentColor).cgColor
-            layer?.cornerRadius = Self.windowCornerRadius + Self.ringWidth
+            layer?.cornerRadius = Self.windowCornerRadius + width
             layer?.cornerCurve = .continuous
-            ring.setFrame(ScreenGeometry.cocoa(frame).insetBy(dx: -Self.ringWidth, dy: -Self.ringWidth), display: true)
+            ring.setFrame(ScreenGeometry.cocoa(frame).insetBy(dx: -width, dy: -width), display: true)
             ring.order(.above, relativeTo: Int(window))
             if !ringShown {
                 ringShown = true
