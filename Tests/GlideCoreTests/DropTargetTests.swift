@@ -30,4 +30,23 @@ final class DropTargetTests: XCTestCase {
         let ws = workspace()
         XCTAssertNil(ws.dropTarget(at: CGPoint(x: 500, y: 400), dragging: 9), "The gap between columns")
     }
+
+    func testHighlightCoversTheTargetColumn() {
+        let ws = workspace()
+        // The first column: its one window, inside the gaps.
+        XCTAssertEqual(ws.columnFrame(containing: 1), CGRect(x: 12, y: 12, width: 482, height: 776))
+        // The tabbed column: its tab bar and the active tab under it.
+        XCTAssertEqual(ws.columnFrame(containing: 2), CGRect(x: 506, y: 12, width: 482, height: 776))
+        XCTAssertNil(ws.columnFrame(containing: 9))
+    }
+
+    func testInsertionBarSitsInTheGap() {
+        let ws = workspace()
+        // Between the two columns: the gap runs from 494 to 506.
+        XCTAssertEqual(ws.insertionFrame(at: 1).midX, 500)
+        // Before the first column and after the last, kept on screen.
+        XCTAssertEqual(ws.insertionFrame(at: 0).midX, 6)
+        XCTAssertEqual(ws.insertionFrame(at: 2).midX, 994)
+    }
 }
+

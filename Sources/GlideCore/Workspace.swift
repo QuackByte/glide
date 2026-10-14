@@ -320,6 +320,28 @@ public struct Workspace: Equatable, Sendable {
         }?.window
     }
 
+    /// Where a window dropped on `target` would go, to highlight while dragging: the tab bar
+    /// with the window under it when `target`'s column is tabbed, else the whole column on screen.
+    public func columnFrame(containing target: WindowID) -> CGRect? {
+        guard let column = strip.location(of: target)?.column else { return nil }
+        let windows = Set(strip.columns[column].windows)
+        var frame = placements()
+            .filter { windows.contains($0.window) && ($0.visibility == .visible || $0.visibility == .partial) }
+            .map(\.frame).reduce(CGRect.null) { $0.union($1) }
+        if let bar = tabBars().first(where: { $0.column == column }) { frame = frame.union(bar.frame) }
+        return frame.isNull ? nil : frame.intersection(viewport)
+    }
+
+    /// A slim bar in the gap where a column inserted at `index` would go, for a drop between columns.
+    public func insertionFrame(at index: Int, thickness: CGFloat = 4) -> CGRect {
+        let offsets = columnOffsets()
+        let edge = index < offsets.count ? offsets[index] : contentWidth + settings.gap
+        let x = viewport.minX + settings.gap + edge - scrollOffset - settings.gap / 2
+        let clamped = min(max(x, viewport.minX + thickness / 2), viewport.maxX - thickness / 2)
+        return CGRect(x: (clamped - thickness / 2).rounded(), y: viewport.minY + settings.gap,
+                      width: thickness, height: max(viewport.height - 2 * settings.gap, 0))
+    }
+
     /// A column's left edge on screen, and whether it is visible or parked at an edge.
     private func position(ofColumn index: Int) -> (x: CGFloat, visibility: Visibility) {
         let width = width(ofColumn: index)

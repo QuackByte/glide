@@ -82,6 +82,9 @@ final class WindowManager {
     private var userResized: Set<WindowID> = []
     /// The window the user is dragging with the mouse, until they let go.
     private var draggedWindow: WindowID?
+    /// Shows where the dragged window would land, while the mouse is down.
+    private let dropHighlight = DropHighlight()
+    private var dropHighlightTimer: Timer?
 
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
     var rules = AppRules()
@@ -180,6 +183,9 @@ final class WindowManager {
         }
 
         saveSnapshot()
+        dropHighlightTimer?.invalidate()
+        dropHighlightTimer = nil
+        dropHighlight.hide()
         decorations.hide()
         tabBars.hide()
         hiddenWindows = []
@@ -450,6 +456,7 @@ final class WindowManager {
             if notification == kAXWindowMovedNotification, NSEvent.pressedMouseButtons != 0, let id = element.windowID,
                motions[id] == nil, element.position != lastApplied[id]?.origin {
                 draggedWindow = id
+                startDropHighlight()
             }
             if NSEvent.pressedMouseButtons != 0, element.windowID == decorations.target {
                 decorations.hide()
@@ -1295,31 +1302,85 @@ final class WindowManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
     }
 
-    /// Puts a window the user dragged and released where it was dropped: on a tab bar it becomes a
-    /// tab there, on another window it stacks into that window's column, on another display it
-    /// joins that display's strip near the pointer. Returns false when it was dropped anywhere
-    /// else, so it snaps back.
-    private func drop(_ id: WindowID) -> Bool {
-        guard isEnabled, windows[id] != nil, !userResized.contains(id), !hiddenWindows.contains(id) else { return false }
-        let point = ScreenGeometry.axPoint(fromCocoa: NSEvent.mouseLocation)
-        let home = displayIndex(of: id)
-        guard let (display, target) = displays.indices.lazy.compactMap({ index in
-            self.displays[index].spaces.active.dropTarget(at: point, dragging: id).map { (index, $0) }
-        }).first else {
-            if let home, let to = DisplayGeometry.display(at: point, in: displayFrames), to != home,
-               displays[to].spaces.viewport.contains(point) {
-                moveToDisplay(id, from: home, to: to, x: point.x)
-                return true
-            }
-            return false
-        }
-        focusedDisplay = display
-        chosenDisplay = nil
-        guard let targetColumn = workspace.strip.location(of: target)?.column,
-              workspace.strip.location(of: id)?.column != targetColumn else { return false }
+    /// What letting go of a dragged window at `point` does.
+    private enum DropPlan {
+        /// Joins `target`'s column: as a tab on a tabbed column, else at the bottom of the stack.
+        case join(display: Int, target: WindowID)
+        /// A tiled window joins another display's strip, as its own column near `x`.
+        case moveToDisplay(from: Int, to: Int, x: CGFloat)
+    }
 
+    /// On a tab bar or another window, the window joins that column; on another display, it joins
+    /// that display's strip. nil when it would snap back, including over its own column.
+    private func dropPlan(for id: WindowID, at point: CGPoint) -> DropPlan? {
+        guard isEnabled, windows[id] != nil, !userResized.contains(id), !hiddenWindows.contains(id) else { return nil }
+        let home = displayIndex(of: id)
+        if let (display, target) = displays.indices.lazy.compactMap({ index in
+            self.displays[index].spaces.active.dropTarget(at: point, dragging: id).map { (index, $0) }
+        }).first {
+            let strip = displays[display].spaces.active.strip
+            guard let targetColumn = strip.location(of: target)?.column, strip.location(of: id)?.column != targetColumn else { return nil }
+            return .join(display: display, target: target)
+        }
+        if let home, let to = DisplayGeometry.display(at: point, in: displayFrames), to != home, displays[to].spaces.viewport.contains(point) {
+            return .moveToDisplay(from: home, to: to, x: point.x)
+        }
+        return nil
+    }
+
+    /// Follows the pointer while a window is dragged, highlighting where it would land.
+    private func startDropHighlight() {
+        guard dropHighlightTimer == nil else { return }
+        let timer = Timer(timeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.updateDropHighlight() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        dropHighlightTimer = timer
+        updateDropHighlight()
+    }
+
+    private func updateDropHighlight() {
+        guard isEnabled, let id = draggedWindow, NSEvent.pressedMouseButtons != 0 else {
+            dropHighlightTimer?.invalidate()
+            dropHighlightTimer = nil
+            dropHighlight.hide()
+            return
+        }
+        let point = ScreenGeometry.axPoint(fromCocoa: NSEvent.mouseLocation)
+        switch dropPlan(for: id, at: point) {
+        case .join(let display, let target):
+            guard let frame = displays[display].spaces.active.columnFrame(containing: target) else { return dropHighlight.hide() }
+            dropHighlight.show(frame)
+        case .moveToDisplay(_, let to, let x):
+            let workspace = displays[to].spaces.active
+            let gap = workspace.settings.gap
+            dropHighlight.show(workspace.strip.isEmpty ? workspace.viewport.insetBy(dx: gap, dy: gap)
+                                                       : workspace.insertionFrame(at: workspace.dropIndex(atX: x)))
+        case nil:
+            dropHighlight.hide()
+        }
+    }
+
+    /// Puts a window the user dragged and released where it was dropped (see `dropPlan`). Returns
+    /// false when it was dropped anywhere else, so it snaps back.
+    private func drop(_ id: WindowID) -> Bool {
+        let point = ScreenGeometry.axPoint(fromCocoa: NSEvent.mouseLocation)
+        switch dropPlan(for: id, at: point) {
+        case nil:
+            return false
+        case .moveToDisplay(let from, let to, let x):
+            moveToDisplay(id, from: from, to: to, x: x)
+            return true
+        case .join(let display, let target):
+            focusedDisplay = display
+            chosenDisplay = nil
+            return join(id, columnOf: target)
+        }
+    }
+
+    private func join(_ id: WindowID, columnOf target: WindowID) -> Bool {
         // A floating window dropped on a tile joins the tiles.
-        if let home { displays[home].spaces.remove(id) }
+        if let home = displayIndex(of: id) { displays[home].spaces.remove(id) }
         userFloating.remove(id)
         userTiled.insert(id)
         guard workspace.strip.join(id, columnOf: target) else {
