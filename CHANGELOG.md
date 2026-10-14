@@ -2,6 +2,12 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it.
 
+## 0.4.0 — 2026-10-14
+
+### New
+
+- **See where a dragged window will land.** While you drag a window, an outline in the focus ring color shows the column it would join, tab bar included. Over another display, a bar shows where it would go between that display's columns. No highlight means it will snap back.
+
 ## 0.3.0 — 2026-10-14
 
 ### New
