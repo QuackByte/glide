@@ -109,11 +109,10 @@ The checked-in Xcode project is generated from [`project.yml`](project.yml) with
 
 ### Releasing
 
-Push a tag like `v0.2.0` on `main`. `.github/workflows/ci-release.yml` builds, signs with the Developer ID, notarizes, and publishes a release with `Glide-<version>-macOS.zip` and the `appcast.xml` that existing copies update from. It needs a `release` environment with:
+Push a tag like `v0.2.0` on `main`. `.github/workflows/ci-release.yml` builds, signs with the Developer ID, notarizes, and publishes a release with `Glide-<version>-macOS.zip` and the `appcast.xml` that existing copies update from. It uses:
 
-- Variables `ASC_KEY_ID` and `ASC_ISSUER_ID`, and secret `ASC_PRIVATE_KEY` (App Store Connect API key, for notarization).
-- Secrets `DEVELOPER_ID_P12_BASE64` and `DEVELOPER_ID_P12_PASSWORD` (the Developer ID Application certificate).
-- Secret `SPARKLE_PRIVATE_KEY`: Sparkle's EdDSA private key, kept in the maintainer's login keychain under the account `dev.quackbyte.glide`. Export it with Sparkle's `generate_keys --account dev.quackbyte.glide -x <file>`. If it's lost, existing copies can't verify updates any more, so keep a backup.
+- QuackByte organization secrets shared with this repository: `APPLE_API_KEY_ID`, `APPLE_API_ISSUER` and `APPLE_API_KEY_P8` (base64; App Store Connect API key, for notarization), and `MAC_CSC_LINK` and `MAC_CSC_KEY_PASSWORD` (the Developer ID Application certificate as base64 .p12, and its password).
+- Repository secret `SPARKLE_PRIVATE_KEY`: Sparkle's EdDSA private key, kept in the maintainer's login keychain under the account `dev.quackbyte.glide`. Export it with Sparkle's `generate_keys --account dev.quackbyte.glide -x <file>`. If it's lost, existing copies can't verify updates any more, so keep a backup.
 
 Debug logging of the strip after every action: `log stream --level debug --predicate 'subsystem == "dev.quackbyte.glide"'`.
 

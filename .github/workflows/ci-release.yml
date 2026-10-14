@@ -45,12 +45,11 @@ jobs:
     concurrency:
       group: release-${{ github.ref }}
       cancel-in-progress: false
+    # Apple credentials are QuackByte organization secrets shared with this repository.
     env:
-      ASC_KEY_ID: ${{ vars.ASC_KEY_ID }}
-      ASC_ISSUER_ID: ${{ vars.ASC_ISSUER_ID }}
-      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      ASC_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER }}
       GH_TOKEN: ${{ github.token }}
-      IDENTITY: F1626DEC4B4687725ABD9D28165CA6F52B9E38F9
     steps:
       - uses: actions/checkout@v7
         with:
@@ -58,6 +57,8 @@ jobs:
           persist-credentials: false
       - name: Check tag and prepare Apple key
         shell: bash
+        env:
+          ASC_PRIVATE_KEY: ${{ secrets.APPLE_API_KEY_P8 }}
         run: |
           set -euo pipefail
           [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
@@ -66,8 +67,14 @@ jobs:
           test -n "$ASC_KEY_ID"
           test -n "$ASC_ISSUER_ID"
           test -n "$ASC_PRIVATE_KEY"
-          printf '%s' "$ASC_PRIVATE_KEY" > "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
-          chmod 600 "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          key="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          # Stored base64-encoded; accept the plain .p8 too.
+          if [[ "$ASC_PRIVATE_KEY" == -----BEGIN* ]]; then
+            printf '%s\n' "$ASC_PRIVATE_KEY" > "$key"
+          else
+            printf '%s' "$ASC_PRIVATE_KEY" | base64 -D > "$key"
+          fi
+          chmod 600 "$key"
       - name: Archive unsigned app
         shell: bash
         run: |
@@ -83,8 +90,8 @@ jobs:
       - name: Sign with Developer ID certificate
         shell: bash
         env:
-          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
-          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          DEVELOPER_ID_P12_BASE64: ${{ secrets.MAC_CSC_LINK }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
         run: |
           set -euo pipefail
           test -n "$DEVELOPER_ID_P12_BASE64"
@@ -102,11 +109,12 @@ jobs:
             -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security > /dev/null
           security set-key-partition-list -S apple-tool:,apple: -s \
             -k "$keychain_password" "$keychain" > /dev/null
-          security find-identity -v -p codesigning "$keychain" | grep -q "$IDENTITY"
+          identity="$(security find-identity -v -p codesigning "$keychain" | awk '/Developer ID Application/ { print $2; exit }')"
+          test -n "$identity"
           mkdir -p "$RUNNER_TEMP/Export"
           app="$RUNNER_TEMP/Export/Glide.app"
           ditto "$RUNNER_TEMP/Glide.xcarchive/Products/Applications/Glide.app" "$app"
-          sign() { codesign --force --options runtime --timestamp --sign "$IDENTITY" --keychain "$keychain" "$@"; }
+          sign() { codesign --force --options runtime --timestamp --sign "$identity" --keychain "$keychain" "$@"; }
           # Inside out: Sparkle's helpers, the frameworks, then the app (Sparkle's documented order).
           sparkle="$app/Contents/Frameworks/Sparkle.framework"
           sign "$sparkle/Versions/B/XPCServices/Installer.xpc"
