@@ -137,4 +137,10 @@ enum ScreenGeometry {
         let height = NSScreen.screens.first?.frame.maxY ?? 0
         return CGRect(x: rect.minX, y: height - rect.maxY, width: rect.width, height: rect.height)
     }
+
+    /// Converts a point in Cocoa screen coordinates to AX coordinates.
+    static func axPoint(fromCocoa point: CGPoint) -> CGPoint {
+        let height = NSScreen.screens.first?.frame.maxY ?? 0
+        return CGPoint(x: point.x, y: height - point.y)
+    }
 }

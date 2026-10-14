@@ -55,6 +55,8 @@ final class WindowManager {
     private var departures: [WindowID: WorkspaceSet.Departure] = [:]
     /// Tiled windows the user resized with the mouse since the last snap-back.
     private var userResized: Set<WindowID> = []
+    /// The window the user is dragging with the mouse, until they let go.
+    private var draggedWindow: WindowID?
 
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
     var rules = AppRules()
@@ -353,6 +355,11 @@ final class WindowManager {
             // The ring can't follow a drag smoothly; hide it until the window snaps back.
             if notification == kAXWindowResizedNotification, NSEvent.pressedMouseButtons != 0, let id = element.windowID {
                 userResized.insert(id)
+            }
+            // A move while the mouse is down that Glide didn't make is the user dragging the window.
+            if notification == kAXWindowMovedNotification, NSEvent.pressedMouseButtons != 0, let id = element.windowID,
+               motions[id] == nil, element.position != lastApplied[id]?.origin {
+                draggedWindow = id
             }
             if NSEvent.pressedMouseButtons != 0, element.windowID == decorations.target {
                 decorations.hide()
@@ -1069,10 +1076,41 @@ final class WindowManager {
                 scheduleReassert()
                 return
             }
+            if let dragged = draggedWindow {
+                draggedWindow = nil
+                if drop(dragged) { return }
+            }
             reassert()
         }
         reassertWork = work
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
+    }
+
+    /// Puts a window the user dragged and released into the column under the pointer: on a tab bar
+    /// it becomes a tab there, on another window it stacks into that window's column. Returns false
+    /// when it was dropped anywhere else, so it snaps back.
+    private func drop(_ id: WindowID) -> Bool {
+        guard isEnabled, windows[id] != nil, !userResized.contains(id), !hiddenWindows.contains(id) else { return false }
+        let point = ScreenGeometry.axPoint(fromCocoa: NSEvent.mouseLocation)
+        guard let target = workspace.dropTarget(at: point, dragging: id) else { return false }
+        guard let targetColumn = workspace.strip.location(of: target)?.column,
+              workspace.strip.location(of: id)?.column != targetColumn else { return false }
+
+        // A floating window dropped on a tile joins the tiles.
+        spaces.remove(id)
+        userFloating.remove(id)
+        userTiled.insert(id)
+        guard workspace.strip.join(id, columnOf: target) else {
+            spaces.insert(id, widthIndex: workspace.settings.defaultWidthIndex, focus: false)
+            return false
+        }
+        lastApplied[id] = nil
+        log.debug("dropped \(id) onto \(target): \(self.stripDescription, privacy: .public)")
+        workspace.settleScroll()
+        applyLayout()
+        focus(id)
+        didChange()
+        return true
     }
 
     /// A window the user dragged snaps back to its slot. One the user resized keeps its new
