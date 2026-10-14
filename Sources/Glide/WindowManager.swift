@@ -129,6 +129,7 @@ final class WindowManager {
     // MARK: Persistence
 
     private func didChange() {
+        rememberPlaces()
         onChange?()
         // Saved shortly after changes too, so a crash doesn't lose the layout.
         saveWork?.cancel()
@@ -445,13 +446,8 @@ final class WindowManager {
                 hide(inactiveWindows)
             } else {
                 for id in ordered {
-                    let rule = rule(for: id)
-                    if let target = rule?.workspace, target != spaces.activeIndex {
-                        spaces.insert(id, widthIndex: widthIndex(for: rule), workspace: target, focus: false)
-                        hide([id])
-                    } else {
-                        workspace.strip.insert(id, widthIndex: widthIndex(for: rule), at: workspace.strip.columns.count, focus: false)
-                    }
+                    let landed = addTile(id, focus: false, atEnd: true)
+                    if landed != spaces.activeIndex { hide([id]) }
                 }
             }
         } else {
@@ -460,8 +456,7 @@ final class WindowManager {
                     let landed = spaces.rejoin(tile.id, from: departure, focus: tile.id == focusedID)
                     if landed != spaces.activeIndex { hide([tile.id]) }
                 } else {
-                    let rule = rule(for: tile.id)
-                    let landed = spaces.insert(tile.id, widthIndex: widthIndex(for: rule), workspace: rule?.workspace, focus: tile.id == focusedID)
+                    let landed = addTile(tile.id, focus: tile.id == focusedID, atEnd: false)
                     if landed != spaces.activeIndex { hide([tile.id]) }
                 }
             }
@@ -486,7 +481,63 @@ final class WindowManager {
     // MARK: App rules
 
     private func rule(for id: WindowID) -> AppRule? {
-        windows[id].flatMap { rules.rule(for: NSRunningApplication(processIdentifier: $0.pid)?.bundleIdentifier) }
+        rules.rule(for: bundleID(of: id))
+    }
+
+    private func bundleID(of id: WindowID) -> String? {
+        windows[id].flatMap { NSRunningApplication(processIdentifier: $0.pid)?.bundleIdentifier }
+    }
+
+    // MARK: Apps reopen where they were
+
+    /// Whether new windows open where their app was last. Read each time so the setting applies at once.
+    static var remembersApps: Bool {
+        get { UserDefaults.standard.object(forKey: "rememberApps") as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: "rememberApps") }
+    }
+
+    private static let memoryKey = "appMemory"
+    private var memory: AppMemory = {
+        guard let data = UserDefaults.standard.data(forKey: WindowManager.memoryKey), let saved = try? JSONDecoder().decode(AppMemory.self, from: data) else { return AppMemory() }
+        return saved
+    }()
+
+    /// Adds a new tiled window. Its rule comes first; a remembered place fills in what the rule
+    /// leaves open. Otherwise it goes right of the focused column, or at the end when adopting.
+    private func addTile(_ id: WindowID, focus: Bool, atEnd: Bool) -> Int {
+        let rule = rule(for: id)
+        let presets = workspace.settings.widthPresets.indices
+        let ruleWidth = rule?.widthIndex.flatMap { presets.contains($0) ? $0 : nil }
+        let remembered = Self.remembersApps ? bundleID(of: id).flatMap { memory.place(for: $0) } : nil
+        let target = rule?.workspace ?? remembered?.workspace ?? spaces.activeIndex
+        let shape = ruleWidth == nil ? remembered : nil
+        let column = Column(
+            windows: [id], widthIndex: ruleWidth ?? shape?.widthIndex ?? workspace.settings.defaultWidthIndex,
+            isFullWidth: shape?.isFullWidth ?? false, customWidth: shape?.customWidth
+        )
+
+        var index: Int?
+        if let remembered, remembered.workspace == target, spaces.workspaces.indices.contains(target) {
+            index = spaces.workspaces[target].strip.columnIndex(rightOf: remembered.leftNeighbour, bundleID: bundleID(of:))
+        }
+        if index == nil, atEnd, spaces.workspaces.indices.contains(target) {
+            index = spaces.workspaces[target].strip.columns.count
+        }
+        return spaces.insertColumn(column, workspace: target, at: index, focus: focus)
+    }
+
+    /// Remembers where each app's tiled windows are, once the layout has changed.
+    private func rememberPlaces() {
+        guard Self.remembersApps else { return }
+        let places = spaces.rememberedPlaces(bundleID: bundleID(of:))
+        guard memory.update(places), let data = try? JSONEncoder().encode(memory) else { return }
+        UserDefaults.standard.set(data, forKey: Self.memoryKey)
+    }
+
+    /// Forgets where every app was, so new windows open by their rules alone.
+    func forgetRememberedApps() {
+        memory.forgetAll()
+        UserDefaults.standard.removeObject(forKey: Self.memoryKey)
     }
 
     private func widthIndex(for rule: AppRule?) -> Int {
@@ -907,6 +958,27 @@ final class WindowManager {
         }
         for (window, frame) in resized { setFrame(frame, of: window) }
     }
+
+    // MARK: Mouse wheel
+
+    private var wheelSnapWork: DispatchWorkItem?
+
+    /// Moves the strip by mouse-wheel notches (positive: content moves right). Ticks that follow
+    /// each other form one gesture; the strip snaps to a column once they stop.
+    func scrollWheel(notches: Double) {
+        guard isEnabled, !workspace.strip.isEmpty else { return }
+        if !isSwiping { beginSwipe() }
+        swipe(by: -CGFloat(notches) * workspace.viewport.width * Self.wheelNotchFraction)
+        wheelSnapWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.endSwipe(velocity: 0) }
+        wheelSnapWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.wheelSnapDelay, execute: work)
+    }
+
+    /// How much of the viewport one wheel notch moves the strip.
+    private static let wheelNotchFraction: CGFloat = 0.2
+    /// How long the wheel must be still before the strip snaps to a column.
+    private static let wheelSnapDelay: Double = 0.15
 
     // MARK: Animation
 

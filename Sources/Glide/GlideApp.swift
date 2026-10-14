@@ -47,6 +47,7 @@ final class AppController {
     @ObservationIgnored let permission = AccessibilityPermission()
     @ObservationIgnored private let trackpad = TrackpadMonitor()
     @ObservationIgnored private var swipeTracker = SwipeTracker(fingerCount: 3)
+    @ObservationIgnored private let wheel = WheelMonitor()
     @ObservationIgnored let updates = Updates()
     let shortcuts = ShortcutStore()
     let appRules = RuleStore()
@@ -85,6 +86,8 @@ final class AppController {
         registerHotkeys()
         trackpad.onFrame = { [weak self] touches, time in self?.handleTouches(touches, at: time) }
         updateTrackpad()
+        wheel.handle = { [weak self] tick in self?.handleWheel(tick) ?? false }
+        updateWheel()
 
         if permission.isTrusted {
             if isTilingPreferred { windowManager.start() }
@@ -140,6 +143,7 @@ final class AppController {
     }
 
     private func permissionChanged(_ trusted: Bool) {
+        updateWheel()
         if trusted {
             onboardingWindow.close()
             if isTilingPreferred { windowManager.start() }
@@ -270,6 +274,31 @@ final class AppController {
                 windowManager.endSwipe(velocity: -CGFloat(velocity) * swipeGain)
             }
         }
+    }
+
+    // MARK: Mouse wheel
+
+    private static let horizontalWheelKey = "horizontalWheel"
+
+    var horizontalWheelMode: HorizontalWheelMode {
+        get { UserDefaults.standard.string(forKey: Self.horizontalWheelKey).flatMap(HorizontalWheelMode.init(rawValue:)) ?? .always }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: Self.horizontalWheelKey)
+            stateChanged()
+        }
+    }
+
+    private func updateWheel() {
+        guard permission.isTrusted else { return wheel.stop() }
+        if !wheel.start() { NSLog("Glide: couldn't watch the mouse wheel") }
+    }
+
+    private func handleWheel(_ tick: WheelTick) -> Bool {
+        guard windowManager.isEnabled else { return false }
+        let mode = horizontalWheelMode
+        guard WheelRouting.movesStrip(horizontal: tick.horizontal, chordHeld: tick.chordHeld, mode: mode) else { return false }
+        windowManager.scrollWheel(notches: tick.notches)
+        return true
     }
 
     /// Applies gap, focus ring and dimming changes made in Settings.
