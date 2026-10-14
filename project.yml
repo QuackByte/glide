@@ -11,8 +11,8 @@ settings:
     SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY: YES
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: 435MC3786D
-    MARKETING_VERSION: "0.1.1"
-    CURRENT_PROJECT_VERSION: "2"
+    MARKETING_VERSION: "0.2.0"
+    CURRENT_PROJECT_VERSION: "3"
     ENABLE_HARDENED_RUNTIME: YES
 packages:
   Sparkle:
@@ -28,6 +28,9 @@ targets:
     sources:
       - path: Sources/Glide
       - path: Assets.xcassets
+      # Read by the What's New window.
+      - path: CHANGELOG.md
+        buildPhase: resources
     dependencies:
       - target: GlideCore
       - package: Sparkle
