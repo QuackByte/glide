@@ -901,6 +901,27 @@ final class WindowManager {
         for (window, frame) in resized { setFrame(frame, of: window) }
     }
 
+    // MARK: Mouse wheel
+
+    private var wheelSnapWork: DispatchWorkItem?
+
+    /// Moves the strip by mouse-wheel notches (positive: content moves right). Ticks that follow
+    /// each other form one gesture; the strip snaps to a column once they stop.
+    func scrollWheel(notches: Double) {
+        guard isEnabled, !workspace.strip.isEmpty else { return }
+        if !isSwiping { beginSwipe() }
+        swipe(by: -CGFloat(notches) * workspace.viewport.width * Self.wheelNotchFraction)
+        wheelSnapWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.endSwipe(velocity: 0) }
+        wheelSnapWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.wheelSnapDelay, execute: work)
+    }
+
+    /// How much of the viewport one wheel notch moves the strip.
+    private static let wheelNotchFraction: CGFloat = 0.2
+    /// How long the wheel must be still before the strip snaps to a column.
+    private static let wheelSnapDelay: Double = 0.15
+
     // MARK: Animation
 
     private struct Motion {
