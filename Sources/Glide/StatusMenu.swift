@@ -86,6 +86,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         let shortcutsItem = NSMenuItem(title: "Shortcuts", action: nil, keyEquivalent: "")
         shortcutsItem.submenu = shortcutsMenu(keymap: keymap, problems: problems)
         menu.addItem(shortcutsItem)
+        menu.addItem(item("What’s New", #selector(showWhatsNew)))
         menu.addItem(item("Check for Updates…", #selector(checkForUpdates)))
         menu.addItem(item("Settings…", #selector(openSettings), key: ","))
         menu.addItem(.separator())
@@ -137,6 +138,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     @objc private func grantAccess() { controller.showOnboarding() }
     @objc private func openSettings() { controller.showSettings() }
     @objc private func checkForUpdates() { controller.updates.checkForUpdates() }
+    @objc private func showWhatsNew() { controller.showWhatsNew() }
     @objc private func quit() { NSApp.terminate(nil) }
 
     @objc private func performAction(_ sender: NSMenuItem) {

@@ -59,6 +59,7 @@ final class AppController {
     @ObservationIgnored private let workspaceHUD = WorkspaceHUD()
     @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(controller: self)
     @ObservationIgnored private lazy var onboardingWindow = OnboardingWindowController(controller: self)
+    @ObservationIgnored private lazy var whatsNewWindow = WhatsNewWindowController()
 
     private static let tilingEnabledKey = "tilingEnabled"
 
@@ -92,6 +93,7 @@ final class AppController {
         }
         // For development: `open Glide.app --args -GlideShowOnboarding YES`.
         if UserDefaults.standard.bool(forKey: "GlideShowOnboarding") { onboardingWindow.show() }
+        showWhatsNewAfterUpdate()
         stateChanged()
     }
 
@@ -178,6 +180,27 @@ final class AppController {
             NSLog("Glide: couldn't \(enabled ? "add" : "remove") the login item: \(error.localizedDescription)")
         }
         stateChanged()
+    }
+
+    // MARK: What's new
+
+    private static let lastSeenVersionKey = "lastSeenVersion"
+
+    /// The first launch of a newer version shows what changed since the last one seen. A new
+    /// install (no Accessibility access yet) only remembers its version. Copies from before this
+    /// never saved one, so they see the current version's notes.
+    private func showWhatsNewAfterUpdate() {
+        guard let string = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+              let current = Changelog.Version(string) else { return }
+        let seen = UserDefaults.standard.string(forKey: Self.lastSeenVersionKey).flatMap { Changelog.Version($0) }
+        guard seen != current else { return }
+        UserDefaults.standard.set(current.description, forKey: Self.lastSeenVersionKey)
+        if seen == nil && !permission.isTrusted { return }
+        whatsNewWindow.show(WhatsNewWindowController.changelog.since(seen, current: current))
+    }
+
+    func showWhatsNew() {
+        whatsNewWindow.show(WhatsNewWindowController.changelog.releases)
     }
 
     // MARK: Updates

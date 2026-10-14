@@ -28,6 +28,9 @@ targets:
     sources:
       - path: Sources/Glide
       - path: Assets.xcassets
+      # Read by the What's New window.
+      - path: CHANGELOG.md
+        buildPhase: resources
     dependencies:
       - target: GlideCore
       - package: Sparkle
