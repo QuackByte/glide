@@ -4,6 +4,7 @@ name: Test and release
 # Pushing a tag like v0.2.0 (on main) builds, signs, notarizes and publishes a release with the
 # app's ZIP and appcast.xml. Glide's updater (Sparkle) reads the appcast of the latest release:
 # https://github.com/QuackByte/glide/releases/latest/download/appcast.xml
+# The release notes are that version's CHANGELOG.md section, the same text Glide shows in What's New.
 
 on:
   push:
@@ -62,6 +63,8 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          # Before signing anything: the release notes come from here.
+          scripts/changelog-section.sh "${GITHUB_REF_NAME#v}" > /dev/null
           git fetch origin main
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
           test -n "$ASC_KEY_ID"
@@ -176,23 +179,20 @@ jobs:
           </rss>
           EOF
           xmllint --noout appcast.xml
-      - name: Write changelog and publish GitHub release
+      - name: Write release notes and publish GitHub release
         shell: bash
         run: |
           set -euo pipefail
           version="${GITHUB_REF_NAME#v}"
           previous_tag="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name' 2>/dev/null || true)"
           {
-            printf 'Glide %s for macOS 27 or later on Apple silicon.\n\n' "$version"
-            printf 'Download the ZIP, extract it, and move Glide.app to Applications. Grant Accessibility access when asked. The app is Developer ID signed and notarized by Apple, and updates itself from here on.\n\n'
-            printf '## Changelog\n\n'
+            scripts/changelog-section.sh "$version"
+            printf '\n## Install\n\n'
+            printf 'Glide %s runs on macOS 27 or later on Apple silicon. Download the ZIP, extract it, and move Glide.app to Applications. Grant Accessibility access when asked. The app is Developer ID signed and notarized by Apple, and updates itself from here on.\n\n' "$version"
+            printf 'The SHA-256 asset contains the ZIP checksum. appcast.xml is the update feed Glide reads.\n'
             if [ -n "$previous_tag" ]; then
-              git log --no-merges --format='- %s (%h)' "$previous_tag..$GITHUB_SHA"
-              printf '\n[Full changelog](https://github.com/%s/compare/%s...%s)\n' "$GITHUB_REPOSITORY" "$previous_tag" "$GITHUB_REF_NAME"
-            else
-              git log --no-merges --format='- %s (%h)' "$GITHUB_SHA"
+              printf '\n[Every change since %s](https://github.com/%s/compare/%s...%s)\n' "$previous_tag" "$GITHUB_REPOSITORY" "$previous_tag" "$GITHUB_REF_NAME"
             fi
-            printf '\nThe SHA-256 asset contains the ZIP checksum. appcast.xml is the update feed Glide reads.\n'
           } > "$RUNNER_TEMP/ReleaseNotes.md"
           gh release create "$GITHUB_REF_NAME" \
             "Glide-${version}-macOS.zip" \
