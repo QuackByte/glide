@@ -146,6 +146,15 @@ struct SettingsView: View {
                             }
                         }
                     }
+                    Picker("Horizontal mouse wheel", selection: Binding(
+                        get: { controller.horizontalWheelMode },
+                        set: { controller.horizontalWheelMode = $0 }
+                    )) {
+                        Text("Always").tag(HorizontalWheelMode.always)
+                        Text("With ⌃⌥").tag(HorizontalWheelMode.withModifier)
+                        Text("Off").tag(HorizontalWheelMode.off)
+                    }
+                    .help("Tilting the mouse wheel (or a thumb wheel) glides the strip. ⌃⌥ with the wheel always does, whatever this is set to.")
                 }
 
                 Section("Updates") {
