@@ -1,0 +1,194 @@
+---
+name: Test and release
+
+# Pushing a tag like v0.2.0 (on main) builds, signs, notarizes and publishes a release with the
+# app's ZIP and appcast.xml. Glide's updater (Sparkle) reads the appcast of the latest release:
+# https://github.com/QuackByte/glide/releases/latest/download/appcast.xml
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test macOS app
+    # Glide targets macOS 27, which needs Xcode 27 (a preview runner image for now).
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build and run unit tests
+        run: |
+          xcodebuild -version
+          xcodebuild -project Glide.xcodeproj -scheme Glide \
+            -configuration Debug -destination 'platform=macOS' \
+            -derivedDataPath "$RUNNER_TEMP/GlideTests" \
+            CODE_SIGNING_ALLOWED=NO -parallel-testing-enabled NO test
+
+  release:
+    name: Sign, notarize, and publish
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    runs-on: xcode-27
+    environment: release
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
+    env:
+      ASC_KEY_ID: ${{ vars.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ vars.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      GH_TOKEN: ${{ github.token }}
+      IDENTITY: F1626DEC4B4687725ABD9D28165CA6F52B9E38F9
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check tag and prepare Apple key
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          test -n "$ASC_KEY_ID"
+          test -n "$ASC_ISSUER_ID"
+          test -n "$ASC_PRIVATE_KEY"
+          printf '%s' "$ASC_PRIVATE_KEY" > "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          chmod 600 "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+      - name: Archive unsigned app
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          # The build number is the version too: Sparkle compares it to decide what's newer.
+          xcodebuild -project Glide.xcodeproj -scheme Glide \
+            -configuration Release -destination 'generic/platform=macOS' \
+            -archivePath "$RUNNER_TEMP/Glide.xcarchive" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
+            MARKETING_VERSION="$version" CURRENT_PROJECT_VERSION="$version" \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO archive
+      - name: Sign with Developer ID certificate
+        shell: bash
+        env:
+          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$DEVELOPER_ID_P12_BASE64"
+          test -n "$DEVELOPER_ID_P12_PASSWORD"
+          certificate="$RUNNER_TEMP/DeveloperID.p12"
+          keychain="$RUNNER_TEMP/ReleaseSigning.keychain-db"
+          printf '%s' "$DEVELOPER_ID_P12_BASE64" | base64 -D > "$certificate"
+          chmod 600 "$certificate"
+          keychain_password="$(openssl rand -hex 32)"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security list-keychains -d user -s "$keychain"
+          security default-keychain -d user -s "$keychain"
+          security import "$certificate" -k "$keychain" \
+            -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security > /dev/null
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$keychain_password" "$keychain" > /dev/null
+          security find-identity -v -p codesigning "$keychain" | grep -q "$IDENTITY"
+          mkdir -p "$RUNNER_TEMP/Export"
+          app="$RUNNER_TEMP/Export/Glide.app"
+          ditto "$RUNNER_TEMP/Glide.xcarchive/Products/Applications/Glide.app" "$app"
+          sign() { codesign --force --options runtime --timestamp --sign "$IDENTITY" --keychain "$keychain" "$@"; }
+          # Inside out: Sparkle's helpers, the frameworks, then the app (Sparkle's documented order).
+          sparkle="$app/Contents/Frameworks/Sparkle.framework"
+          sign "$sparkle/Versions/B/XPCServices/Installer.xpc"
+          sign --preserve-metadata=entitlements "$sparkle/Versions/B/XPCServices/Downloader.xpc"
+          sign "$sparkle/Versions/B/Autoupdate"
+          sign "$sparkle/Versions/B/Updater.app"
+          sign "$sparkle"
+          sign "$app/Contents/Frameworks/GlideCore.framework"
+          sign "$app"
+          codesign --verify --deep --strict "$app"
+          security delete-keychain "$keychain"
+      - name: Notarize and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          app="$RUNNER_TEMP/Export/Glide.app"
+          ditto -c -k --keepParent "$app" "$RUNNER_TEMP/Glide-notary.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/Glide-notary.zip" \
+            --key "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8" \
+            --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" --wait
+          xcrun stapler staple "$app"
+          xcrun stapler validate "$app"
+          spctl --assess --type execute --verbose "$app"
+          ditto -c -k --keepParent "$app" "Glide-${version}-macOS.zip"
+          shasum -a 256 "Glide-${version}-macOS.zip" > "Glide-${version}-macOS.zip.sha256"
+      - name: Write the appcast
+        shell: bash
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$SPARKLE_PRIVATE_KEY"
+          version="${GITHUB_REF_NAME#v}"
+          zip="Glide-${version}-macOS.zip"
+          key="$RUNNER_TEMP/sparkle.key"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$key"
+          chmod 600 "$key"
+          # Prints: sparkle:edSignature="…" length="…"
+          signature="$("$RUNNER_TEMP/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update" --ed-key-file "$key" "$zip")"
+          rm "$key"
+          repo="https://github.com/$GITHUB_REPOSITORY"
+          cat > appcast.xml <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <channel>
+              <title>Glide</title>
+              <link>$repo</link>
+              <item>
+                <title>Glide $version</title>
+                <pubDate>$(LC_ALL=C date -u '+%a, %d %b %Y %H:%M:%S +0000')</pubDate>
+                <sparkle:version>$version</sparkle:version>
+                <sparkle:shortVersionString>$version</sparkle:shortVersionString>
+                <sparkle:minimumSystemVersion>27.0</sparkle:minimumSystemVersion>
+                <sparkle:fullReleaseNotesLink>$repo/releases/tag/$GITHUB_REF_NAME</sparkle:fullReleaseNotesLink>
+                <enclosure url="$repo/releases/download/$GITHUB_REF_NAME/$zip" type="application/octet-stream" $signature />
+              </item>
+            </channel>
+          </rss>
+          EOF
+          xmllint --noout appcast.xml
+      - name: Write changelog and publish GitHub release
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          previous_tag="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name' 2>/dev/null || true)"
+          {
+            printf 'Glide %s for macOS 27 or later on Apple silicon.\n\n' "$version"
+            printf 'Download the ZIP, extract it, and move Glide.app to Applications. Grant Accessibility access when asked. The app is Developer ID signed and notarized by Apple, and updates itself from here on.\n\n'
+            printf '## Changelog\n\n'
+            if [ -n "$previous_tag" ]; then
+              git log --no-merges --format='- %s (%h)' "$previous_tag..$GITHUB_SHA"
+              printf '\n[Full changelog](https://github.com/%s/compare/%s...%s)\n' "$GITHUB_REPOSITORY" "$previous_tag" "$GITHUB_REF_NAME"
+            else
+              git log --no-merges --format='- %s (%h)' "$GITHUB_SHA"
+            fi
+            printf '\nThe SHA-256 asset contains the ZIP checksum. appcast.xml is the update feed Glide reads.\n'
+          } > "$RUNNER_TEMP/ReleaseNotes.md"
+          gh release create "$GITHUB_REF_NAME" \
+            "Glide-${version}-macOS.zip" \
+            "Glide-${version}-macOS.zip.sha256" \
+            appcast.xml \
+            --verify-tag --title "Glide $version" \
+            --notes-file "$RUNNER_TEMP/ReleaseNotes.md"

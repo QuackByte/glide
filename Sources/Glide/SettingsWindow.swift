@@ -148,6 +148,21 @@ struct SettingsView: View {
                     }
                 }
 
+                Section("Updates") {
+                    Toggle("Check for updates automatically", isOn: Binding(
+                        get: { controller.checksForUpdates },
+                        set: { controller.checksForUpdates = $0 }
+                    ))
+                    Toggle("Download and install updates automatically", isOn: Binding(
+                        get: { controller.installsUpdates },
+                        set: { controller.installsUpdates = $0 }
+                    ))
+                    .disabled(!controller.checksForUpdates)
+                    LabeledContent("Glide \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")") {
+                        Button("Check Now") { controller.updates.checkForUpdates() }
+                    }
+                }
+
                 AppearanceSection(controller: controller)
 
                 AppRulesSection(store: controller.appRules)
