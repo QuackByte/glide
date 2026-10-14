@@ -190,8 +190,7 @@ final class AppController {
     /// install (no Accessibility access yet) only remembers its version. Copies from before this
     /// never saved one, so they see the current version's notes.
     private func showWhatsNewAfterUpdate() {
-        guard let string = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
-              let current = Changelog.Version(string) else { return }
+        guard let current = Self.currentVersion else { return }
         let seen = UserDefaults.standard.string(forKey: Self.lastSeenVersionKey).flatMap { Changelog.Version($0) }
         guard seen != current else { return }
         UserDefaults.standard.set(current.description, forKey: Self.lastSeenVersionKey)
@@ -199,8 +198,14 @@ final class AppController {
         whatsNewWindow.show(WhatsNewWindowController.changelog.since(seen, current: current))
     }
 
+    /// Every release up to the one running, so notes for unreleased versions stay out of the menu.
     func showWhatsNew() {
-        whatsNewWindow.show(WhatsNewWindowController.changelog.releases)
+        guard let current = Self.currentVersion else { return }
+        whatsNewWindow.show(WhatsNewWindowController.changelog.releases.filter { $0.version <= current })
+    }
+
+    private static var currentVersion: Changelog.Version? {
+        (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String).flatMap { Changelog.Version($0) }
     }
 
     // MARK: Updates
