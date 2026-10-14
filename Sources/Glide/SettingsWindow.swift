@@ -322,6 +322,16 @@ private struct AppearanceSection: View {
                         .labelsHidden()
                     }
                 }
+                LabeledContent("Ring thickness") {
+                    HStack {
+                        Slider(value: binding(get: { Double(Appearance.focusRingWidth) }, set: { Appearance.focusRingWidth = CGFloat($0.rounded()) }),
+                               in: Double(Appearance.focusRingWidthRange.lowerBound)...Double(Appearance.focusRingWidthRange.upperBound), step: 1)
+                            .frame(width: 180)
+                        Text("\(Int(Appearance.focusRingWidth)) pt")
+                            .monospacedDigit()
+                            .frame(width: 40, alignment: .trailing)
+                    }
+                }
             }
 
             Toggle("Show workspace number when switching", isOn: binding(get: { Appearance.showsWorkspaceHUD }, set: { Appearance.showsWorkspaceHUD = $0 }))
