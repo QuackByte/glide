@@ -264,6 +264,8 @@ final class AppController {
     private var swipeGain: CGFloat { windowManager.viewportWidth * 1.5 }
 
     private func handleTouches(_ touches: [Touch], at time: Double) {
+        // A full-screen app keeps its gestures; a swipe in progress is let go.
+        let touches = windowManager.gesturesPassThrough ? [] : touches
         for event in swipeTracker.update(touches: touches, at: time) {
             switch event {
             case .began:
@@ -296,6 +298,8 @@ final class AppController {
 
     private func handleWheel(_ tick: WheelTick) -> Bool {
         guard windowManager.isEnabled else { return false }
+        // A full-screen video or game keeps its wheel; ⌃⌥ is asked for, so it still goes to the strip.
+        if windowManager.gesturesPassThrough, !tick.chordHeld { return false }
         let mode = horizontalWheelMode
         guard WheelRouting.movesStrip(horizontal: tick.horizontal, chordHeld: tick.chordHeld, mode: mode) else { return false }
         windowManager.scrollWheel(notches: tick.notches)

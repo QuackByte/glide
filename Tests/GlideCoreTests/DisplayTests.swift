@@ -22,6 +22,25 @@ final class DisplayTests: XCTestCase {
         XCTAssertFalse(DisplayGeometry.showsOnAnother(CGRect(x: 1140, y: 100, width: 300, height: 300), own: 0, in: sideBySide))
     }
 
+    func testCoversDisplay() {
+        XCTAssertTrue(DisplayGeometry.coversDisplay(sideBySide[0], in: sideBySide))
+        XCTAssertTrue(DisplayGeometry.coversDisplay(sideBySide[1], in: sideBySide))
+        // A full-width column honors the gaps and the menu bar, so it falls short of the display.
+        XCTAssertFalse(DisplayGeometry.coversDisplay(CGRect(x: 12, y: 36, width: 1416, height: 852), in: sideBySide))
+        // Full width but under the menu bar.
+        XCTAssertFalse(DisplayGeometry.coversDisplay(CGRect(x: 0, y: 24, width: 1440, height: 876), in: sideBySide))
+        // Straddling two displays isn't covering one.
+        XCTAssertFalse(DisplayGeometry.coversDisplay(CGRect(x: 700, y: 0, width: 1440, height: 900), in: sideBySide))
+    }
+
+    func testCoversDisplayIgnoresWhereGlidePutTheWindow() {
+        // No gap, menu bar hidden: Glide's own full-width column is the display's size.
+        let placed = sideBySide[0]
+        XCTAssertFalse(DisplayGeometry.coversDisplay(sideBySide[0], in: sideBySide, placed: placed))
+        XCTAssertFalse(DisplayGeometry.coversDisplay(placed.offsetBy(dx: 1, dy: 1), in: sideBySide, placed: placed))
+        XCTAssertTrue(DisplayGeometry.coversDisplay(sideBySide[0], in: sideBySide, placed: CGRect(x: 12, y: 36, width: 700, height: 852)))
+    }
+
     func testHiddenCornerAvoidsTheNeighbour() {
         // The laptop's bottom-right corner faces the external display, so its windows hide bottom-left.
         XCTAssertEqual(DisplayGeometry.hiddenCorner(of: 0, in: sideBySide), .bottomLeft)
