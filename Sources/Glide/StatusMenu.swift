@@ -33,8 +33,8 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         } else {
             button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Glide")
         }
-        button.setAccessibilityLabel(manager.isEnabled ? "Glide, workspace \(manager.activeWorkspaceNumber)" : "Glide")
-        button.toolTip = manager.isEnabled ? "Glide: workspace \(manager.activeWorkspaceNumber)" : "Glide: paused"
+        button.setAccessibilityLabel(manager.isEnabled ? String(localized: "Glide, workspace \(manager.activeWorkspaceNumber)") : "Glide")
+        button.toolTip = manager.isEnabled ? String(localized: "Glide: workspace \(manager.activeWorkspaceNumber)") : String(localized: "Glide: paused")
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -53,16 +53,20 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         menu.addItem(toggle)
 
         if manager.isEnabled {
-            let columns = manager.columnCount
-            var summary = "\(manager.tiledWindowCount) windows in \(columns) column\(columns == 1 ? "" : "s")"
-            if manager.floatingWindowCount > 0 { summary += ", \(manager.floatingWindowCount) floating" }
+            let windows = String(localized: "\(manager.tiledWindowCount) windows")
+            let columns = String(localized: "\(manager.columnCount) columns")
+            var summary = String(localized: "\(windows) in \(columns)")
+            if manager.floatingWindowCount > 0 {
+                let floating = String(localized: "\(manager.floatingWindowCount) floating")
+                summary = String(localized: "\(summary), \(floating)")
+            }
             menu.addItem(disabled(summary))
 
             menu.addItem(.separator())
-            menu.addItem(NSMenuItem.sectionHeader(title: "Workspaces"))
+            menu.addItem(NSMenuItem.sectionHeader(title: String(localized: "Workspaces")))
             for entry in manager.workspaceSummary {
                 let action = Action(rawValue: "focusWorkspace\(entry.number)")
-                let windows = "\(entry.windowCount) window\(entry.windowCount == 1 ? "" : "s")"
+                let windows = String(localized: "\(entry.windowCount) windows")
                 let switchItem = item("Workspace \(entry.number) — \(windows)", #selector(performAction(_:)), combo: action.flatMap(keymap.combo(for:)))
                 switchItem.representedObject = action?.rawValue
                 switchItem.state = entry.isActive ? .on : .off
@@ -73,8 +77,8 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         if !problems.isEmpty {
             menu.addItem(.separator())
             let count = problems.count
-            let warning = item("⚠︎ \(count) shortcut\(count == 1 ? "" : "s") unavailable…", #selector(openSettings))
-            warning.toolTip = "Open Settings to choose other shortcuts."
+            let warning = item("⚠︎ \(count) shortcuts unavailable…", #selector(openSettings))
+            warning.toolTip = String(localized: "Open Settings to choose other shortcuts.")
             menu.addItem(warning)
             for action in Action.allCases {
                 guard let problem = problems[action], let combo = keymap.combo(for: action) else { continue }
@@ -83,7 +87,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         }
 
         menu.addItem(.separator())
-        let shortcutsItem = NSMenuItem(title: "Shortcuts", action: nil, keyEquivalent: "")
+        let shortcutsItem = NSMenuItem(title: String(localized: "Shortcuts"), action: nil, keyEquivalent: "")
         shortcutsItem.submenu = shortcutsMenu(keymap: keymap, problems: problems)
         menu.addItem(shortcutsItem)
         menu.addItem(item("What’s New", #selector(showWhatsNew)))
@@ -101,16 +105,16 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         menu.addItem(showAll)
         for group in Action.Group.allCases {
             if !menu.items.isEmpty { menu.addItem(.separator()) }
-            menu.addItem(NSMenuItem.sectionHeader(title: group.rawValue))
+            menu.addItem(NSMenuItem.sectionHeader(title: group.title))
             for action in Action.allCases where action.group == group {
                 let combo = keymap.combo(for: action)
-                let entry = item(action.title, #selector(performAction(_:)), combo: combo)
+                let entry = item(verbatim: action.title, #selector(performAction(_:)), combo: combo)
                 entry.representedObject = action.rawValue
                 if let problem = problems[action] {
                     entry.title += "  ⚠︎"
                     entry.toolTip = problem.message
                 } else if combo == nil {
-                    entry.toolTip = "No shortcut"
+                    entry.toolTip = String(localized: "No shortcut")
                 }
                 menu.addItem(entry)
             }
@@ -118,7 +122,11 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         return menu
     }
 
-    private func item(_ title: String, _ action: Selector, key: String = "", combo: KeyCombo? = nil) -> NSMenuItem {
+    private func item(_ title: LocalizedStringResource, _ action: Selector, key: String = "", combo: KeyCombo? = nil) -> NSMenuItem {
+        item(verbatim: String(localized: title), action, key: key, combo: combo)
+    }
+
+    private func item(verbatim title: String, _ action: Selector, key: String = "", combo: KeyCombo? = nil) -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
         item.target = self
         if let combo {

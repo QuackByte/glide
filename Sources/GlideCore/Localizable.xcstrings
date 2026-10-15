@@ -1,0 +1,468 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ + arrows move the cursor in text fields." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ + flechas mueve el cursor en los campos de texto."
+          }
+        }
+      }
+    },
+    "%@ is a standard macOS command." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ es un comando estándar de macOS."
+          }
+        }
+      }
+    },
+    "Add ⌃, ⌥ or ⌘ so the shortcut doesn't block normal typing." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade ⌃, ⌥ o ⌘ para que el atajo no impida escribir con normalidad."
+          }
+        }
+      }
+    },
+    "Center Column" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Centrar columna"
+          }
+        }
+      }
+    },
+    "Columns" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columnas"
+          }
+        }
+      }
+    },
+    "Consume or Expel Window Left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apilar o desapilar ventana a la izquierda"
+          }
+        }
+      }
+    },
+    "Consume or Expel Window Right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apilar o desapilar ventana a la derecha"
+          }
+        }
+      }
+    },
+    "Cycle Column Width" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar ancho de columna"
+          }
+        }
+      }
+    },
+    "Cycle Column Width Backward" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar ancho de columna hacia atrás"
+          }
+        }
+      }
+    },
+    "Displays" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantallas"
+          }
+        }
+      }
+    },
+    "Enable or Disable Tiling" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar o desactivar el mosaico"
+          }
+        }
+      }
+    },
+    "Focus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foco"
+          }
+        }
+      }
+    },
+    "Focus Column Left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocar columna a la izquierda"
+          }
+        }
+      }
+    },
+    "Focus Column Right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocar columna a la derecha"
+          }
+        }
+      }
+    },
+    "Focus Display Left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocar pantalla de la izquierda"
+          }
+        }
+      }
+    },
+    "Focus Display Right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocar pantalla de la derecha"
+          }
+        }
+      }
+    },
+    "Focus First Column" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocar primera columna"
+          }
+        }
+      }
+    },
+    "Focus Last Column" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocar última columna"
+          }
+        }
+      }
+    },
+    "Focus Next Workspace" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ir al escritorio siguiente"
+          }
+        }
+      }
+    },
+    "Focus Previous Workspace" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ir al escritorio anterior"
+          }
+        }
+      }
+    },
+    "Focus Window Down" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocar ventana de abajo"
+          }
+        }
+      }
+    },
+    "Focus Window Up" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocar ventana de arriba"
+          }
+        }
+      }
+    },
+    "Focus Workspace %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ir al escritorio %lld"
+          }
+        }
+      }
+    },
+    "General" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        }
+      }
+    },
+    "Move" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover"
+          }
+        }
+      }
+    },
+    "Move Column Left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover columna a la izquierda"
+          }
+        }
+      }
+    },
+    "Move Column Right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover columna a la derecha"
+          }
+        }
+      }
+    },
+    "Move Column to Display Left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover columna a la pantalla de la izquierda"
+          }
+        }
+      }
+    },
+    "Move Column to Display Right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover columna a la pantalla de la derecha"
+          }
+        }
+      }
+    },
+    "Move Column to Next Workspace" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover columna al escritorio siguiente"
+          }
+        }
+      }
+    },
+    "Move Column to Previous Workspace" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover columna al escritorio anterior"
+          }
+        }
+      }
+    },
+    "Move Column to Workspace %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover columna al escritorio %lld"
+          }
+        }
+      }
+    },
+    "Move Window Down" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover ventana abajo"
+          }
+        }
+      }
+    },
+    "Move Window Up" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover ventana arriba"
+          }
+        }
+      }
+    },
+    "Show Shortcuts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar atajos"
+          }
+        }
+      }
+    },
+    "Show or Hide Overview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar u ocultar la vista general"
+          }
+        }
+      }
+    },
+    "Toggle Floating" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar o desactivar flotante"
+          }
+        }
+      }
+    },
+    "Toggle Full Width" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar o desactivar ancho completo"
+          }
+        }
+      }
+    },
+    "Toggle Tabbed Column" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar o desactivar columna con pestañas"
+          }
+        }
+      }
+    },
+    "Workspaces" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escritorios"
+          }
+        }
+      }
+    },
+    "macOS uses %@Space for Spotlight or input sources." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS usa %@Espacio para Spotlight o las fuentes de entrada."
+          }
+        }
+      }
+    },
+    "macOS uses ⌃ + arrows for Spaces and Mission Control." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS usa ⌃ + flechas para los Spaces y Mission Control."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

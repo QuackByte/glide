@@ -1,3 +1,5 @@
+import Foundation
+
 /// Everything a shortcut can trigger. Raw values are persisted; do not rename them.
 public enum Action: String, CaseIterable, Codable, Sendable {
     case focusColumnLeft
@@ -55,57 +57,63 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case workspaces = "Workspaces"
         case displays = "Displays"
         case general = "General"
+
+        /// The group name in the user's language. The raw value stays the English name.
+        public var title: String {
+            switch self {
+            case .focus: String(localized: "Focus", bundle: #bundle)
+            case .move: String(localized: "Move", bundle: #bundle)
+            case .column: String(localized: "Columns", bundle: #bundle)
+            case .workspaces: String(localized: "Workspaces", bundle: #bundle)
+            case .displays: String(localized: "Displays", bundle: #bundle)
+            case .general: String(localized: "General", bundle: #bundle)
+            }
+        }
     }
 
+    /// The title in the user's language. The English text is the catalog key.
     public var title: String {
-        switch self {
-        case .focusColumnLeft: "Focus Column Left"
-        case .focusColumnRight: "Focus Column Right"
-        case .focusWindowUp: "Focus Window Up"
-        case .focusWindowDown: "Focus Window Down"
-        case .focusFirstColumn: "Focus First Column"
-        case .focusLastColumn: "Focus Last Column"
-        case .moveColumnLeft: "Move Column Left"
-        case .moveColumnRight: "Move Column Right"
-        case .moveWindowUp: "Move Window Up"
-        case .moveWindowDown: "Move Window Down"
-        case .consumeOrExpelLeft: "Consume or Expel Window Left"
-        case .consumeOrExpelRight: "Consume or Expel Window Right"
-        case .cycleColumnWidth: "Cycle Column Width"
-        case .cycleColumnWidthBackward: "Cycle Column Width Backward"
-        case .toggleFullWidth: "Toggle Full Width"
-        case .toggleTabbed: "Toggle Tabbed Column"
-        case .centerColumn: "Center Column"
-        case .focusPreviousWorkspace: "Focus Previous Workspace"
-        case .focusNextWorkspace: "Focus Next Workspace"
-        case .moveColumnToPreviousWorkspace: "Move Column to Previous Workspace"
-        case .moveColumnToNextWorkspace: "Move Column to Next Workspace"
-        case .focusWorkspace1: "Focus Workspace 1"
-        case .focusWorkspace2: "Focus Workspace 2"
-        case .focusWorkspace3: "Focus Workspace 3"
-        case .focusWorkspace4: "Focus Workspace 4"
-        case .focusWorkspace5: "Focus Workspace 5"
-        case .focusWorkspace6: "Focus Workspace 6"
-        case .focusWorkspace7: "Focus Workspace 7"
-        case .focusWorkspace8: "Focus Workspace 8"
-        case .focusWorkspace9: "Focus Workspace 9"
-        case .moveColumnToWorkspace1: "Move Column to Workspace 1"
-        case .moveColumnToWorkspace2: "Move Column to Workspace 2"
-        case .moveColumnToWorkspace3: "Move Column to Workspace 3"
-        case .moveColumnToWorkspace4: "Move Column to Workspace 4"
-        case .moveColumnToWorkspace5: "Move Column to Workspace 5"
-        case .moveColumnToWorkspace6: "Move Column to Workspace 6"
-        case .moveColumnToWorkspace7: "Move Column to Workspace 7"
-        case .moveColumnToWorkspace8: "Move Column to Workspace 8"
-        case .moveColumnToWorkspace9: "Move Column to Workspace 9"
-        case .focusDisplayLeft: "Focus Display Left"
-        case .focusDisplayRight: "Focus Display Right"
-        case .moveColumnToDisplayLeft: "Move Column to Display Left"
-        case .moveColumnToDisplayRight: "Move Column to Display Right"
-        case .toggleOverview: "Show or Hide Overview"
-        case .showShortcuts: "Show Shortcuts"
-        case .toggleFloating: "Toggle Floating"
-        case .toggleTiling: "Enable or Disable Tiling"
+        if let command = workspaceCommand, case .index(let index) = command.target {
+            return command.movesColumn
+                ? String(localized: "Move Column to Workspace \(index + 1)", bundle: #bundle)
+                : String(localized: "Focus Workspace \(index + 1)", bundle: #bundle)
+        }
+        return switch self {
+        case .focusColumnLeft: String(localized: "Focus Column Left", bundle: #bundle)
+        case .focusColumnRight: String(localized: "Focus Column Right", bundle: #bundle)
+        case .focusWindowUp: String(localized: "Focus Window Up", bundle: #bundle)
+        case .focusWindowDown: String(localized: "Focus Window Down", bundle: #bundle)
+        case .focusFirstColumn: String(localized: "Focus First Column", bundle: #bundle)
+        case .focusLastColumn: String(localized: "Focus Last Column", bundle: #bundle)
+        case .moveColumnLeft: String(localized: "Move Column Left", bundle: #bundle)
+        case .moveColumnRight: String(localized: "Move Column Right", bundle: #bundle)
+        case .moveWindowUp: String(localized: "Move Window Up", bundle: #bundle)
+        case .moveWindowDown: String(localized: "Move Window Down", bundle: #bundle)
+        case .consumeOrExpelLeft: String(localized: "Consume or Expel Window Left", bundle: #bundle)
+        case .consumeOrExpelRight: String(localized: "Consume or Expel Window Right", bundle: #bundle)
+        case .cycleColumnWidth: String(localized: "Cycle Column Width", bundle: #bundle)
+        case .cycleColumnWidthBackward: String(localized: "Cycle Column Width Backward", bundle: #bundle)
+        case .toggleFullWidth: String(localized: "Toggle Full Width", bundle: #bundle)
+        case .toggleTabbed: String(localized: "Toggle Tabbed Column", bundle: #bundle)
+        case .centerColumn: String(localized: "Center Column", bundle: #bundle)
+        case .focusPreviousWorkspace: String(localized: "Focus Previous Workspace", bundle: #bundle)
+        case .focusNextWorkspace: String(localized: "Focus Next Workspace", bundle: #bundle)
+        case .moveColumnToPreviousWorkspace: String(localized: "Move Column to Previous Workspace", bundle: #bundle)
+        case .moveColumnToNextWorkspace: String(localized: "Move Column to Next Workspace", bundle: #bundle)
+        case .focusDisplayLeft: String(localized: "Focus Display Left", bundle: #bundle)
+        case .focusDisplayRight: String(localized: "Focus Display Right", bundle: #bundle)
+        case .moveColumnToDisplayLeft: String(localized: "Move Column to Display Left", bundle: #bundle)
+        case .moveColumnToDisplayRight: String(localized: "Move Column to Display Right", bundle: #bundle)
+        case .toggleOverview: String(localized: "Show or Hide Overview", bundle: #bundle)
+        case .showShortcuts: String(localized: "Show Shortcuts", bundle: #bundle)
+        case .toggleFloating: String(localized: "Toggle Floating", bundle: #bundle)
+        case .toggleTiling: String(localized: "Enable or Disable Tiling", bundle: #bundle)
+        // Handled above.
+        case .focusWorkspace1, .focusWorkspace2, .focusWorkspace3, .focusWorkspace4, .focusWorkspace5,
+             .focusWorkspace6, .focusWorkspace7, .focusWorkspace8, .focusWorkspace9,
+             .moveColumnToWorkspace1, .moveColumnToWorkspace2, .moveColumnToWorkspace3, .moveColumnToWorkspace4,
+             .moveColumnToWorkspace5, .moveColumnToWorkspace6, .moveColumnToWorkspace7, .moveColumnToWorkspace8,
+             .moveColumnToWorkspace9: ""
         }
     }
 

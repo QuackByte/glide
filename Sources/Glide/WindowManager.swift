@@ -961,7 +961,7 @@ final class WindowManager {
             }
             refreshOverlays()
             onChange?()
-            onWorkspaceEvent?(workspace.strip.isEmpty ? "Workspace \(spaces.activeIndex + 1) is empty" : "Workspace \(spaces.activeIndex + 1)")
+            onWorkspaceEvent?(workspace.strip.isEmpty ? String(localized: "Workspace \(spaces.activeIndex + 1) is empty") : String(localized: "Workspace \(spaces.activeIndex + 1)"))
         }
     }
 
@@ -974,7 +974,7 @@ final class WindowManager {
             applyLayout()
             if let next = workspace.strip.focusedWindow { focus(next) }
             didChange()
-            onWorkspaceEvent?("Column sent to workspace \(index + 1)")
+            onWorkspaceEvent?(String(localized: "Column sent to workspace \(index + 1)"))
         } else {
             switchWorkspace(to: index, focusing: nil)
         }
@@ -997,7 +997,7 @@ final class WindowManager {
         log.debug("workspace \(index + 1): \(self.stripDescription, privacy: .public)")
         refreshOverlays()
         didChange()
-        onWorkspaceEvent?(workspace.strip.isEmpty ? "Workspace \(index + 1) is empty" : "Workspace \(index + 1)")
+        onWorkspaceEvent?(workspace.strip.isEmpty ? String(localized: "Workspace \(index + 1) is empty") : String(localized: "Workspace \(index + 1)"))
     }
 
     // MARK: Overview
@@ -1098,7 +1098,7 @@ final class WindowManager {
         let window = windows[id]
         let title: String? = window?.element.value(kAXTitleAttribute)
         let appName = window.flatMap { NSRunningApplication(processIdentifier: $0.pid)?.localizedName }
-        return TabBarOverlay.Tab(window: id, title: title.flatMap { $0.isEmpty ? nil : $0 } ?? appName ?? "Window", pid: window?.pid)
+        return TabBarOverlay.Tab(window: id, title: title.flatMap { $0.isEmpty ? nil : $0 } ?? appName ?? String(localized: "Window"), pid: window?.pid)
     }
 
     /// Whether `id` has keyboard focus, counting a focus change Glide just asked for.

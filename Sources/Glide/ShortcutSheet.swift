@@ -93,7 +93,7 @@ private struct ShortcutSheetView: View {
 
     private func groupView(_ group: Action.Group) -> some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(group.rawValue)
+            Text(group.title)
                 .font(.headline)
                 .padding(.bottom, 2)
             ForEach(Action.allCases.filter { $0.group == group }, id: \.self) { action in

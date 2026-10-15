@@ -9,7 +9,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private let recorder: ShortcutRecorder
     private lazy var window: NSWindow = {
         let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView(controller: controller, recorder: recorder)))
-        window.title = "Glide Settings"
+        window.title = String(localized: "Glide Settings")
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false
         window.delegate = self
@@ -50,7 +50,7 @@ final class ShortcutRecorder {
     func start(_ action: Action) {
         stop()
         self.action = action
-        message = "Press the new shortcut for “\(action.title)”. Esc cancels, ⌫ removes it."
+        message = String(localized: "Press the new shortcut for “\(action.title)”. Esc cancels, ⌫ removes it.")
         controller.suspendHotkeys()
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self else { return event }
@@ -78,7 +78,7 @@ final class ShortcutRecorder {
         }
         if modifiers.isEmpty && (keyCode == KeyCode.delete || keyCode == KeyCode.forwardDelete) {
             controller.shortcuts.set(nil, for: action)
-            message = "Removed the shortcut for “\(action.title)”."
+            message = String(localized: "Removed the shortcut for “\(action.title)”.")
             return stop()
         }
 
@@ -86,16 +86,16 @@ final class ShortcutRecorder {
         var notes: [String] = []
         switch ShortcutPolicy.evaluate(combo) {
         case .rejected(let reason):
-            message = "\(combo) can't be used: \(reason)"
+            message = String(localized: "\(combo.description) can't be used: \(reason)")
             return
         case .warning(let reason):
-            notes.append("Note: \(reason)")
+            notes.append(String(localized: "Note: \(reason)"))
         case .ok:
             break
         }
         let displaced = controller.shortcuts.set(combo, for: action)
         if !displaced.isEmpty {
-            notes.insert("\(combo) was removed from “\(displaced.map(\.title).joined(separator: "”, “"))”.", at: 0)
+            notes.insert(String(localized: "\(combo.description) was removed from “\(displaced.map(\.title).joined(separator: "”, “"))”."), at: 0)
         }
         message = notes.isEmpty ? nil : notes.joined(separator: " ")
         stop()
@@ -187,7 +187,7 @@ struct SettingsView: View {
                 AppRulesSection(store: controller.appRules)
 
                 ForEach(Action.Group.allCases, id: \.self) { group in
-                    Section(group.rawValue) {
+                    Section(group.title) {
                         ForEach(Action.allCases.filter { $0.group == group }, id: \.self) { action in
                             ShortcutRow(action: action, controller: controller, recorder: recorder)
                         }
@@ -197,7 +197,7 @@ struct SettingsView: View {
             .formStyle(.grouped)
 
             HStack(alignment: .top) {
-                Text(recorder.message ?? "Click a shortcut to record a new one. Shortcuts work in every app.")
+                Text(recorder.message ?? String(localized: "Click a shortcut to record a new one. Shortcuts work in every app."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -205,7 +205,7 @@ struct SettingsView: View {
                 Button("Restore Defaults") {
                     recorder.stop()
                     controller.shortcuts.resetAll()
-                    recorder.message = "All shortcuts restored to their defaults."
+                    recorder.message = String(localized: "All shortcuts restored to their defaults.")
                 }
             }
         }
@@ -281,7 +281,8 @@ private struct AppRuleRow: View {
                 }
                 Picker("Width", selection: binding(\.widthIndex)) {
                     Text("Default width").tag(Int?.none)
-                    ForEach(Array(["⅓ width", "½ width", "⅔ width", "Full width"].enumerated()), id: \.offset) { index, name in
+                    let names: [LocalizedStringResource] = ["⅓ width", "½ width", "⅔ width", "Full width"]
+                    ForEach(Array(names.enumerated()), id: \.offset) { index, name in
                         Text(name).tag(Int?.some(index))
                     }
                 }
@@ -405,7 +406,7 @@ private struct ShortcutRow: View {
             Button {
                 recording ? recorder.stop() : recorder.start(action)
             } label: {
-                Text(recording ? "Press keys…" : combo?.description ?? "None")
+                Text(recording ? String(localized: "Press keys…") : combo?.description ?? String(localized: "None"))
                     .monospaced()
                     .frame(minWidth: 96)
                     .foregroundStyle(combo == nil && !recording ? .secondary : .primary)
@@ -418,7 +419,7 @@ private struct ShortcutRow: View {
                 Image(systemName: "arrow.uturn.backward")
             }
             .buttonStyle(.borderless)
-            .help("Restore the default (\(Keymap.defaults[action]?.description ?? "none"))")
+            .help("Restore the default (\(Keymap.defaults[action]?.description ?? String(localized: "none")))")
             .disabled(combo == Keymap.defaults[action])
         }
     }

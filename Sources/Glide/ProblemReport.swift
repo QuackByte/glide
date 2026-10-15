@@ -26,7 +26,7 @@ enum ProblemReport {
             } catch {
                 DispatchQueue.main.async {
                     let alert = NSAlert()
-                    alert.messageText = "Couldn’t Create the Report"
+                    alert.messageText = String(localized: "Couldn’t Create the Report")
                     alert.informativeText = error.localizedDescription
                     alert.runModal()
                 }
@@ -88,7 +88,7 @@ enum ProblemReport {
         try ditto.run()
         ditto.waitUntilExit()
         guard ditto.terminationStatus == 0 else {
-            throw CocoaError(.fileWriteUnknown, userInfo: [NSLocalizedDescriptionKey: "Zipping the report failed (ditto exited with \(ditto.terminationStatus))."])
+            throw CocoaError(.fileWriteUnknown, userInfo: [NSLocalizedDescriptionKey: String(localized: "Zipping the report failed (ditto exited with \(Int(ditto.terminationStatus))).")])
         }
         return zip
     }

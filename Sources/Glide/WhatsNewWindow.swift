@@ -102,6 +102,6 @@ private struct ReleaseView: View {
         parser.locale = Locale(identifier: "en_US_POSIX")
         parser.dateFormat = "yyyy-MM-dd"
         guard let date = parser.date(from: iso) else { return nil }
-        return date.formatted(.dateTime.day().month(.wide).year())
+        return date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "en")))
     }
 }

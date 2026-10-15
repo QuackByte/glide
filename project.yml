@@ -1,6 +1,7 @@
 name: Glide
 options:
   bundleIdPrefix: dev.quackbyte
+  developmentLanguage: en
   deploymentTarget:
     macOS: "27.0"
 settings:
@@ -14,6 +15,8 @@ settings:
     MARKETING_VERSION: "0.4.0"
     CURRENT_PROJECT_VERSION: "6"
     ENABLE_HARDENED_RUNTIME: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
 packages:
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
