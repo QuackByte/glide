@@ -42,6 +42,18 @@ public enum DisplayGeometry {
         return best
     }
 
+    /// Whether a window at `frame` covers a whole display, as a video player or game does when it
+    /// takes the screen without macOS's full screen. Where Glide itself put the window (`placed`)
+    /// doesn't count: with no gap and the menu bar hidden, a full-width column covers the display too.
+    public static func coversDisplay(_ frame: CGRect, in displays: [CGRect], placed: CGRect? = nil, tolerance: CGFloat = 2) -> Bool {
+        func close(_ a: CGRect, _ b: CGRect) -> Bool {
+            abs(a.minX - b.minX) <= tolerance && abs(a.minY - b.minY) <= tolerance
+                && abs(a.width - b.width) <= tolerance && abs(a.height - b.height) <= tolerance
+        }
+        if let placed, close(frame, placed) { return false }
+        return displays.contains { close(frame, $0) }
+    }
+
     /// The display a point is on; nil if it's on none.
     public static func display(at point: CGPoint, in displays: [CGRect]) -> Int? {
         displays.firstIndex { $0.contains(point) }

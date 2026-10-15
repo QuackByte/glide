@@ -85,6 +85,13 @@ final class WindowManager {
     /// Shows where the dragged window would land, while the mouse is down.
     private let dropHighlight = DropHighlight()
     private var dropHighlightTimer: Timer?
+    /// Tiled windows showing full screen (green button, a video player): left where they are, with
+    /// no ring, dimming or tab bar, until they come back. They keep their slot in the strip.
+    private var fullScreenWindows: Set<WindowID> = []
+    /// The display the window in front is full screen on. Cached, since the wheel asks on every tick.
+    private var foregroundFullScreenDisplay: Int?
+    /// The displays showing a full-screen window, as of `at`.
+    private var fullScreenDisplays: (at: CFTimeInterval, displays: Set<Int>) = (0, [])
 
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
     var rules = AppRules()
@@ -173,7 +180,7 @@ final class WindowManager {
         guard isEnabled else { return }
         finishAnimations()
         // Every workspace's windows: the hidden ones come back on screen too.
-        let ordered = displays.flatMap(\.spaces.allWindows).compactMap { id in
+        let ordered = displays.flatMap(\.spaces.allWindows).filter { !fullScreenWindows.contains($0) }.compactMap { id in
             windows[id].flatMap { window in window.element.frame.map { (window, $0) } }
         }
         let restored = RestorePlanner.restoredFrames(for: ordered.map { ($0.0.id, $0.1) },
@@ -189,6 +196,8 @@ final class WindowManager {
         decorations.hide()
         tabBars.hide()
         hiddenWindows = []
+        fullScreenWindows = []
+        foregroundFullScreenDisplay = nil
         departures = [:]
         isEnabled = false
         reassertWork?.cancel()
@@ -375,6 +384,9 @@ final class WindowManager {
         on(NSWorkspace.didUnhideApplicationNotification) { [weak self] app in
             self?.scheduleReconcile(app.processIdentifier, retries: [0.3])
         }
+        workspaceObservers.append(center.addObserver(forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refreshFullScreen() }
+        })
         workspaceObservers.append(NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
         ) { [weak self] _ in
@@ -458,6 +470,7 @@ final class WindowManager {
                 draggedWindow = id
                 startDropHighlight()
             }
+            if let id = element.windowID, windows[id] != nil { checkFullScreen(id) }
             if NSEvent.pressedMouseButtons != 0, element.windowID == decorations.target {
                 decorations.hide()
                 tabBars.hide()
@@ -516,7 +529,9 @@ final class WindowManager {
                 if kind != .ignored { present[id] = (element, kind) }
             }
 
-            for window in windows.values where window.pid == pid
+            // A full-screen window lives on a Space of its own, so it's out of sight but not gone.
+            let away = fullScreenWindows.isEmpty ? [] : allWindowIDs()
+            for window in windows.values where window.pid == pid && !(fullScreenWindows.contains(window.id) && away.contains(window.id))
                 && (present[window.id] == nil || (!onScreen.contains(window.id) && spaceShowing(window.id))) {
                 // Hidden and minimized windows come back with the same ID; closed ones never do.
                 if let display = displayIndex(of: window.id), let departure = displays[display].spaces.departure(of: window.id) {
@@ -720,6 +735,7 @@ final class WindowManager {
     private func forget(_ id: WindowID) {
         if let display = displayIndex(of: id) { displays[display].spaces.remove(id) }
         windows[id] = nil
+        fullScreenWindows.remove(id)
         userFloating.remove(id)
         userTiled.remove(id)
         lastApplied[id] = nil
@@ -731,6 +747,96 @@ final class WindowManager {
     private func onScreenWindowIDs() -> Set<WindowID> {
         guard let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return [] }
         return Set(info.compactMap { $0[kCGWindowNumber as String] as? WindowID })
+    }
+
+    private func allWindowIDs() -> Set<WindowID> {
+        guard let info = CGWindowListCopyWindowInfo([.optionAll, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return [] }
+        return Set(info.compactMap { $0[kCGWindowNumber as String] as? WindowID })
+    }
+
+    // MARK: Full screen
+
+    /// Whether a window is full screen: macOS's own, or one that covers its display exactly
+    /// (some video players and games). Where Glide put a tile doesn't count.
+    private func isFullScreen(_ element: AXUIElement, placed: CGRect?) -> Bool {
+        if element.isFullScreen { return true }
+        guard let frame = element.frame else { return false }
+        return DisplayGeometry.coversDisplay(frame, in: displayFrames, placed: placed)
+    }
+
+    /// A tiled window going full screen is left alone; when it comes back, it goes back to its column.
+    private func checkFullScreen(_ id: WindowID) {
+        guard isEnabled, let window = windows[id], displayIndex(of: id) != nil else { return }
+        let now = fullScreenWindows.contains(id)
+        // Windows on the move, being dragged or waiting out of sight aren't covering anything.
+        if !now, motions[id] != nil || draggedWindow == id || hiddenWindows.contains(id) || NSEvent.pressedMouseButtons != 0 { return }
+        guard isFullScreen(window.element, placed: lastApplied[id]) != now else { return }
+        if now {
+            fullScreenWindows.remove(id)
+            lastApplied[id] = nil
+            lastObserved[id] = nil
+            log.debug("\(id) left full screen")
+            applyLayout()
+            // Leaving full screen animates; put the window back once it has settled.
+            scheduleReassert()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.reassert() }
+        } else {
+            fullScreenWindows.insert(id)
+            motions[id] = nil
+            log.debug("\(id) went full screen")
+            refreshOverlays()
+        }
+        updateForegroundFullScreen()
+        didChange()
+    }
+
+    /// Checks the frontmost app's tiled windows, and any that are full screen, e.g. after a Space change.
+    private func refreshFullScreen() {
+        guard isEnabled else { return }
+        let front = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        for window in windows.values where window.pid == front || fullScreenWindows.contains(window.id) { checkFullScreen(window.id) }
+        updateForegroundFullScreen()
+        refreshOverlays()
+    }
+
+    private func updateForegroundFullScreen() {
+        guard let element = focusedWindowElement(), let id = element.windowID,
+              windows[id] != nil ? fullScreenWindows.contains(id) : isFullScreen(element, placed: nil) else { return foregroundFullScreenDisplay = nil }
+        foregroundFullScreenDisplay = displayIndex(onScreen: element)
+    }
+
+    /// Whether wheel and swipe gestures belong to the app in front on the display they would move
+    /// (the swipe's, else the pointer's): it is full screen there, or that display is showing a
+    /// full-screen Space. A full-screen window on another display doesn't take them.
+    var gesturesPassThrough: Bool {
+        guard isEnabled else { return false }
+        let display = isSwiping ? swipeDisplay : pointerDisplay
+        if foregroundFullScreenDisplay == display { return true }
+        // Asking the window server on every tick is wasteful; a fraction of a second old is fine.
+        let now = CACurrentMediaTime()
+        if now - fullScreenDisplays.at > 0.3 {
+            fullScreenDisplays = (now, displaysShowingFullScreenWindow())
+        }
+        return fullScreenDisplays.displays.contains(display)
+    }
+
+    /// The displays that have a window on screen covering all of them, other than a tile Glide put there.
+    private func displaysShowingFullScreenWindow() -> Set<Int> {
+        guard let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return [] }
+        let own = ProcessInfo.processInfo.processIdentifier
+        // Window server bounds and `displayFrames` share one space: points, top-left origin at the primary display's top-left.
+        let frames = displayFrames
+        var covered: Set<Int> = []
+        for entry in info {
+            guard entry[kCGWindowLayer as String] as? Int == 0, entry[kCGWindowOwnerPID as String] as? pid_t != own,
+                  let bounds = (entry[kCGWindowBounds as String] as? NSDictionary).flatMap({ CGRect(dictionaryRepresentation: $0 as CFDictionary) })
+            else { continue }
+            let id = entry[kCGWindowNumber as String] as? WindowID
+            for (index, frame) in frames.enumerated() where DisplayGeometry.coversDisplay(bounds, in: [frame], placed: id.flatMap { lastApplied[$0] }) {
+                covered.insert(index)
+            }
+        }
+        return covered
     }
 
     // MARK: Focus
@@ -754,6 +860,8 @@ final class WindowManager {
         guard isEnabled else { return }
         defer { refreshOverlays() }
         guard let id = focusedWindowID() else { return }
+        if windows[id] != nil { checkFullScreen(id) }
+        updateForegroundFullScreen()
         if let lock = focusLock, Date() < lock.until, lock.window != id { return }
         guard let display = displayIndex(of: id), let index = displays[display].spaces.index(of: id) else {
             if windows[id] == nil, let pid = focusedWindowElement()?.pid { scheduleReconcile(pid) }
@@ -926,7 +1034,7 @@ final class WindowManager {
     private func hide(_ ids: [WindowID]) {
         var moves: [pid_t: [(AXUIElement, CGPoint)]] = [:]
         for id in ids {
-            guard let window = windows[id] else { continue }
+            guard let window = windows[id], !fullScreenWindows.contains(id) else { continue }
             motions[id] = nil
             hiddenWindows.insert(id)
             let size = lastApplied[id]?.size ?? window.element.size ?? .zero
@@ -967,7 +1075,7 @@ final class WindowManager {
     private func refreshDecorations(systemFocus: WindowID?) {
         guard Appearance.showsFocusRing || Appearance.dimsUnfocusedWindows,
               let id = workspace.strip.focusedWindow, var frame = lastObserved[id] ?? lastApplied[id] else { return decorations.hide() }
-        guard isFocusedNow(id, systemFocus: systemFocus) else { return decorations.hide() }
+        guard isFocusedNow(id, systemFocus: systemFocus), !fullScreenWindows.contains(id) else { return decorations.hide() }
         // A tabbed column's ring takes in its tab bar.
         if let bar = workspace.tabBars().first(where: { $0.activeWindow == id }) { frame = frame.union(bar.frame) }
         decorations.show(around: id, frame: frame, screen: displays[focusedDisplay].frame)
@@ -975,7 +1083,7 @@ final class WindowManager {
 
     private func refreshTabBars(systemFocus: WindowID? = nil) {
         let systemFocus = systemFocus ?? focusedWindowID()
-        let bars = displays.flatMap { $0.spaces.active.tabBars() }.map { bar in
+        let bars = displays.flatMap { $0.spaces.active.tabBars() }.filter { !fullScreenWindows.contains($0.activeWindow) }.map { bar in
             TabBarOverlay.Bar(
                 frame: bar.frame,
                 tabs: bar.windows.map(tab(for:)),
@@ -1057,7 +1165,7 @@ final class WindowManager {
         for target in targets() {
             let id = target.window
             let wasHidden = target.hidden ? !hiddenWindows.insert(id).inserted : hiddenWindows.remove(id) != nil
-            guard let window = windows[id], lastApplied[id] != target.frame else { continue }
+            guard let window = windows[id], !fullScreenWindows.contains(id), lastApplied[id] != target.frame else { continue }
             let from = motions[id].map { $0.frame(at: now) }
                 ?? lastApplied[id]
             lastApplied[id] = target.frame
@@ -1157,7 +1265,7 @@ final class WindowManager {
         var moves: [pid_t: [(AXUIElement, CGPoint)]] = [:]
         for target in targets() where target.display == swipeDisplay {
             if target.hidden { hiddenWindows.insert(target.window) } else { hiddenWindows.remove(target.window) }
-            guard let window = windows[target.window], let previous = lastApplied[target.window],
+            guard let window = windows[target.window], !fullScreenWindows.contains(target.window), let previous = lastApplied[target.window],
                   previous != target.frame else { continue }
             lastApplied[target.window] = target.frame
             lastObserved[target.window] = target.frame
@@ -1269,7 +1377,7 @@ final class WindowManager {
         animationTimer?.invalidate()
         animationTimer = nil
         for (id, motion) in motions {
-            if let window = windows[id] { setFrame(motion.to, of: window) }
+            if let window = windows[id], !fullScreenWindows.contains(id) { setFrame(motion.to, of: window) }
         }
         motions = [:]
     }
@@ -1422,7 +1530,7 @@ final class WindowManager {
         defer { userResized = [] }
         for display in displays.indices {
             for id in displays[display].spaces.active.strip.windows {
-                guard let window = windows[id], let actual = window.element.frame else { continue }
+                guard let window = windows[id], !fullScreenWindows.contains(id), let actual = window.element.frame else { continue }
                 if userResized.contains(id), !hiddenWindows.contains(id), let applied = lastApplied[id], abs(actual.width - applied.width) > 2,
                    let (column, _) = displays[display].spaces.active.strip.location(of: id) {
                     displays[display].spaces.active.strip.setCustomWidth(actual.width, forColumnOf: id)
