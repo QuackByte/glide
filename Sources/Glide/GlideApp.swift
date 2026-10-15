@@ -58,6 +58,7 @@ final class AppController {
     @ObservationIgnored private var watchdog: Process?
     @ObservationIgnored private lazy var overview = OverviewController(manager: windowManager)
     @ObservationIgnored private let workspaceHUD = WorkspaceHUD()
+    @ObservationIgnored private let shortcutSheet = ShortcutSheetController()
     @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(controller: self)
     @ObservationIgnored private lazy var onboardingWindow = OnboardingWindowController(controller: self)
     @ObservationIgnored private lazy var whatsNewWindow = WhatsNewWindowController()
@@ -122,6 +123,11 @@ final class AppController {
             overview.toggle()
             return
         }
+        if action == .showShortcuts {
+            shortcutSheet.toggle(keymap: shortcuts.keymap, problems: hotkeys.problems, on: windowManager.focusedScreen)
+            return
+        }
+        if shortcutSheet.isShown { shortcutSheet.close() }
         // Anything else acts on the layout behind the overview, which would make it stale.
         if overview.isShown { overview.close(goingTo: nil) }
         if action == .toggleTiling {

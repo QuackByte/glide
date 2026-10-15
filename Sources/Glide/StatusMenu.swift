@@ -95,6 +95,9 @@ final class StatusMenu: NSObject, NSMenuDelegate {
 
     private func shortcutsMenu(keymap: Keymap, problems: [Action: HotkeyCenter.Problem]) -> NSMenu {
         let menu = NSMenu()
+        let showAll = item("Show All Shortcuts", #selector(performAction(_:)), combo: keymap.combo(for: .showShortcuts))
+        showAll.representedObject = Action.showShortcuts.rawValue
+        menu.addItem(showAll)
         for group in Action.Group.allCases {
             if !menu.items.isEmpty { menu.addItem(.separator()) }
             menu.addItem(NSMenuItem.sectionHeader(title: group.rawValue))

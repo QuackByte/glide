@@ -32,6 +32,7 @@ final class KeymapTests: XCTestCase {
         XCTAssertEqual(Keymap.defaults[.focusColumnLeft]?.description, "⌃⌥←")
         XCTAssertEqual(Keymap.defaults[.moveColumnRight]?.description, "⌃⌥⇧→")
         XCTAssertEqual(Keymap.defaults[.consumeOrExpelLeft]?.description, "⌃⌥[")
+        XCTAssertEqual(Keymap.defaults[.showShortcuts]?.description, "⌃⌥/")
     }
 
     func testOverrideAndReset() {

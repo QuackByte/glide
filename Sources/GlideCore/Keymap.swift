@@ -24,6 +24,7 @@ public struct Keymap: Equatable, Sendable {
             .toggleTabbed: KeyCombo(KeyCode.w, hyper),
             .centerColumn: KeyCombo(KeyCode.c, hyper),
             .toggleOverview: KeyCombo(KeyCode.o, hyper),
+            .showShortcuts: KeyCombo(KeyCode.slash, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
             .toggleTiling: KeyCombo(KeyCode.t, move),
             .focusPreviousWorkspace: KeyCombo(KeyCode.pageUp, hyper),

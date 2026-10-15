@@ -11,6 +11,7 @@
 		05EABA58F843FB05AA29F043 /* DropTargetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F286D1BB0A539F05483F1556 /* DropTargetTests.swift */; };
 		06BD64AC4BB36B7D23006468 /* SwipeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0218104AF30AC3A25988DD7 /* SwipeTracker.swift */; };
 		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
+		13064E5791605EB01D0B61C1 /* ShortcutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECA1EB3CA83CD0F5481A0CA /* ShortcutSheet.swift */; };
 		15E9FA80D8D9DB5E14C69285 /* KeymapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1529283E97AE33824F61C0A5 /* KeymapTests.swift */; };
 		172E00206B5801C381F1808C /* AppMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E1EFE1FDBB87D705674139 /* AppMemory.swift */; };
 		1ADA5E746AD53B25E033F49A /* GlideCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DD74BF51238E38CE7484D1F6 /* GlideCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -170,6 +171,7 @@
 		F3825A04CEA6B7276C6C995D /* DropHighlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropHighlight.swift; sourceTree = "<group>"; };
 		F4B209FFB1B066001F2B114E /* TabTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabTests.swift; sourceTree = "<group>"; };
 		F55E3468B2292B798242FE4E /* RestorePlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorePlannerTests.swift; sourceTree = "<group>"; };
+		FECA1EB3CA83CD0F5481A0CA /* ShortcutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutSheet.swift; sourceTree = "<group>"; };
 		FFD1ADCA9153C04F07A3271E /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -209,6 +211,7 @@
 				913303FC6FE0EAFF5B404A4A /* OverviewWindow.swift */,
 				0E3B1D8E1B8FC2E7B626F008 /* RuleStore.swift */,
 				D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */,
+				FECA1EB3CA83CD0F5481A0CA /* ShortcutSheet.swift */,
 				59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */,
 				C9AEE8E1BF58E4F34130ACDD /* StatusMenu.swift */,
 				CBFB3B94681949181BB10AE9 /* TabBarOverlay.swift */,
@@ -454,6 +457,7 @@
 				2A52C44D2CC367F4A3ACD154 /* OverviewWindow.swift in Sources */,
 				A71CF1F962ED1ADD49DFC800 /* RuleStore.swift in Sources */,
 				B43D06626F88A29E9F6C511E /* SettingsWindow.swift in Sources */,
+				13064E5791605EB01D0B61C1 /* ShortcutSheet.swift in Sources */,
 				FBDA779A3D9620B228EE028F /* ShortcutStore.swift in Sources */,
 				F10682418406DA343212A609 /* StatusMenu.swift in Sources */,
 				A6874CD705A2296E0E92C5E6 /* TabBarOverlay.swift in Sources */,
