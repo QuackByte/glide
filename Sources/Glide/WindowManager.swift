@@ -1012,7 +1012,7 @@ final class WindowManager {
     }
 
     /// e.g. "[Ghostty#2208] [*Safari#31 Safari#40] scroll 600" with * marking focus.
-    private var stripDescription: String {
+    var stripDescription: String {
         let strip = workspace.strip
         let columns = strip.columns.enumerated().map { index, column in
             let names = column.windows.map { id in

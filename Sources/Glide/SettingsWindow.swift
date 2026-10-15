@@ -162,6 +162,9 @@ struct SettingsView: View {
                     LabeledContent("Remembered places") {
                         Button("Forget") { controller.windowManager.forgetRememberedApps() }
                     }
+                    LabeledContent("Something wrong?") {
+                        Button("Report a Problem…") { controller.reportProblem() }
+                    }
                 }
 
                 Section("Updates") {

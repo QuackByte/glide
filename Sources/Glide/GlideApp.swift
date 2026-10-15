@@ -219,6 +219,12 @@ final class AppController {
         (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String).flatMap { Changelog.Version($0) }
     }
 
+    // MARK: Report a problem
+
+    func reportProblem() {
+        ProblemReport.open(layout: windowManager.stripDescription + "\n")
+    }
+
     // MARK: Updates
 
     var checksForUpdates: Bool {
