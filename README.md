@@ -14,6 +14,7 @@ Status: early development (milestone 1: one display). There's also [Glide for Wi
 - Glide keeps the focused column fully on screen, scrolling the strip as little as possible. macOS doesn't let windows sit entirely off screen, so columns scrolled out of view are parked as 4 pt slivers at the left and right screen edges.
 - A column can also be **tabbed** (⌃⌥W): it shows one window at full height under a tab bar, and the others wait as tabs. ⌃⌥↑/↓ switch tabs, ⌃⌥⇧↑/↓ reorder them, clicking a tab selects it, and consume/expel (⌃⌥[ / ⌃⌥]) adds or removes tabs. Tabs can be windows of different apps. macOS won't let a window go fully off screen, so hidden tabs wait in the bottom-right corner with a point showing.
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.
+- **Full screen stays full screen.** A tiled window that goes full screen (the green button, a video, a game) keeps its place in the strip but is left alone: no focus ring, dimming or tab bar over it, and the horizontal wheel and three-finger swipes on its display reach it instead of gliding the strip (⌃⌥ + wheel still glides). When it leaves full screen, it goes back to its column.
 - **App rules** (Settings › App Rules): per app, always float, always tile, or let Glide decide, plus the width and workspace its new windows open with. A new window sent to another workspace by a rule takes you there. Float and tile apply at once to open windows; width and workspace apply to new ones. System Settings floats out of the box. ⌃⌥V on a single window still wins over its app's rule.
 - Closing, minimizing or hiding a window removes it from the strip. A minimized window, or one whose app was hidden, returns to the spot it left: same workspace, same width, and back into its stack or tabs if they're still there.
 - **Workspaces:** nine of them, each its own strip with its own scroll position. ⌃⌥1…9 switch workspaces and ⌃⌥⇧1…9 send the focused column to one. ⌃⌥PgUp/PgDn (fn⌃⌥↑/↓ on a laptop) step to the previous or next workspace, and adding ⇧ takes the column along. The menu bar icon shows the active workspace's number, and the menu lists the occupied ones. Inactive workspaces' windows wait in the bottom-right corner like hidden tabs, since macOS Spaces can't be driven reliably from outside. Focusing a window on another workspace (⌘-Tab, the Dock, a notification) switches to it. New windows open on the active workspace.
@@ -56,6 +57,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Focus display left / right | ⌃⌥⌘← / ⌃⌥⌘→ |
 | Send column to display left / right | ⌃⌥⌘⇧← / ⌃⌥⌘⇧→ |
 | Overview | ⌃⌥O |
+| Show every shortcut | ⌃⌥/ |
 | Toggle floating for the focused window | ⌃⌥V |
 | Enable or disable tiling | ⌃⌥⇧T |
 
@@ -87,6 +89,14 @@ Requires macOS 27 or later (Glide follows the current Xcode 27 project defaults)
 3. Grant **Accessibility** access when asked: **System Settings › Privacy & Security › Accessibility**, turn on Glide. Glide notices the grant within a second and starts tiling without a relaunch. If the permission is revoked later, Glide stops and asks again.
 
 Glide uses Accessibility only to read window positions and move, resize and focus windows. Screen Recording is optional and only used to draw window previews in the overview.
+
+## Report a Problem
+
+**Report a Problem…** in the menu bar menu (or under **Settings › General**) puts Glide's recent log, settings and layout in a zip, with window titles taken out, shows it in Finder, and opens a new GitHub issue for you to describe what happened and attach the zip. Nothing is sent by itself.
+
+## Languages
+
+Glide is in English and Spanish, following the language order in **System Settings › General › Language & Region**. What's New stays in English.
 
 ## Updates
 

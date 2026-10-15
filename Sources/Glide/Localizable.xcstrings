@@ -248,7 +248,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1. Haz clic en **Abrir Configuración del Sistema**."
+            "value" : "1. Haz clic en **Abrir Ajustes del Sistema**."
           }
         }
       }
@@ -655,7 +655,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuración de Glide"
+            "value" : "Ajustes de Glide"
           }
         }
       }
@@ -776,7 +776,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ítems de inicio de sesión…"
+            "value" : "Ítems de inicio…"
           }
         }
       }
@@ -842,7 +842,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abre la configuración para elegir otros atajos."
+            "value" : "Abre Ajustes para elegir otros atajos."
           }
         }
       }
@@ -853,7 +853,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir Configuración del Sistema"
+            "value" : "Abrir Ajustes del Sistema"
           }
         }
       }
@@ -1051,7 +1051,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuración…"
+            "value" : "Ajustes…"
           }
         }
       }
@@ -1139,7 +1139,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuración del trackpad…"
+            "value" : "Ajustes del trackpad…"
           }
         }
       }
@@ -1348,7 +1348,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS necesita que permitas Glide en Ítems de inicio de sesión."
+            "value" : "macOS necesita que permitas Glide en Ítems de inicio."
           }
         }
       }
