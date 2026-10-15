@@ -88,6 +88,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         menu.addItem(shortcutsItem)
         menu.addItem(item("What’s New", #selector(showWhatsNew)))
         menu.addItem(item("Check for Updates…", #selector(checkForUpdates)))
+        menu.addItem(item("Report a Problem…", #selector(reportProblem)))
         menu.addItem(item("Settings…", #selector(openSettings), key: ","))
         menu.addItem(.separator())
         menu.addItem(item("Quit Glide", #selector(quit), key: "q"))
@@ -139,6 +140,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     @objc private func openSettings() { controller.showSettings() }
     @objc private func checkForUpdates() { controller.updates.checkForUpdates() }
     @objc private func showWhatsNew() { controller.showWhatsNew() }
+    @objc private func reportProblem() { controller.reportProblem() }
     @objc private func quit() { NSApp.terminate(nil) }
 
     @objc private func performAction(_ sender: NSMenuItem) {
