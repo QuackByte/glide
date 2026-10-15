@@ -88,9 +88,10 @@ final class WindowManager {
     /// Tiled windows showing full screen (green button, a video player): left where they are, with
     /// no ring, dimming or tab bar, until they come back. They keep their slot in the strip.
     private var fullScreenWindows: Set<WindowID> = []
-    /// Whether the window in front is full screen. Cached, since the wheel asks on every tick.
-    private var foregroundFullScreen = false
-    private var spaceFullScreenCheck: (at: CFTimeInterval, result: Bool) = (0, false)
+    /// The display the window in front is full screen on. Cached, since the wheel asks on every tick.
+    private var foregroundFullScreenDisplay: Int?
+    /// The displays showing a full-screen window, as of `at`.
+    private var fullScreenDisplays: (at: CFTimeInterval, displays: Set<Int>) = (0, [])
 
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
     var rules = AppRules()
@@ -196,7 +197,7 @@ final class WindowManager {
         tabBars.hide()
         hiddenWindows = []
         fullScreenWindows = []
-        foregroundFullScreen = false
+        foregroundFullScreenDisplay = nil
         departures = [:]
         isEnabled = false
         reassertWork?.cancel()
@@ -799,34 +800,43 @@ final class WindowManager {
     }
 
     private func updateForegroundFullScreen() {
-        guard let element = focusedWindowElement(), let id = element.windowID else { return foregroundFullScreen = false }
-        foregroundFullScreen = windows[id] != nil ? fullScreenWindows.contains(id) : isFullScreen(element, placed: nil)
+        guard let element = focusedWindowElement(), let id = element.windowID,
+              windows[id] != nil ? fullScreenWindows.contains(id) : isFullScreen(element, placed: nil) else { return foregroundFullScreenDisplay = nil }
+        foregroundFullScreenDisplay = displayIndex(onScreen: element)
     }
 
-    /// Whether wheel and swipe gestures belong to the app in front: it is full screen, or the
-    /// Space showing is a full-screen one.
+    /// Whether wheel and swipe gestures belong to the app in front on the display they would move
+    /// (the swipe's, else the pointer's): it is full screen there, or that display is showing a
+    /// full-screen Space. A full-screen window on another display doesn't take them.
     var gesturesPassThrough: Bool {
         guard isEnabled else { return false }
-        if foregroundFullScreen { return true }
+        let display = isSwiping ? swipeDisplay : pointerDisplay
+        if foregroundFullScreenDisplay == display { return true }
         // Asking the window server on every tick is wasteful; a fraction of a second old is fine.
         let now = CACurrentMediaTime()
-        if now - spaceFullScreenCheck.at > 0.3 {
-            spaceFullScreenCheck = (now, spaceHasFullScreenWindow())
+        if now - fullScreenDisplays.at > 0.3 {
+            fullScreenDisplays = (now, displaysShowingFullScreenWindow())
         }
-        return spaceFullScreenCheck.result
+        return fullScreenDisplays.displays.contains(display)
     }
 
-    /// Whether a window on screen covers a whole display and isn't a tile Glide put there.
-    private func spaceHasFullScreenWindow() -> Bool {
-        guard let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return false }
+    /// The displays that have a window on screen covering all of them, other than a tile Glide put there.
+    private func displaysShowingFullScreenWindow() -> Set<Int> {
+        guard let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return [] }
         let own = ProcessInfo.processInfo.processIdentifier
-        return info.contains { entry in
+        // Window server bounds and `displayFrames` share one space: points, top-left origin at the primary display's top-left.
+        let frames = displayFrames
+        var covered: Set<Int> = []
+        for entry in info {
             guard entry[kCGWindowLayer as String] as? Int == 0, entry[kCGWindowOwnerPID as String] as? pid_t != own,
                   let bounds = (entry[kCGWindowBounds as String] as? NSDictionary).flatMap({ CGRect(dictionaryRepresentation: $0 as CFDictionary) })
-            else { return false }
+            else { continue }
             let id = entry[kCGWindowNumber as String] as? WindowID
-            return DisplayGeometry.coversDisplay(bounds, in: displayFrames, placed: id.flatMap { lastApplied[$0] })
+            for (index, frame) in frames.enumerated() where DisplayGeometry.coversDisplay(bounds, in: [frame], placed: id.flatMap { lastApplied[$0] }) {
+                covered.insert(index)
+            }
         }
+        return covered
     }
 
     // MARK: Focus
