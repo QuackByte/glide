@@ -2,6 +2,20 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it.
 
+## 0.9.0 — 2026-10-15
+
+Glide for Mac now shares version numbers with Glide for Windows.
+
+### New
+
+- **Every shortcut on one page.** ⌃⌥/ shows them all; press it again, press Esc or click outside to close. It's also in the menu bar menu, at the top of Shortcuts.
+- **Report a Problem**, in the menu bar menu and in Settings › General. Glide puts its recent log and settings in a zip, with window titles taken out, shows it in Finder, and opens a new issue on GitHub for you to describe what happened and attach the zip. Nothing is sent by itself.
+- **Glide habla español.** When macOS is in Spanish, Glide is too. What's New stays in English.
+
+### Fixes
+
+- **Full screen stays full screen.** A window you make full screen, or a video or game that fills the display, is no longer pulled back into its column. Glide leaves it alone, hides the focus ring, dimming and tab bar over it, and lets the horizontal wheel and three-finger swipes on that display reach it. When it leaves full screen, it goes back to its column.
+
 ## 0.4.0 — 2026-10-14
 
 ### New
