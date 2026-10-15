@@ -66,6 +66,7 @@ public enum KeyCode {
     public static let forwardDelete: UInt32 = 117
     public static let leftBracket: UInt32 = 33
     public static let rightBracket: UInt32 = 30
+    public static let slash: UInt32 = 44
     public static let c: UInt32 = 8
     public static let f: UInt32 = 3
     public static let o: UInt32 = 31

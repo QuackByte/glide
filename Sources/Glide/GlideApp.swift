@@ -58,6 +58,7 @@ final class AppController {
     @ObservationIgnored private var watchdog: Process?
     @ObservationIgnored private lazy var overview = OverviewController(manager: windowManager)
     @ObservationIgnored private let workspaceHUD = WorkspaceHUD()
+    @ObservationIgnored private let shortcutSheet = ShortcutSheetController()
     @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(controller: self)
     @ObservationIgnored private lazy var onboardingWindow = OnboardingWindowController(controller: self)
     @ObservationIgnored private lazy var whatsNewWindow = WhatsNewWindowController()
@@ -122,6 +123,11 @@ final class AppController {
             overview.toggle()
             return
         }
+        if action == .showShortcuts {
+            shortcutSheet.toggle(keymap: shortcuts.keymap, problems: hotkeys.problems, on: windowManager.focusedScreen)
+            return
+        }
+        if shortcutSheet.isShown { shortcutSheet.close() }
         // Anything else acts on the layout behind the overview, which would make it stale.
         if overview.isShown { overview.close(goingTo: nil) }
         if action == .toggleTiling {
@@ -213,6 +219,12 @@ final class AppController {
         (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String).flatMap { Changelog.Version($0) }
     }
 
+    // MARK: Report a problem
+
+    func reportProblem() {
+        ProblemReport.open(layout: windowManager.stripDescription + "\n")
+    }
+
     // MARK: Updates
 
     var checksForUpdates: Bool {
@@ -264,6 +276,8 @@ final class AppController {
     private var swipeGain: CGFloat { windowManager.viewportWidth * 1.5 }
 
     private func handleTouches(_ touches: [Touch], at time: Double) {
+        // A full-screen app keeps its gestures; a swipe in progress is let go.
+        let touches = windowManager.gesturesPassThrough ? [] : touches
         for event in swipeTracker.update(touches: touches, at: time) {
             switch event {
             case .began:
@@ -296,6 +310,8 @@ final class AppController {
 
     private func handleWheel(_ tick: WheelTick) -> Bool {
         guard windowManager.isEnabled else { return false }
+        // A full-screen video or game keeps its wheel; ⌃⌥ is asked for, so it still goes to the strip.
+        if windowManager.gesturesPassThrough, !tick.chordHeld { return false }
         let mode = horizontalWheelMode
         guard WheelRouting.movesStrip(horizontal: tick.horizontal, chordHeld: tick.chordHeld, mode: mode) else { return false }
         windowManager.scrollWheel(notches: tick.notches)

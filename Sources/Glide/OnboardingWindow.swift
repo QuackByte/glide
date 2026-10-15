@@ -5,7 +5,7 @@ final class OnboardingWindowController {
     private unowned let controller: AppController
     private lazy var window: NSWindow = {
         let window = NSWindow(contentViewController: NSHostingController(rootView: OnboardingView(controller: controller)))
-        window.title = "Welcome to Glide"
+        window.title = String(localized: "Welcome to Glide")
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.center()

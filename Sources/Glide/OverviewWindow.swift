@@ -191,11 +191,11 @@ private struct OverviewView: View {
         return HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            Text(overview.query.isEmpty ? "Type to filter windows" : overview.query)
+            Text(overview.query.isEmpty ? String(localized: "Type to filter windows") : overview.query)
                 .foregroundStyle(overview.query.isEmpty ? .secondary : .primary)
                 .lineLimit(1)
             if let matches = overview.matches {
-                Text(matches.isEmpty ? "No match" : "\(matches.count) match\(matches.count == 1 ? "" : "es")")
+                Text(matches.isEmpty ? String(localized: "No match") : String(localized: "\(matches.count) matches"))
                     .foregroundStyle(.secondary)
                     .padding(.leading, 6)
             }
@@ -222,7 +222,7 @@ private struct OverviewView: View {
         .font(.callout)
     }
 
-    private func hint(_ keys: String, _ label: String) -> some View {
+    private func hint(_ keys: String, _ label: LocalizedStringKey) -> some View {
         HStack(spacing: 6) {
             Text(keys)
                 .fontWeight(.semibold)

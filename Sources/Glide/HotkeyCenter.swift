@@ -16,9 +16,9 @@ final class HotkeyCenter {
 
         var message: String {
             switch self {
-            case .inUse: "Already in use by another app"
-            case .system: "Taken by a macOS shortcut"
-            case .failed(let status): "Couldn't register (error \(status))"
+            case .inUse: String(localized: "Already in use by another app")
+            case .system: String(localized: "Taken by a macOS shortcut")
+            case .failed(let status): String(localized: "Couldn't register (error \(Int(status)))")
             }
         }
     }

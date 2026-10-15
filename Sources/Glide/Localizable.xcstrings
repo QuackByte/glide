@@ -1,0 +1,1454 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ can't be used: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede usar %@: %@"
+          }
+        }
+      }
+    },
+    "%@ in %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ en %@"
+          }
+        }
+      }
+    },
+    "%@ was removed from “%@”." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha quitado %@ de “%@”."
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@"
+          }
+        }
+      }
+    },
+    "%@. Choose a different shortcut." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@. Elige otro atajo."
+          }
+        }
+      }
+    },
+    "%lld columns" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld column"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld columns"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld columna"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld columnas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld floating" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld floating"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld floating"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld flotante"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld flotantes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld matches" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld match"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld matches"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld resultado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld resultados"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld pt"
+          }
+        }
+      }
+    },
+    "%lld windows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld window"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld windows"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ventana"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ventanas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
+    "1. Click **Open System Settings**." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Haz clic en **Abrir Ajustes del Sistema**."
+          }
+        }
+      }
+    },
+    "2. Turn on **Glide** under Privacy & Security › Accessibility." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. Activa **Glide** en Privacidad y seguridad › Accesibilidad."
+          }
+        }
+      }
+    },
+    "3. Come back here. Glide starts on its own, with no relaunch needed." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. Vuelve aquí. Glide arranca solo, sin necesidad de reiniciarlo."
+          }
+        }
+      }
+    },
+    "Add App…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir app…"
+          }
+        }
+      }
+    },
+    "All shortcuts restored to their defaults." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los atajos han vuelto a sus valores predeterminados."
+          }
+        }
+      }
+    },
+    "Allow…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir…"
+          }
+        }
+      }
+    },
+    "Already in use by another app" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya lo usa otra app"
+          }
+        }
+      }
+    },
+    "Always" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siempre"
+          }
+        }
+      }
+    },
+    "Always float" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siempre flotante"
+          }
+        }
+      }
+    },
+    "Always tile" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siempre en mosaico"
+          }
+        }
+      }
+    },
+    "Animate window movement" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animar el movimiento de las ventanas"
+          }
+        }
+      }
+    },
+    "Any workspace" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cualquier escritorio"
+          }
+        }
+      }
+    },
+    "App Rules" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglas de apps"
+          }
+        }
+      }
+    },
+    "Appearance" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apariencia"
+          }
+        }
+      }
+    },
+    "Apps reopen where you keep them" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las apps se abren donde las dejas"
+          }
+        }
+      }
+    },
+    "Automatic" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        }
+      }
+    },
+    "Check Now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar ahora"
+          }
+        }
+      }
+    },
+    "Check for Updates…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar actualizaciones…"
+          }
+        }
+      }
+    },
+    "Check for updates automatically" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar actualizaciones automáticamente"
+          }
+        }
+      }
+    },
+    "Click a shortcut to record a new one. Shortcuts work in every app." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en un atajo para grabar uno nuevo. Los atajos funcionan en todas las apps."
+          }
+        }
+      }
+    },
+    "Close" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar"
+          }
+        }
+      }
+    },
+    "Column sent to workspace %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columna enviada al escritorio %lld"
+          }
+        }
+      }
+    },
+    "Couldn't register (error %lld)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido registrar (error %lld)"
+          }
+        }
+      }
+    },
+    "Couldn’t Create the Report" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido crear el informe"
+          }
+        }
+      }
+    },
+    "Default width" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho predeterminado"
+          }
+        }
+      }
+    },
+    "Dim unfocused windows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atenuar las ventanas sin foco"
+          }
+        }
+      }
+    },
+    "Dimming" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atenuación"
+          }
+        }
+      }
+    },
+    "Download and install updates automatically" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargar e instalar las actualizaciones automáticamente"
+          }
+        }
+      }
+    },
+    "Empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacío"
+          }
+        }
+      }
+    },
+    "Enable Tiling" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar mosaico"
+          }
+        }
+      }
+    },
+    "Filter" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtrar"
+          }
+        }
+      }
+    },
+    "Focus ring" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borde de foco"
+          }
+        }
+      }
+    },
+    "Forget" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olvidar"
+          }
+        }
+      }
+    },
+    "Full width" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho completo"
+          }
+        }
+      }
+    },
+    "Gap between windows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separación entre ventanas"
+          }
+        }
+      }
+    },
+    "General" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        }
+      }
+    },
+    "Glide %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide %@"
+          }
+        }
+      }
+    },
+    "Glide Settings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes de Glide"
+          }
+        }
+      }
+    },
+    "Glide Shortcuts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atajos de Glide"
+          }
+        }
+      }
+    },
+    "Glide arranges your windows as columns on a strip you scroll with the keyboard. macOS only lets an app move and resize other apps' windows with Accessibility access." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide coloca tus ventanas en columnas sobre una tira que recorres con el teclado. macOS solo deja que una app mueva y cambie el tamaño de las ventanas de otras apps si tiene acceso de accesibilidad."
+          }
+        }
+      }
+    },
+    "Glide needs Accessibility access" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide necesita acceso de accesibilidad"
+          }
+        }
+      }
+    },
+    "Glide uses this access only to read window positions, move and resize windows, and focus them. It sends nothing over the network." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide usa este acceso solo para leer la posición de las ventanas, moverlas, cambiarles el tamaño y darles el foco. No envía nada por la red."
+          }
+        }
+      }
+    },
+    "Glide, workspace %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide, escritorio %lld"
+          }
+        }
+      }
+    },
+    "Glide: paused" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide: en pausa"
+          }
+        }
+      }
+    },
+    "Glide: workspace %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide: escritorio %lld"
+          }
+        }
+      }
+    },
+    "Go" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ir"
+          }
+        }
+      }
+    },
+    "Grant Accessibility Access…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conceder acceso de accesibilidad…"
+          }
+        }
+      }
+    },
+    "Horizontal mouse wheel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rueda horizontal del ratón"
+          }
+        }
+      }
+    },
+    "Login Items…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ítems de inicio…"
+          }
+        }
+      }
+    },
+    "No match" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin resultados"
+          }
+        }
+      }
+    },
+    "No shortcut" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin atajo"
+          }
+        }
+      }
+    },
+    "None" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguno"
+          }
+        }
+      }
+    },
+    "Note: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota: %@"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivada"
+          }
+        }
+      }
+    },
+    "Open Settings to choose other shortcuts." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Ajustes para elegir otros atajos."
+          }
+        }
+      }
+    },
+    "Open System Settings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Ajustes del Sistema"
+          }
+        }
+      }
+    },
+    "Open at login" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir al iniciar sesión"
+          }
+        }
+      }
+    },
+    "Other App…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otra app…"
+          }
+        }
+      }
+    },
+    "Press esc to close" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsa esc para cerrar"
+          }
+        }
+      }
+    },
+    "Press keys…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsa las teclas…"
+          }
+        }
+      }
+    },
+    "Press the new shortcut for “%@”. Esc cancels, ⌫ removes it." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsa el nuevo atajo para “%@”. Esc cancela, ⌫ lo quita."
+          }
+        }
+      }
+    },
+    "Quit Glide" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salir de Glide"
+          }
+        }
+      }
+    },
+    "Remembered places" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sitios recordados"
+          }
+        }
+      }
+    },
+    "Remove the rule for %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar la regla de %@"
+          }
+        }
+      }
+    },
+    "Removed the shortcut for “%@”." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha quitado el atajo de “%@”."
+          }
+        }
+      }
+    },
+    "Report a Problem…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informar de un problema…"
+          }
+        }
+      }
+    },
+    "Restore Defaults" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer valores"
+          }
+        }
+      }
+    },
+    "Restore the default (%@)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer el valor predeterminado (%@)"
+          }
+        }
+      }
+    },
+    "Ring color" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color del borde"
+          }
+        }
+      }
+    },
+    "Ring thickness" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grosor del borde"
+          }
+        }
+      }
+    },
+    "Rules apply as windows open. Float and tile take effect right away; width and workspace apply to new windows. ⌃⌥V still floats or tiles a single window." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las reglas se aplican al abrirse las ventanas. Flotante y mosaico surten efecto al momento; el ancho y el escritorio se aplican a las ventanas nuevas. ⌃⌥V sigue haciendo flotar o poniendo en mosaico una sola ventana."
+          }
+        }
+      }
+    },
+    "Scroll with a three-finger swipe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desplazar deslizando tres dedos"
+          }
+        }
+      }
+    },
+    "Select" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir"
+          }
+        }
+      }
+    },
+    "Settings…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes…"
+          }
+        }
+      }
+    },
+    "Shortcuts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atajos"
+          }
+        }
+      }
+    },
+    "Show All Shortcuts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar todos los atajos"
+          }
+        }
+      }
+    },
+    "Show workspace number when switching" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar el número de escritorio al cambiar"
+          }
+        }
+      }
+    },
+    "Something wrong?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Algo no funciona?"
+          }
+        }
+      }
+    },
+    "Taken by a macOS shortcut" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo usa un atajo de macOS"
+          }
+        }
+      }
+    },
+    "Tile windows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organizar las ventanas en mosaico"
+          }
+        }
+      }
+    },
+    "Tilting the mouse wheel (or a thumb wheel) glides the strip. ⌃⌥ with the wheel always does, whatever this is set to." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inclinar la rueda del ratón (o una rueda para el pulgar) recorre la tira. ⌃⌥ con la rueda siempre lo hace, sea cual sea este ajuste."
+          }
+        }
+      }
+    },
+    "Trackpad Settings…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes del trackpad…"
+          }
+        }
+      }
+    },
+    "Type to filter windows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe para filtrar ventanas"
+          }
+        }
+      }
+    },
+    "Updates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizaciones"
+          }
+        }
+      }
+    },
+    "Use Accent Color" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar el color de énfasis"
+          }
+        }
+      }
+    },
+    "Waiting for permission…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esperando el permiso…"
+          }
+        }
+      }
+    },
+    "Welcome to Glide" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te damos la bienvenida a Glide"
+          }
+        }
+      }
+    },
+    "What’s New" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novedades"
+          }
+        }
+      }
+    },
+    "Width" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho"
+          }
+        }
+      }
+    },
+    "Window" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ventana"
+          }
+        }
+      }
+    },
+    "Window previews need Screen Recording access." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las vistas previas de las ventanas necesitan acceso a la grabación de pantalla."
+          }
+        }
+      }
+    },
+    "Windows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ventanas"
+          }
+        }
+      }
+    },
+    "With ⌃⌥" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con ⌃⌥"
+          }
+        }
+      }
+    },
+    "Workspace" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escritorio"
+          }
+        }
+      }
+    },
+    "Workspace %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escritorio %lld"
+          }
+        }
+      }
+    },
+    "Workspace %lld is empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El escritorio %lld está vacío"
+          }
+        }
+      }
+    },
+    "Workspace %lld — %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escritorio %lld — %@"
+          }
+        }
+      }
+    },
+    "Workspaces" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escritorios"
+          }
+        }
+      }
+    },
+    "Zipping the report failed (ditto exited with %lld)." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido comprimir el informe (ditto ha terminado con el código %lld)."
+          }
+        }
+      }
+    },
+    "macOS also switches Spaces with three-finger swipes. Set “Swipe between full-screen apps” to four fingers." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS también cambia de Space deslizando tres dedos. Ajusta “Deslizar entre apps a pantalla completa” a cuatro dedos."
+          }
+        }
+      }
+    },
+    "macOS needs you to allow Glide under Login Items." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS necesita que permitas Glide en Ítems de inicio."
+          }
+        }
+      }
+    },
+    "none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ninguno"
+          }
+        }
+      }
+    },
+    "½ width" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho de ½"
+          }
+        }
+      }
+    },
+    "⅓ width" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho de ⅓"
+          }
+        }
+      }
+    },
+    "⅔ width" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho de ⅔"
+          }
+        }
+      }
+    },
+    "⚠︎ %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠︎ %@"
+          }
+        }
+      }
+    },
+    "⚠︎ %lld shortcuts unavailable…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "⚠︎ %lld shortcut unavailable…"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "⚠︎ %lld shortcuts unavailable…"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "⚠︎ %lld atajo no disponible…"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "⚠︎ %lld atajos no disponibles…"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

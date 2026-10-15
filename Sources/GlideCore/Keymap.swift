@@ -1,3 +1,5 @@
+import Foundation
+
 /// Which shortcut triggers which action: the defaults plus any user overrides.
 public struct Keymap: Equatable, Sendable {
     /// Defaults are ⌃⌥ for focus/commands and ⌃⌥⇧ for "move", plus ⌘ for displays. See the README
@@ -24,6 +26,7 @@ public struct Keymap: Equatable, Sendable {
             .toggleTabbed: KeyCombo(KeyCode.w, hyper),
             .centerColumn: KeyCombo(KeyCode.c, hyper),
             .toggleOverview: KeyCombo(KeyCode.o, hyper),
+            .showShortcuts: KeyCombo(KeyCode.slash, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
             .toggleTiling: KeyCombo(KeyCode.t, move),
             .focusPreviousWorkspace: KeyCombo(KeyCode.pageUp, hyper),
@@ -141,22 +144,22 @@ public enum ShortcutPolicy {
         let primary = modifiers.subtracting(.shift)
 
         if primary.isEmpty && !KeyCode.isFunctionKey(key) {
-            return .rejected("Add ⌃, ⌥ or ⌘ so the shortcut doesn't block normal typing.")
+            return .rejected(String(localized: "Add ⌃, ⌥ or ⌘ so the shortcut doesn't block normal typing.", bundle: #bundle))
         }
         if KeyCode.arrows.contains(key) || key == KeyCode.home || key == KeyCode.end {
             if modifiers == .control && KeyCode.arrows.contains(key) {
-                return .warning("macOS uses ⌃ + arrows for Spaces and Mission Control.")
+                return .warning(String(localized: "macOS uses ⌃ + arrows for Spaces and Mission Control.", bundle: #bundle))
             }
             if primary == .option || primary == .command {
-                return .warning("\(modifiers.symbols) + arrows move the cursor in text fields.")
+                return .warning(String(localized: "\(modifiers.symbols) + arrows move the cursor in text fields.", bundle: #bundle))
             }
         }
         if key == KeyCode.space && (modifiers == .command || modifiers == [.command, .option]
             || modifiers == .control || modifiers == [.control, .option]) {
-            return .warning("macOS uses \(modifiers.symbols)Space for Spotlight or input sources.")
+            return .warning(String(localized: "macOS uses \(modifiers.symbols)Space for Spotlight or input sources.", bundle: #bundle))
         }
         if modifiers == .command && [KeyCode.tab, 12, 13, 4, 46].contains(key) {
-            return .warning("\(combo) is a standard macOS command.")
+            return .warning(String(localized: "\(combo.description) is a standard macOS command.", bundle: #bundle))
         }
         return .ok
     }
