@@ -39,6 +39,10 @@ public struct Changelog: Equatable, Sendable {
     /// Newest first, as written.
     public let releases: [Release]
 
+    public init(releases: [Release]) {
+        self.releases = releases
+    }
+
     public init(markdown: String) {
         var releases: [Release] = []
         var release: Release?
@@ -79,6 +83,15 @@ public struct Changelog: Equatable, Sendable {
             release.sections.removeAll { $0.entries.isEmpty }
             return release
         }
+    }
+
+    /// This changelog with each release replaced by the same version from `translation` when it has
+    /// one. Releases the translation lacks stay as they are, so they appear in English until translated.
+    /// The versions, and their order, come only from this changelog.
+    public func localized(with translation: Changelog?) -> Changelog {
+        guard let translation else { return self }
+        let translated = Dictionary(translation.releases.map { ($0.version, $0) }, uniquingKeysWith: { first, _ in first })
+        return Changelog(releases: releases.map { translated[$0.version] ?? $0 })
     }
 
     /// The releases someone who last saw `seen` hasn't seen, up to and including `current`,

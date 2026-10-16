@@ -5,10 +5,22 @@ import SwiftUI
 /// "What's new": entries from CHANGELOG.md, which is built into Glide. Shown once after an update
 /// with what changed since the version last seen, and from the menu with every release.
 final class WhatsNewWindowController {
+    /// The language Glide is showing, which can differ from the system's first choice when Glide
+    /// isn't translated into it. Nil for English.
+    static var language: String? {
+        let code = Bundle.main.preferredLocalizations.first ?? "en"
+        return code == "en" ? nil : code
+    }
+
+    /// CHANGELOG.md, with each release in the app's language when changelog/CHANGELOG.<code>.md has it.
     static let changelog: Changelog = {
-        guard let url = Bundle.main.url(forResource: "CHANGELOG", withExtension: "md"),
-              let text = try? String(contentsOf: url, encoding: .utf8) else { return Changelog(markdown: "") }
-        return Changelog(markdown: text)
+        func load(_ name: String) -> Changelog? {
+            Bundle.main.url(forResource: name, withExtension: "md")
+                .flatMap { try? String(contentsOf: $0, encoding: .utf8) }
+                .map { Changelog(markdown: $0) }
+        }
+        let english = load("CHANGELOG") ?? Changelog(markdown: "")
+        return english.localized(with: language.flatMap { load("CHANGELOG.\($0)") })
     }()
 
     private var window: NSWindow?
@@ -18,7 +30,7 @@ final class WhatsNewWindowController {
         window?.close()
         let view = WhatsNewView(releases: releases) { [weak self] in self?.window?.close() }
         let window = NSWindow(contentViewController: NSHostingController(rootView: view))
-        window.title = "What’s New in Glide"
+        window.title = String(localized: "What’s New in Glide")
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.center()
@@ -102,6 +114,6 @@ private struct ReleaseView: View {
         parser.locale = Locale(identifier: "en_US_POSIX")
         parser.dateFormat = "yyyy-MM-dd"
         guard let date = parser.date(from: iso) else { return nil }
-        return date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "en")))
+        return date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en")))
     }
 }
