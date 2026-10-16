@@ -96,7 +96,9 @@ Glide uses Accessibility only to read window positions and move, resize and focu
 
 ## Languages
 
-Glide is in English and Spanish, following the language order in **System Settings › General › Language & Region**. What's New stays in English.
+Glide is in English, Spanish, French, German, Japanese, Simplified Chinese, Korean and Brazilian Portuguese, following the language order in **System Settings › General › Language & Region**. What's New stays in English.
+
+Translations live in the two String Catalogs, `Sources/Glide/Localizable.xcstrings` and `Sources/GlideCore/Localizable.xcstrings`. `LocalizationTests` fails if a string is missing in any language or changes its placeholders.
 
 ## Updates
 
