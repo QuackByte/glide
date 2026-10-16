@@ -2,6 +2,12 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it.
 
+## 0.9.2 — 2026-10-16
+
+### New
+
+- **What's New speaks your language too.** The notes Glide shows after an update, and under What's New, are now in the same language as the rest of Glide.
+
 ## 0.9.1 — 2026-10-16
 
 ### New
