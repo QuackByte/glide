@@ -2,6 +2,12 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it.
 
+## 0.9.1 — 2026-10-16
+
+### New
+
+- **Glide speaks your language.** Glide is now in French, German, Japanese, Simplified Chinese, Korean and Brazilian Portuguese, as well as English and Spanish, and follows the language macOS prefers. What's New stays in English.
+
 ## 0.9.0 — 2026-10-15
 
 Glide for Mac now shares version numbers with Glide for Windows.
