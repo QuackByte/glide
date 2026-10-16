@@ -406,8 +406,14 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				de,
 				en,
 				es,
+				fr,
+				ja,
+				ko,
+				"pt-BR",
+				"zh-Hans",
 			);
 			mainGroup = 94BA5C58C1A72FDC6E953004;
 			minimizedProjectReferenceProxies = 1;
