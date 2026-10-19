@@ -2,6 +2,18 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.10.0 — 2026-10-19
+
+### Neu
+
+- **Gekachelt ist jetzt eine spiralförmige Anordnung.** Mit ⌃⌥T schaltest du einen Arbeitsbereich auf eine Anordnung um, in der alle Fenster auf den Bildschirm passen: Ein Fenster füllt ihn, zwei teilen ihn sich als Hälften, und ab dem dritten wird die letzte Spalte erneut geteilt, abwechselnd oben und unten mit links und rechts. Sie nutzt 2 Spalten oder 3 mit dem neuen ⌃⌥G, was Glide auch auf Ultrawide-Bildschirmen wählt. Wechselst du zurück zu Scrollend, bleiben deine Fenster in derselben Reihenfolge.
+- **Bewege dich in einem gekachelten Arbeitsbereich nach Richtung.** ⌃⌥ + Pfeiltasten fokussieren die Kachel neben der fokussierten, und ⌃⌥⇧ + Pfeiltasten tauschen sie mit diesem Nachbarn. Das Wechseln der Breite (⌃⌥R) ändert, wie die fokussierte Kachel den Platz mit den folgenden Kacheln teilt, und ⌃⌥F zoomt eine Kachel auf den ganzen Bildschirm, bis du es erneut drückst.
+- **Wähle, wie viele Spalten gekachelte Arbeitsbereiche nutzen,** unter Einstellungen › Allgemein › Gekachelte Spalten: Automatisch (3 auf Ultrawide-Bildschirmen, sonst 2), 2 oder 3.
+
+### Änderungen
+
+- **Ein Fenster in einen anderen Arbeitsbereich zu schicken, verschiebt nur dieses Fenster.** ⌃⌥⇧1…9 und ⌃⌥⇧PgUp/PgDn nahmen früher die ganze Spalte mit, jetzt geht nur das fokussierte Fenster als eigene Spalte, und du bleibst im aktuellen Arbeitsbereich.
+
 ## 0.9.4 — 2026-10-19
 
 ### Fehlerbehebungen
