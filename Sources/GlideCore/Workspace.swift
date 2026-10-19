@@ -95,6 +95,8 @@ public struct Workspace: Equatable, Sendable {
     public var tiledRatios: [CGFloat]?
     /// The window whose tile fills the screen (tiled "full width"); only counts while that tile has focus.
     public private(set) var zoomedWindow: WindowID?
+    /// The window whose learned minimum width held back the last width change, so the caller can say why; nil otherwise.
+    public private(set) var stoppedByMinimum: WindowID?
 
     public init(strip: Strip = Strip(), viewport: CGRect, settings: LayoutSettings = .standard) {
         self.strip = strip
@@ -148,6 +150,21 @@ public struct Workspace: Equatable, Sendable {
 
     private func minimumWidth(of column: Column) -> CGFloat {
         column.windows.compactMap { minimumWidths[$0] }.max() ?? 0
+    }
+
+    /// The learned minimum width of the column or tile holding `window`, and the window that sets it; nil if none is known.
+    public func minimumLimit(of window: WindowID) -> (window: WindowID, width: CGFloat)? {
+        if layout == .tiled {
+            let tiles = tiles()
+            guard let index = tiles.firstIndex(where: { tileWindows($0).contains(window) }) else { return nil }
+            return minimumLimit(among: tileWindows(tiles[index]))
+        }
+        guard let (column, _) = strip.location(of: window) else { return nil }
+        return minimumLimit(among: strip.columns[column].windows)
+    }
+
+    private func minimumLimit(among windows: [WindowID]) -> (window: WindowID, width: CGFloat)? {
+        windows.compactMap { id in minimumWidths[id].map { (window: id, width: $0) } }.max { $0.width < $1.width }
     }
 
     /// Every column's width on the strip, worked out once.
@@ -292,6 +309,7 @@ public struct Workspace: Equatable, Sendable {
     /// Applies a layout action. Returns false if it changed nothing or is not a layout action.
     @discardableResult
     public mutating func perform(_ action: Action) -> Bool {
+        stoppedByMinimum = nil
         if action == .cycleTiledColumns {
             cycleTiledColumns()
             return true
@@ -343,14 +361,22 @@ public struct Workspace: Equatable, Sendable {
     /// otherwise it steps through the presets.
     private mutating func cycleWidth(forward: Bool) -> Bool {
         guard let column = strip.focusedColumn else { return false }
-        guard let custom = column.customWidth, !column.isFullWidth else {
-            return strip.cycleWidth(presetCount: settings.widthPresets.count, forward: forward)
+        let changed: Bool
+        if let custom = column.customWidth, !column.isFullWidth {
+            let widths = settings.widthPresets.map(presetWidth)
+            let index = forward
+                ? widths.firstIndex { $0 > custom + 1 } ?? 0
+                : widths.lastIndex { $0 < custom - 1 } ?? widths.count - 1
+            changed = strip.setWidthIndex(index)
+        } else {
+            changed = strip.cycleWidth(presetCount: settings.widthPresets.count, forward: forward)
         }
-        let widths = settings.widthPresets.map(presetWidth)
-        let index = forward
-            ? widths.firstIndex { $0 > custom + 1 } ?? 0
-            : widths.lastIndex { $0 < custom - 1 } ?? widths.count - 1
-        return strip.setWidthIndex(index)
+        // A step narrower than the window's minimum still shows the minimum; say so.
+        if !forward, let window = strip.focusedWindow, let limit = minimumLimit(of: window), let focused = strip.focusedColumn,
+           presetWidth(settings.widthPresets[focused.widthIndex]) < limit.width - 0.5 {
+            stoppedByMinimum = limit.window
+        }
+        return changed
     }
 
     /// Adopts the width the user just dragged `window` to. On the strip that is its column's width.
@@ -359,25 +385,27 @@ public struct Workspace: Equatable, Sendable {
     /// nothing changed.
     @discardableResult
     public mutating func setColumnWidthFromResize(_ window: WindowID, to width: CGFloat) -> Bool {
-        guard layout == .tiled else { return strip.setCustomWidth(width, forColumnOf: window) }
+        stoppedByMinimum = nil
+        guard layout == .tiled else {
+            var width = width
+            if let limit = minimumLimit(of: window), width < limit.width - 0.5 {
+                stoppedByMinimum = limit.window
+                width = limit.width
+            }
+            return strip.setCustomWidth(width, forColumnOf: window)
+        }
         let tiles = tiles()
         guard let index = tiles.firstIndex(where: { tileWindows($0).contains(window) }), zoomedWindow == nil else { return false }
         let count = tiles.count
-        let splits = TiledLayout.splits(in: viewport, count: count, columns: tiledColumns, gap: settings.gap, ratios: effectiveRatios(count))
-        // The split that sizes the tile across: its own if that one is side by side (the tile is its first part), else the nearest earlier one (it is in the second part).
-        let split: Int
-        let isFirstPart: Bool
-        if index < count - 1, splits[index].sideBySide {
-            (split, isFirstPart) = (index, true)
-        } else if let earlier = (0..<min(index, count - 1)).reversed().first(where: { splits[$0].sideBySide }) {
-            (split, isFirstPart) = (earlier, false)
-        } else {
-            return false
+        let ratios = displayedRatios(tiles)
+        guard let sizing = sizing(ofTile: index, count: count, ratios: ratios) else { return false }
+        var width = width
+        if let limit = minimumLimit(of: window), width < limit.width - 0.5 {
+            stoppedByMinimum = limit.window
+            width = limit.width
         }
-        let available = splits[split].room.width - settings.gap
-        guard available > 0 else { return false }
-        let share = min(max(width / available, 0.1), 0.9)
-        return setTiledRatio(split: split, count: count, to: isFirstPart ? share : 1 - share)
+        let share = min(max(width / sizing.available, 0.1), 0.9)
+        return setTiledRatio(split: sizing.split, count: count, to: sizing.isFirstPart ? share : 1 - share)
     }
 
     // MARK: Tiled
@@ -406,20 +434,66 @@ public struct Workspace: Equatable, Sendable {
         return ratios
     }
 
+    /// The narrowest a tile without a minimum of its own is squeezed to by its neighbours' minimums (or
+    /// the tile's own width, if it was already narrower).
+    private static let neighbourFloor: CGFloat = 200
+
+    /// The ratios the layout is drawn with: the stored ones, with the split of each tile that has a
+    /// learned minimum width set to give it that width. Unset splits stay 0, so they keep their default.
+    private func displayedRatios(_ tiles: [Tile]) -> [CGFloat] {
+        fittedRatios(tiles) ?? effectiveRatios(tiles.count) ?? Array(repeating: 0, count: max(tiles.count - 1, 0))
+    }
+
+    /// The ratios that give each tile its learned minimum width by the split that sizes it, leaving the
+    /// other splits as they are. nil when the minimums can't all fit, or a tile would end up narrower than
+    /// its minimum or than `neighbourFloor`, so the caller keeps the layout as it was.
+    private func fittedRatios(_ tiles: [Tile]) -> [CGFloat]? {
+        let count = tiles.count
+        let original = effectiveRatios(count) ?? Array(repeating: 0, count: max(count - 1, 0))
+        let minimums = tiles.map { min(minimumLimit(among: tileWindows($0))?.width ?? 0, usableWidth).rounded(.up) }
+        func frames(_ ratios: [CGFloat]) -> [CGRect] {
+            TiledLayout.frames(in: viewport, count: count, columns: tiledColumns, gap: settings.gap, ratios: ratios)
+        }
+        var ratios = original
+        for index in tiles.indices where minimums[index] > 0 && frames(ratios)[index].width < minimums[index] {
+            guard let sizing = sizing(ofTile: index, count: count, ratios: ratios), minimums[index] < sizing.available else { return nil }
+            let share = minimums[index] / sizing.available
+            ratios[sizing.split] = sizing.isFirstPart ? share : 1 - share
+        }
+        let before = frames(original), after = frames(ratios)
+        let fits = tiles.indices.allSatisfy { index in
+            after[index].width >= max(minimums[index], min(before[index].width, Self.neighbourFloor)) - 0.5
+        }
+        return fits ? ratios : nil
+    }
+
+    /// The split that sizes tile `index` across, whether the tile is its first part, and the room that
+    /// split divides (its width, less the gap). The tile's own split if that is side by side, else the
+    /// nearest earlier side-by-side split, which it sits in the second part of.
+    private func sizing(ofTile index: Int, count: Int, ratios: [CGFloat]) -> (split: Int, isFirstPart: Bool, available: CGFloat)? {
+        let splits = TiledLayout.splits(in: viewport, count: count, columns: tiledColumns, gap: settings.gap, ratios: ratios)
+        if index < count - 1, splits[index].sideBySide {
+            return (index, true, splits[index].room.width - settings.gap)
+        }
+        guard let earlier = (0..<min(index, count - 1)).reversed().first(where: { splits[$0].sideBySide }) else { return nil }
+        return (earlier, false, splits[earlier].room.width - settings.gap)
+    }
+
     /// The tile holding the zoomed window, while it has focus.
     private func zoomedTile(in tiles: [Tile]) -> Int? {
         guard let zoomed = zoomedWindow, let focused = strip.focusedColumn, focused.windows.contains(zoomed) else { return nil }
         return tiles.firstIndex { $0.column == strip.focusedColumnIndex && ($0.row == nil || focused.windows[$0.row!] == zoomed) }
     }
 
-    /// Every tile's frame as the spiral lays it out, before minimum widths and zoom: what focus
-    /// and move go by, and what the ratios shape.
+    /// Every tile's frame as the spiral lays it out, with the ratios fitted to minimum widths but before
+    /// zoom: what focus and move go by, and what the ratios shape.
     private func tileFrames(_ tiles: [Tile]) -> [CGRect] {
-        TiledLayout.frames(in: viewport, count: tiles.count, columns: tiledColumns, gap: settings.gap, ratios: effectiveRatios(tiles.count))
+        TiledLayout.frames(in: viewport, count: tiles.count, columns: tiledColumns, gap: settings.gap, ratios: displayedRatios(tiles))
     }
 
-    /// The frames tiles are sent to: a tile narrower than a window in it allows gets that window's
-    /// minimum width within its own x, overlapping its neighbour if it must; a zoomed tile fills the screen.
+    /// The frames tiles are sent to. A tile narrower than a window in it allows gets that window's minimum
+    /// width within its own x, overlapping its neighbour, but only when the minimums can't all fit (see
+    /// `fittedRatios`); a zoomed tile fills the screen.
     private func placedFrames(_ tiles: [Tile]) -> [CGRect] {
         var frames = tileFrames(tiles)
         let gap = settings.gap
@@ -506,13 +580,26 @@ public struct Workspace: Equatable, Sendable {
         guard count >= 2 else { return false }
         let index = strip.focusedColumnIndex
         let split = min(index, count - 2)
-        let current = TiledLayout.ratio(split: split, count: count, columns: tiledColumns, ratios: effectiveRatios(count))
+        let ratios = displayedRatios(tiles())
+        let current = TiledLayout.ratio(split: split, count: count, columns: tiledColumns, ratios: ratios)
         let isLast = index == count - 1
         let share = isLast ? 1 - current : current
         let presets = TiledLayout.ratioPresets
         let tolerance: CGFloat = 0.01
         let next = forward ? presets.first { $0 > share + tolerance } ?? presets[0]
                            : presets.last { $0 < share - tolerance } ?? presets[presets.count - 1]
+        var stepped = ratios
+        stepped[split] = isLast ? 1 - next : next
+        // A step that would leave the tile narrower than its window's minimum stops at that minimum.
+        if let window = strip.focusedWindow, let limit = minimumLimit(of: window),
+           TiledLayout.frames(in: viewport, count: count, columns: tiledColumns, gap: settings.gap, ratios: stepped)[index].width < limit.width - 0.5 {
+            stoppedByMinimum = limit.window
+            guard let sizing = sizing(ofTile: index, count: count, ratios: ratios), limit.width.rounded(.up) < sizing.available else { return false }
+            let minimumShare = limit.width.rounded(.up) / sizing.available
+            let target = sizing.isFirstPart ? minimumShare : 1 - minimumShare
+            guard abs(target - ratios[sizing.split]) >= 0.001 else { return false }
+            return setTiledRatio(split: sizing.split, count: count, to: target)
+        }
         return setTiledRatio(split: split, count: count, to: isLast ? 1 - next : next)
     }
 
