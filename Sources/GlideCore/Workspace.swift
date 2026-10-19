@@ -459,8 +459,8 @@ public struct Workspace: Equatable, Sendable {
         case .moveWindowDown: return moveTile(.down)
         case .focusFirstColumn: return strip.focusFirstColumn()
         case .focusLastColumn: return strip.focusLastColumn()
-        // Tiles are windows, never stacks: there is nothing to consume or expel.
-        case .consumeOrExpelLeft, .consumeOrExpelRight: return false
+        case .consumeOrExpelLeft: return consumeOrExpelTile(.left)
+        case .consumeOrExpelRight: return consumeOrExpelTile(.right)
         case .cycleColumnWidth: return cycleTiledRatio(forward: true)
         case .cycleColumnWidthBackward: return cycleTiledRatio(forward: false)
         case .toggleFullWidth:
@@ -480,6 +480,16 @@ public struct Workspace: Equatable, Sendable {
     private mutating func moveTile(_ side: TileSide) -> Bool {
         guard let target = TiledLayout.neighbour(of: tileFrames(tiles()), from: strip.focusedColumnIndex, side: side) else { return false }
         return strip.swapColumns(strip.focusedColumnIndex, target)
+    }
+
+    /// A tab of a tabbed tile with other tabs is expelled into a new tile on that side. A window
+    /// alone in its tile joins the tile on that side as a tab, making that tile tabbed so it stays one tile.
+    private mutating func consumeOrExpelTile(_ direction: HorizontalDirection) -> Bool {
+        guard let column = strip.focusedColumn else { return false }
+        if column.windows.count > 1 { return strip.consumeOrExpel(direction) }
+        let side: TileSide = direction == .left ? .left : .right
+        guard let target = TiledLayout.neighbour(of: tileFrames(tiles()), from: strip.focusedColumnIndex, side: side) else { return false }
+        return strip.joinColumn(at: target)
     }
 
     /// Steps the split that cuts the focused tile off from the tiles after it through 1/3, 1/2 and
