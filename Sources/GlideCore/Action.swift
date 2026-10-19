@@ -49,6 +49,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case showShortcuts
     case toggleFloating
     case toggleTiling
+    case toggleLayout
 
     public enum Group: String, CaseIterable, Sendable {
         case focus = "Focus"
@@ -108,6 +109,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .showShortcuts: String(localized: "Show Shortcuts", bundle: #bundle)
         case .toggleFloating: String(localized: "Toggle Floating", bundle: #bundle)
         case .toggleTiling: String(localized: "Enable or Disable Tiling", bundle: #bundle)
+        case .toggleLayout: String(localized: "Switch Between Scrolling and Tiled", bundle: #bundle)
         // Handled above.
         case .focusWorkspace1, .focusWorkspace2, .focusWorkspace3, .focusWorkspace4, .focusWorkspace5,
              .focusWorkspace6, .focusWorkspace7, .focusWorkspace8, .focusWorkspace9,

@@ -29,6 +29,7 @@ public struct Keymap: Equatable, Sendable {
             .showShortcuts: KeyCombo(KeyCode.slash, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
             .toggleTiling: KeyCombo(KeyCode.t, move),
+            .toggleLayout: KeyCombo(KeyCode.t, hyper),
             .focusPreviousWorkspace: KeyCombo(KeyCode.pageUp, hyper),
             .focusNextWorkspace: KeyCombo(KeyCode.pageDown, hyper),
             .moveColumnToPreviousWorkspace: KeyCombo(KeyCode.pageUp, move),
