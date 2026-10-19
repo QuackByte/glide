@@ -2,6 +2,16 @@
 
 Ce fichier est la traduction française de CHANGELOG.md, qui reste l’original. Il présente les nouveautés de chaque version de Glide pour Mac. Glide affiche les nouvelles entrées une seule fois après une mise à jour, et les notes de chaque version sur GitHub en sont issues.
 
+## 0.10.2 — 2026-10-19
+
+### Nouveautés
+
+- **Disposition en mosaïque : ⌃⌥↑ et ⌃⌥↓ changent d'onglet d'abord.** Dans un groupe d'onglets, ils passent à l'onglet suivant avant de passer à la tuile dans cette direction.
+
+### Corrections
+
+- **Disposition en mosaïque : les voisines rétrécissent pour respecter la largeur minimale d'une app.** Si une app a une largeur minimale, les tuiles à côté rétrécissent au lieu de se chevaucher, et Glide indique pourquoi un redimensionnement s'arrête à cette largeur.
+
 ## 0.10.1 — 2026-10-19
 
 ### Corrections

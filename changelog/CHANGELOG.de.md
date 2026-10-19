@@ -2,6 +2,16 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.10.2 — 2026-10-19
+
+### Neu
+
+- **Gekachelt: ⌃⌥↑ und ⌃⌥↓ wechseln zuerst die Tabs.** In einer Tab-Gruppe wechseln sie erst die Tabs, bevor sie zur Kachel in dieser Richtung weitergehen.
+
+### Fehlerbehebungen
+
+- **Gekachelt: Nachbarn schrumpfen auf die Mindestbreite einer App.** Hat eine App eine Mindestbreite, werden die Kacheln daneben verkleinert, statt sich zu überlappen, und Glide sagt, warum eine Größenänderung bei dieser Breite stoppt.
+
 ## 0.10.1 — 2026-10-19
 
 ### Fehlerbehebungen
