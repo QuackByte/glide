@@ -11,7 +11,7 @@ Status: early development (milestone 1: one display). There's also [Glide for Wi
 - Each standard window is a **column** on the strip. New windows open to the right of the focused column and take focus.
 - Columns use preset widths (⅓, ½, ⅔, full) and fill the screen height, minus a gap (12 pt by default). A column can stack several windows vertically.
 - **Resize with the mouse:** drag a tiled window's edge and its column keeps the new width; the strip reflows around it. ⌃⌥R / ⌃⌥⇧R then step to the next preset in that direction. **Drag a window** (rather than its edge) onto a tab bar and it becomes a tab there; onto another window and it stacks into that window's column; onto another display and it joins that display's strip. While you drag, an outline in the focus ring color shows the column it would join, or a bar where it would land on another display. Dropped anywhere else, it snaps back into its slot. A floating window dropped on a tile joins the tiles.
-- **Tiled layout:** ⌃⌥T switches the current workspace between the scrolling strip and a tiled layout, where every column shares the screen width so they all fit, without scrolling. A column's preset or dragged width becomes its share: ⌃⌥R gives it a bigger or smaller one, dragging its edge resizes it (the others keep their proportions), and ⌃⌥F still makes it full width until you press it again. Windows that won't shrink below some width keep it and the rest share what is left. Each workspace on each display keeps its own layout, even after a restart. **Settings › General › Layout** sets the layout of workspaces you haven't switched by hand, and applies at once.
+- **Tiled layout:** ⌃⌥T switches the current workspace between the scrolling strip and a tiled layout, where every window fits on screen and nothing scrolls. Each workspace on each display keeps its own layout, even after a restart. **Settings › General › Layout** sets the layout of workspaces you haven't switched by hand, and applies at once. [Details below.](#tiled-layout)
 - Glide keeps the focused column fully on screen, scrolling the strip as little as possible. macOS doesn't let windows sit entirely off screen, so columns scrolled out of view are parked as 4 pt slivers at the left and right screen edges.
 - A column can also be **tabbed** (⌃⌥W): it shows one window at full height under a tab bar, and the others wait as tabs. ⌃⌥↑/↓ switch tabs, ⌃⌥⇧↑/↓ reorder them, clicking a tab selects it, and consume/expel (⌃⌥[ / ⌃⌥]) adds or removes tabs. Tabs can be windows of different apps. macOS won't let a window go fully off screen, so hidden tabs wait in the bottom-right corner with a point showing.
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.
@@ -25,9 +25,20 @@ Status: early development (milestone 1: one display). There's also [Glide for Wi
 - Layout changes slide into place in about 120 ms (ease-out). Turn this off under **Settings › Animate window movement**.
 - A **focus ring** outlines the focused window (your accent color, or any color you pick). Optionally, Glide **dims every other window**. Both are click-through overlay windows stacked just above and just below the focused window, since macOS doesn't let one app restyle another's windows. They hide while a floating window or Glide's own Settings has focus. The ring and tab bars disappear while windows slide and fade back in once they settle: each app redraws a moved window on its own schedule, so an overlay moved alongside would drift away from it.
 - Set the **gap** between windows (0–40 pt), the ring color, and the dimming amount under **Settings › Appearance**. Changes apply immediately.
-- Glide remembers the layout (column order, stacks, widths, each workspace's scrolling or tiled layout, and windows you floated or tiled by hand) when you quit it or turn tiling off. Windows that are still open come back exactly as they were. The layout resets after a restart, because macOS window IDs only last until then.
+- Glide remembers the layout (column order, stacks, widths, each workspace's scrolling or tiled layout with its tiled column count and splits, and windows you floated or tiled by hand) when you quit it or turn tiling off. Windows that are still open come back exactly as they were. The layout resets after a restart, because macOS window IDs only last until then.
 - Turning tiling off (or quitting Glide) moves every window to a sensible spot on screen, so nothing stays parked at the edges.
 - **Crash recovery:** Glide runs a small watchdog (a second copy of itself started with `--watchdog`). If Glide exits without quitting cleanly, whether it crashed or was force quit, the watchdog brings every parked or hidden window back on screen. After a real crash (macOS wrote a crash report) it also relaunches Glide, at most once a minute, and Glide re-tiles from the saved layout.
+
+## Tiled layout
+
+⌃⌥T switches the current workspace between the scrolling strip and a tiled layout, where every window fits on screen and nothing scrolls. Windows are tiled in order, like a dwindle or spiral layout: one window fills the screen, two share it as columns, and from the third on the last column splits again, top and bottom, then left and right, alternating. With two columns (the default) that gives `[1][2]`, `[1][2 over 3]`, `[1][2 over (3 | 4)]`…; with three, `[1][2][3]`, `[1][2][3 over 4]`, `[1][2][3 over (4 | 5)]`…. ⌃⌥G switches the workspace between 2 and 3 columns. **Settings › General › Tiled columns** sets how many columns workspaces you haven't switched by hand use: Automatic (3 on ultrawide displays, at least twice as wide as tall, and 2 elsewhere), 2 or 3.
+
+- **Order**: tiles follow the strip's columns left to right. Switching to tiled gives every window of a stack its own column (a tabbed column stays one tile, with its tab bar on top); switching back gives every column the default width. The order and focus survive both ways. A new window becomes the next tile after the focused one, and a window dropped onto another's column becomes the next tile too.
+- **⌃⌥ + arrows** focus the tile next to the focused one in that direction, and **⌃⌥⇧ + arrows** swap it with that neighbour. ⌃⌥Home / End focus the first / last tile. ⌃⌥[ and ⌃⌥] and ⌃⌥C do nothing, and neither do the trackpad swipe or the mouse wheel.
+- **⌃⌥R** steps the split between the focused tile and the rest through ⅓, ½ and ⅔ (the last tile changes the split before it). Dragging a tile's edge moves the same split; a tile with no split to move snaps back. The splits start over when a window opens or closes.
+- **⌃⌥F** zooms the focused tile to fill the screen until you press it again, or move focus away.
+- Windows with a minimum width that doesn't fit their tile get that width, overlapping their neighbour if they have to.
+- Each workspace's column count and splits are remembered with its layout.
 
 ## Trackpad
 
@@ -47,10 +58,11 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Move column left / right | ⌃⌥⇧← / ⌃⌥⇧→ |
 | Move window up / down (within a column, or reorder tabs) | ⌃⌥⇧↑ / ⌃⌥⇧↓ |
 | Consume or expel window left / right | ⌃⌥[ / ⌃⌥] |
-| Cycle column width (⅓ → ½ → ⅔ → full) | ⌃⌥R (⌃⌥⇧R cycles backward) |
-| Toggle full width | ⌃⌥F |
+| Cycle column width (⅓ → ½ → ⅔ → full); tiled: the split | ⌃⌥R (⌃⌥⇧R cycles backward) |
+| Toggle full width; tiled: zoom the tile | ⌃⌥F |
 | Toggle tabbed column | ⌃⌥W |
 | Switch the workspace between scrolling and tiled | ⌃⌥T |
+| Switch the tiled workspace between 2 and 3 columns | ⌃⌥G |
 | Center focused column | ⌃⌥C |
 | Switch to workspace 1…9 | ⌃⌥1 … ⌃⌥9 |
 | Send focused window to workspace 1…9 | ⌃⌥⇧1 … ⌃⌥⇧9 |
@@ -71,7 +83,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 - **Arrows, not letters, for direction.** Arrows need no vim knowledge, work on every keyboard layout, and are where your hand already is for navigation.
 - **They don't steal text editing.** ⌥←/→ (word), ⌘←/→ (line), their ⇧ variants (selection), and ⌃A/E are untouched. Glide never binds a single modifier with an arrow.
 - **They don't touch macOS.** ⌃←/→ (switch Spaces), ⌃↑/↓ (Mission Control / App Exposé), ⌘Space / ⌥⌘Space (Spotlight), ⌃Space / ⌃⌥Space (input sources), and the Globe-key window tiling shortcuts (🌐⌃ + arrows and friends) are all left alone. Glide also reads the system's enabled shortcuts at launch and flags any collision.
-- **Mnemonic letters** for the rest: **R**esize, **F**ull, **C**enter, **T**iled, **O**verview (niri's key too). ⌃⌥T switches the layout and sits one ⇧ away from ⌃⌥⇧T, which turns tiling off. Tabs use ⌃⌥W like niri. Floating uses ⌃⌥V, the same key niri uses. **[** and **]** point at the side the window goes to.
+- **Mnemonic letters** for the rest: **R**esize, **F**ull, **C**enter, **T**iled, **G**rid of columns, **O**verview (niri's key too). ⌃⌥T switches the layout and sits one ⇧ away from ⌃⌥⇧T, which turns tiling off. Tabs use ⌃⌥W like niri. Floating uses ⌃⌥V, the same key niri uses. **[** and **]** point at the side the window goes to.
 - **Workspaces on the number row.** ⌃⌥ + digit leaves ⌃1…9 (macOS "Switch to Desktop N") and AeroSpace's ⌥1…9 alone.
 - **Other window managers.** AeroSpace's defaults use ⌥ alone (⌥H/J/K/L, ⌥1…), so the two don't collide. Raycast ships no window shortcuts by default. Rectangle-style apps default to ⌃⌥ + arrows/letters; if you still run one, rebind one of them (Glide is meant to replace them).
 - **Terminal caveat:** in a terminal with "Option as Meta", ⌃⌥ letters are Emacs C-M- chords (C-M-f, C-M-r, …). If you live in Emacs, rebind those in Settings.
