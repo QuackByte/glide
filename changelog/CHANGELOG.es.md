@@ -2,6 +2,13 @@
 
 Novedades de cada versión de Glide para Mac. Glide muestra las entradas nuevas una sola vez tras actualizarse, y las notas de cada versión en GitHub salen de aquí. Esta es una traducción de CHANGELOG.md, que es el original.
 
+## 0.9.3 — 2026-10-19
+
+### Novedades
+
+- **Disposición en mosaico.** ⌃⌥T cambia el escritorio actual entre la tira desplazable y una disposición en mosaico, donde todas las columnas comparten la pantalla y caben a la vez, sin desplazarte. Cada escritorio conserva su propia disposición, incluso después de reiniciar Glide. Cambiar el ancho de una columna (⌃⌥R) le da una parte mayor o menor, arrastrar su borde la redimensiona, y ⌃⌥F sigue poniéndola a ancho completo hasta que lo pulses de nuevo.
+- **Elige la disposición con la que empiezan los escritorios nuevos** en Ajustes › General › Disposición: Desplazable, como hasta ahora, o Mosaico. Los escritorios que hayas cambiado con ⌃⌥T conservan la suya.
+
 ## 0.9.2 — 2026-10-16
 
 ### Novedades

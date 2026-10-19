@@ -2,6 +2,13 @@
 
 Ce fichier est la traduction française de CHANGELOG.md, qui reste l’original. Il présente les nouveautés de chaque version de Glide pour Mac. Glide affiche les nouvelles entrées une seule fois après une mise à jour, et les notes de chaque version sur GitHub en sont issues.
 
+## 0.9.3 — 2026-10-19
+
+### Nouveautés
+
+- **Disposition en mosaïque.** ⌃⌥T fait passer le bureau actuel de la bande à défilement à une disposition en mosaïque, où toutes les colonnes se partagent l’écran et tiennent ensemble, sans défilement. Chaque bureau garde sa propre disposition, même après un redémarrage de Glide. Changer la largeur d’une colonne (⌃⌥R) lui donne une part plus grande ou plus petite, faire glisser son bord la redimensionne, et ⌃⌥F la met toujours en pleine largeur jusqu’à ce que vous appuyiez de nouveau dessus.
+- **Choisissez la disposition des nouveaux bureaux** dans Réglages › Général › Disposition : Défilement, comme avant, ou Mosaïque. Les bureaux que vous avez basculés avec ⌃⌥T gardent la leur.
+
 ## 0.9.2 — 2026-10-16
 
 ### Nouveautés

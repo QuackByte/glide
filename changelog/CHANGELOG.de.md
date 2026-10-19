@@ -2,6 +2,13 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.9.3 — 2026-10-19
+
+### Neu
+
+- **Gekachelte Anordnung.** Mit ⌃⌥T schaltest du den aktuellen Arbeitsbereich zwischen dem scrollenden Streifen und einer gekachelten Anordnung um, in der sich alle Spalten den Bildschirm teilen und gemeinsam Platz finden, ohne zu scrollen. Jeder Arbeitsbereich behält seine eigene Anordnung, auch nach einem Neustart von Glide. Wechselst du die Breite einer Spalte (⌃⌥R), bekommt sie einen größeren oder kleineren Anteil, Ziehen an ihrem Rand ändert die Größe, und ⌃⌥F macht sie weiterhin volle Breite, bis du es erneut drückst.
+- **Wähle die Anordnung, mit der neue Arbeitsbereiche starten,** unter Einstellungen › Allgemein › Anordnung: Scrollend wie bisher oder Gekachelt. Arbeitsbereiche, die du mit ⌃⌥T umgeschaltet hast, behalten ihre eigene.
+
 ## 0.9.2 — 2026-10-16
 
 ### Neu
