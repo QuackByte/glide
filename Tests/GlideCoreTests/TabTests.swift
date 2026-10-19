@@ -113,6 +113,76 @@ final class TabTests: XCTestCase {
         XCTAssertEqual(placements(ws)[2]?.visibility, .visible)
     }
 
+    /// Five tiles as in TiledLayoutTests: 0 on the left, 1 top right with 2 below it, then 3 and 4. Tile 1 is a tab group.
+    private func tiledWithTabGroup(focusedRow: Int = 0) -> Workspace {
+        let columns = [Column(windows: [1], widthIndex: 1), Column(windows: [10, 11, 12], focusedRow: focusedRow, widthIndex: 1, isTabbed: true)]
+            + [13, 14, 15].map { Column(windows: [$0], widthIndex: 1) }
+        var ws = Workspace(strip: Strip(columns: columns, focusedColumnIndex: 1), viewport: viewport)
+        ws.layoutOverride = .tiled
+        ws.tiledColumnsOverride = 2
+        return ws
+    }
+
+    func testTiledFocusUpAndDownSwitchTabsInTheFocusedTile() {
+        var ws = tiledWithTabGroup()
+        ws.strip.focus(10)
+        XCTAssertTrue(ws.perform(.focusWindowDown))
+        XCTAssertEqual(ws.strip.focusedWindow, 11)
+        XCTAssertEqual(ws.strip.focusedColumnIndex, 1, "Still the same tile")
+        XCTAssertEqual(ws.tabBars()[0].activeWindow, 11)
+        XCTAssertTrue(ws.perform(.focusWindowDown))
+        XCTAssertEqual(ws.strip.focusedWindow, 12)
+        XCTAssertTrue(ws.perform(.focusWindowUp))
+        XCTAssertEqual(ws.strip.focusedWindow, 11)
+        XCTAssertTrue(ws.perform(.focusWindowUp))
+        XCTAssertEqual(ws.strip.focusedWindow, 10)
+        XCTAssertEqual(placements(ws)[10]?.visibility, .visible)
+        XCTAssertEqual(placements(ws)[11]?.visibility, .hiddenTab)
+    }
+
+    func testTiledFocusFallsBackToTheTileBelowWhenTheTabsRunOut() {
+        var ws = tiledWithTabGroup(focusedRow: 1)
+        XCTAssertTrue(ws.perform(.focusWindowDown))
+        XCTAssertEqual(ws.strip.focusedWindow, 12)
+        XCTAssertTrue(ws.perform(.focusWindowDown), "No tab below, so the tile below")
+        XCTAssertEqual(ws.strip.focusedColumnIndex, 2)
+        XCTAssertEqual(ws.strip.focusedWindow, 13)
+        XCTAssertEqual(ws.tabBars()[0].activeWindow, 12, "The tab group keeps its active tab")
+        XCTAssertTrue(ws.perform(.focusWindowUp), "Back into the tab group from below")
+        XCTAssertEqual(ws.strip.focusedColumnIndex, 1)
+        XCTAssertEqual(ws.strip.focusedWindow, 12)
+    }
+
+    func testTiledFocusInATabGroupWithNoTileInThatDirectionDoesNothing() {
+        var ws = tiledWithTabGroup(focusedRow: 0)
+        XCTAssertFalse(ws.perform(.focusWindowUp), "No tab above and no tile above")
+        XCTAssertEqual(ws.strip.focusedWindow, 10)
+    }
+
+    func testTiledFocusOnAPlainTileIsUnchangedByTabGroupsElsewhere() {
+        var ws = tiledWithTabGroup()
+        ws.strip.focus(13)
+        XCTAssertTrue(ws.perform(.focusWindowUp))
+        XCTAssertEqual(ws.strip.focusedColumnIndex, 1)
+        XCTAssertEqual(ws.strip.focusedWindow, 10, "Lands on the tab group's active tab")
+        ws.strip.focus(14)
+        XCTAssertTrue(ws.perform(.focusWindowDown))
+        XCTAssertEqual(ws.strip.focusedColumnIndex, 4)
+        XCTAssertEqual(ws.strip.focusedWindow, 15)
+        XCTAssertFalse(ws.perform(.focusWindowDown))
+    }
+
+    func testAZoomedTabGroupStaysZoomedAndShowsTheNewTab() {
+        var ws = tiledWithTabGroup()
+        ws.strip.focus(10)
+        ws.perform(.toggleFullWidth)
+        XCTAssertTrue(ws.perform(.focusWindowDown))
+        XCTAssertNotNil(ws.zoomedWindow, "Zoom only ends when focus leaves the tile")
+        XCTAssertEqual(ws.tabBars()[0].activeWindow, 11)
+        XCTAssertEqual(placements(ws)[11]?.visibility, .visible)
+        XCTAssertEqual(placements(ws)[11]?.frame, CGRect(x: 12, y: 84, width: 1188, height: 744))
+    }
+
     func testParkedTabbedColumnHasNoTabBar() {
         let columns = [Column(windows: [1, 2], widthIndex: 1, isTabbed: true)] + (3...5).map { Column(windows: [WindowID($0)], widthIndex: 1) }
         var ws = Workspace(strip: Strip(columns: columns), viewport: viewport)
