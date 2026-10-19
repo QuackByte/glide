@@ -2,6 +2,12 @@
 
 Novidades de cada versão do Glide para Mac. O Glide mostra as novas entradas uma vez após se atualizar, e as notas de cada versão no GitHub vêm daqui, então escreva para quem usa o Glide. Adicione uma entrada para cada mudança que vale a pena conhecer na próxima versão antes de criar a tag. Esta é uma tradução de CHANGELOG.md, que é o original.
 
+## 0.9.4 — 2026-10-19
+
+### Correções
+
+- **Chega de lacunas depois de fechar uma janela.** Quando uma janela fechava ou saía, um app que ignorava parte de um movimento (como o Proton Mail) podia ficar onde estava, deixando uma lacuna. Agora o Glide confere onde as janelas realmente ficam e as coloca no lugar certo.
+
 ## 0.9.3 — 2026-10-19
 
 ### Novidades

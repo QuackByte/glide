@@ -1,5 +1,6 @@
 import AppKit
 import ApplicationServices
+import GlideCore
 
 /// Returns the CGWindowID behind an AX window element. Private but stable for over a decade,
 /// and used by every macOS window manager; Glide is distributed outside the App Store.
@@ -72,12 +73,22 @@ nonisolated extension AXUIElement {
 
     /// Sets size, then position, then size again: the second resize lands once the window is
     /// somewhere the first one may have been clamped against (the approach Rectangle uses).
-    func setFrame(_ frame: CGRect) {
+    ///
+    /// Some apps (Electron ones in particular) take the size but drop the move, so the result
+    /// is read back and, if the origin is off, set once more. Returns where the window ended up.
+    @discardableResult
+    func setFrame(_ frame: CGRect) -> CGRect? {
         setSize(frame.size)
         setPosition(frame.origin)
         if let size, abs(size.width - frame.width) > 1 || abs(size.height - frame.height) > 1 {
             setSize(frame.size)
         }
+        guard let actual = self.frame else { return nil }
+        if FrameCheck.missedOrigin(target: frame, actual: actual) {
+            setPosition(frame.origin)
+            return self.frame
+        }
+        return actual
     }
 }
 

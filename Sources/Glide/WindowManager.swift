@@ -56,6 +56,9 @@ final class WindowManager {
     /// The frame Glide last asked for, and the frame the window actually took.
     private var lastApplied: [WindowID: CGRect] = [:]
     private var lastObserved: [WindowID: CGRect] = [:]
+    /// Targets a window has already been put right for after it missed them, so an app that
+    /// can't be placed there (or keeps refusing) is retried once, not forever.
+    private var corrected: [WindowID: CGRect] = [:]
     private var pendingReconcile: Set<pid_t> = []
     private var reconcileScheduled = false
     private var reassertWork: DispatchWorkItem?
@@ -1184,6 +1187,7 @@ final class WindowManager {
             let from = motions[id].map { $0.frame(at: now) }
                 ?? lastApplied[id]
             lastApplied[id] = target.frame
+            if corrected[id] != target.frame { corrected[id] = nil }
             // Tabs switch in place: sliding in from the corner they wait in would look odd.
             if animate, !target.hidden, !wasHidden, let from,
                FrameAnimation.shouldAnimate(from: from, to: target.frame, in: displays[target.display].spaces.viewport) {
@@ -1212,6 +1216,8 @@ final class WindowManager {
     private func settle(_ window: TrackedWindow, at frame: CGRect) -> Bool {
         let actual = window.element.frame
         lastObserved[window.id] = actual
+        // The app ignored the move: look again shortly, once the app has had time to catch up.
+        if let actual, !hiddenWindows.contains(window.id), FrameCheck.missedOrigin(target: frame, actual: actual) { scheduleReassert() }
         guard let actual, let display = displayIndex(of: window.id), actual.width > frame.width + 2,
               actual.width > displays[display].spaces.active.minimumWidths[window.id] ?? 0 else { return false }
         displays[display].spaces.active.minimumWidths[window.id] = actual.width
@@ -1555,7 +1561,13 @@ final class WindowManager {
                     moved = true
                     continue
                 }
-                if let observed = lastObserved[id], Self.roughlyEqual(observed, actual) { continue }
+                if let observed = lastObserved[id], Self.roughlyEqual(observed, actual) {
+                    // Where the window sits is where Glide last saw it, but an app may have ignored the move.
+                    guard !hiddenWindows.contains(id), let applied = lastApplied[id], corrected[id] != applied,
+                          FrameCheck.missedOrigin(target: applied, actual: actual) else { continue }
+                    corrected[id] = applied
+                    log.debug("\(id) missed its position, putting it right")
+                }
                 lastApplied[id] = nil
                 moved = true
             }

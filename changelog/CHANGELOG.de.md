@@ -2,6 +2,12 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.9.4 — 2026-10-19
+
+### Fehlerbehebungen
+
+- **Keine Lücken mehr nach dem Schließen eines Fensters.** Wenn ein Fenster geschlossen wurde oder verschwand, konnte eine App, die einen Teil einer Verschiebung ignorierte (etwa Proton Mail), an ihrer Stelle bleiben und eine Lücke hinterlassen. Glide prüft jetzt, wo die Fenster tatsächlich landen, und rückt sie zurecht.
+
 ## 0.9.3 — 2026-10-19
 
 ### Neu

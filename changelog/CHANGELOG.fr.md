@@ -2,6 +2,12 @@
 
 Ce fichier est la traduction française de CHANGELOG.md, qui reste l’original. Il présente les nouveautés de chaque version de Glide pour Mac. Glide affiche les nouvelles entrées une seule fois après une mise à jour, et les notes de chaque version sur GitHub en sont issues.
 
+## 0.9.4 — 2026-10-19
+
+### Corrections
+
+- **Plus de trous après la fermeture d’une fenêtre.** Quand une fenêtre se fermait ou partait, une app qui ignorait une partie d’un déplacement (comme Proton Mail) pouvait rester où elle était et laisser un trou. Glide vérifie désormais où les fenêtres atterrissent réellement et les remet en place.
+
 ## 0.9.3 — 2026-10-19
 
 ### Nouveautés

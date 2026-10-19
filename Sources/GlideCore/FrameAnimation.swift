@@ -34,3 +34,12 @@ public enum FrameAnimation {
         return visible(from) || visible(to)
     }
 }
+
+/// Checks of where a window actually ended up against where Glide put it.
+public enum FrameCheck {
+    /// Whether a window's origin is off its target by more than `tolerance`. Only the origin
+    /// counts: a size an app refuses (a minimum width) is learned elsewhere, not retried.
+    public static func missedOrigin(target: CGRect, actual: CGRect, tolerance: CGFloat = 2) -> Bool {
+        abs(target.minX - actual.minX) > tolerance || abs(target.minY - actual.minY) > tolerance
+    }
+}
