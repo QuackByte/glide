@@ -325,7 +325,9 @@ final class WindowManager {
             onWorkspaceEvent?(workspace.layout == .tiled ? String(localized: "\(columns) columns") : String(localized: "\(columns) columns when tiled"))
             return
         }
-        guard workspace.perform(action) else {
+        let changed = workspace.perform(action)
+        if let window = workspace.stoppedByMinimum, let minimum = workspace.minimumWidths[window] { showMinimumNotice(window, minimum: minimum) }
+        guard changed else {
             log.debug("\(action.rawValue, privacy: .public): no change. \(self.stripDescription, privacy: .public)")
             return
         }
@@ -1563,12 +1565,17 @@ final class WindowManager {
     private func reassert() {
         var moved = false
         var resized = false
+        var minimumNotice: (window: WindowID, minimum: CGFloat)?
         defer { userResized = [] }
         for display in displays.indices {
             for id in displays[display].spaces.active.strip.windows {
                 guard let window = windows[id], !fullScreenWindows.contains(id), let actual = window.element.frame else { continue }
                 if userResized.contains(id), !hiddenWindows.contains(id), let applied = lastApplied[id], abs(actual.width - applied.width) > 2,
                    let (column, _) = displays[display].spaces.active.strip.location(of: id) {
+                    // The app held its width at its minimum, so the drag stopped there.
+                    if let limit = displays[display].spaces.active.minimumLimit(of: id), abs(actual.width - limit.width) <= 2, applied.width > actual.width + 2 {
+                        minimumNotice = (limit.window, limit.width)
+                    }
                     displays[display].spaces.active.setColumnWidthFromResize(id, to: actual.width)
                     for sibling in displays[display].spaces.active.strip.columns[column].windows { lastApplied[sibling] = nil }
                     displays[display].spaces.active.ensureFocusedVisible()
@@ -1590,9 +1597,16 @@ final class WindowManager {
         if resized {
             log.debug("adopted a resized width: \(self.stripDescription, privacy: .public)")
         }
+        if let notice = minimumNotice { showMinimumNotice(notice.window, minimum: notice.minimum) }
         if moved { applyLayout() }
         refreshOverlays()
         if resized { didChange() }
+    }
+
+    /// Says on screen why a width change stopped at an app's minimum width.
+    private func showMinimumNotice(_ window: WindowID, minimum: CGFloat) {
+        guard let pid = windows[window]?.pid, let name = NSRunningApplication(processIdentifier: pid)?.localizedName else { return }
+        onWorkspaceEvent?(String(localized: "\(name) has a minimum width of \(Int(minimum.rounded())) px, so Glide can't make it narrower."))
     }
 
     private static func roughlyEqual(_ a: CGRect, _ b: CGRect) -> Bool {

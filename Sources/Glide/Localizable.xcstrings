@@ -236,6 +236,59 @@
         }
       }
     },
+    "%@ has a minimum width of %lld px, so Glide can't make it narrower." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ hat eine Mindestbreite von %lld px, daher kann Glide sie nicht schmaler machen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has a minimum width of %lld px, so Glide can't make it narrower."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tiene un ancho mínimo de %lld px, así que Glide no puede hacerla más estrecha."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ a une largeur minimale de %lld px, donc Glide ne peut pas la rendre plus étroite."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ の最小幅は %lld px のため、Glide では幅を狭くできません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@의 최소 너비는 %lld px이므로 Glide에서는 더 좁힐 수 없습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tem largura mínima de %lld px, então o Glide não consegue deixá-la mais estreita."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的最小宽度为 %lld px，因此 Glide 无法将其变窄。"
+          }
+        }
+      }
+    },
     "%lld columns" : {
       "extractionState" : "manual",
       "localizations" : {

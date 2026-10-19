@@ -91,15 +91,49 @@ final class TiledLayoutTests: XCTestCase {
         XCTAssertEqual(set.workspaces[1].tiledColumns, 3)
     }
 
-    func testMinimumWidthsGiveTheTileItsMinimumWithinItsX() {
+    func testAMinimumWidthShrinksTheNeighbourInsteadOfOverlapping() {
         var ws = make(2)
         ws.minimumWidths[1] = 800
-        XCTAssertEqual(frames(ws)[1], CGRect(x: 12, y: 52, width: 800, height: 776), "Overlaps its neighbour at x = 612")
-        XCTAssertEqual(frames(ws)[2], CGRect(x: 612, y: 52, width: 588, height: 776))
+        XCTAssertEqual(frames(ws)[1], CGRect(x: 12, y: 52, width: 800, height: 776))
+        XCTAssertEqual(frames(ws)[2], CGRect(x: 824, y: 52, width: 376, height: 776), "Shrinks to sit beside it")
+        XCTAssertNil(ws.tiledRatios, "The stored ratios are left alone")
+    }
+
+    func testMinimumWidthsThatCannotFitFallBackToOverlap() {
+        var ws = make(2)
+        ws.minimumWidths[1] = 800
         ws.minimumWidths[2] = 700
-        XCTAssertEqual(frames(ws)[2], CGRect(x: 500, y: 52, width: 700, height: 776), "Pulled left so it stays on screen")
+        XCTAssertEqual(frames(ws)[1], CGRect(x: 12, y: 52, width: 800, height: 776))
+        XCTAssertEqual(frames(ws)[2], CGRect(x: 500, y: 52, width: 700, height: 776), "Both can't fit side by side, so the second overlaps")
         ws.minimumWidths[2] = 5000
         XCTAssertEqual(frames(ws)[2]?.width, ws.usableWidth)
+    }
+
+    func testANeighbourIsNotSqueezedBelowASensibleSize() {
+        var ws = make(2)
+        ws.minimumWidths[1] = 1000
+        XCTAssertEqual(frames(ws)[2], CGRect(x: 612, y: 52, width: 588, height: 776), "Leaving 176 pt for the neighbour is too little, so it overlaps")
+    }
+
+    func testAMinimumForASecondPartTileIsMetThroughTheEarlierSplit() {
+        var ws = make(3)
+        ws.minimumWidths[2] = 900
+        XCTAssertEqual(frames(ws)[1], CGRect(x: 12, y: 52, width: 276, height: 776), "The first column gives up the room")
+        XCTAssertEqual(frames(ws)[2], CGRect(x: 300, y: 52, width: 900, height: 382))
+        XCTAssertEqual(frames(ws)[3], CGRect(x: 300, y: 446, width: 900, height: 382))
+        XCTAssertNil(ws.tiledRatios)
+    }
+
+    func testAResizeOrWidthCycleBelowTheMinimumStopsAtIt() {
+        var ws = make(2)
+        ws.minimumWidths[1] = 800
+        XCTAssertTrue(ws.setColumnWidthFromResize(1, to: 300))
+        XCTAssertEqual(frames(ws)[1]?.width, 800)
+        XCTAssertEqual(ws.stoppedByMinimum, 1)
+        XCTAssertFalse(ws.perform(.cycleColumnWidthBackward), "Already at its minimum")
+        XCTAssertEqual(ws.stoppedByMinimum, 1)
+        XCTAssertFalse(ws.perform(.focusColumnLeft), "No tile to the left")
+        XCTAssertNil(ws.stoppedByMinimum)
     }
 
     func testATabbedColumnIsOneTileWithItsBarAtTheTop() {
