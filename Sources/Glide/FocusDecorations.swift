@@ -45,6 +45,14 @@ enum Appearance {
         set { defaults.set(newValue.rawValue, forKey: "defaultLayout") }
     }
 
+    /// How many columns tiled workspaces the user hasn't switched by hand use: 2 or 3, or nil to go by the screen's shape.
+    static var tiledColumns: Int? {
+        get { (defaults.object(forKey: "tiledColumns") as? Int).flatMap { (TiledLayout.minColumns...TiledLayout.maxColumns).contains($0) ? $0 : nil } }
+        set {
+            if let newValue { defaults.set(newValue, forKey: "tiledColumns") } else { defaults.removeObject(forKey: "tiledColumns") }
+        }
+    }
+
     /// A brief display of the workspace numbers when switching.
     static var showsWorkspaceHUD: Bool {
         get { defaults.object(forKey: "workspaceHUD") as? Bool ?? true }

@@ -110,6 +110,17 @@ public struct Strip: Equatable, Sendable {
         return column
     }
 
+    /// Takes just the focused window out. A window alone in its column leaves with the column (and
+    /// its width); one that shares a column leaves it to the others, as a new column of
+    /// `widthIndex`. Focus moves as it does when a window closes.
+    public mutating func removeFocusedWindow(widthIndex: Int) -> Column? {
+        guard let column = focusedColumn else { return nil }
+        guard column.windows.count > 1 else { return removeFocusedColumn() }
+        let window = column.focusedWindow
+        remove(window)
+        return Column(windows: [window], widthIndex: widthIndex)
+    }
+
     /// Removes a window. An emptied column disappears and focus moves to its left neighbour.
     @discardableResult
     public mutating func remove(_ window: WindowID) -> Bool {
@@ -221,6 +232,53 @@ public struct Strip: Equatable, Sendable {
         columns.remove(at: focusedColumnIndex)
         focusedColumnIndex = direction == .left ? neighbour : neighbour - 1
         return true
+    }
+
+    /// Swaps two columns' places, with focus following the focused column to its new one.
+    @discardableResult
+    public mutating func swapColumns(_ first: Int, _ second: Int) -> Bool {
+        guard first != second, columns.indices.contains(first), columns.indices.contains(second) else { return false }
+        columns.swapAt(first, second)
+        if focusedColumnIndex == first {
+            focusedColumnIndex = second
+        } else if focusedColumnIndex == second {
+            focusedColumnIndex = first
+        }
+        return true
+    }
+
+    /// Focuses a column by index, keeping the row it last had. Returns false if it already had focus.
+    @discardableResult
+    public mutating func focusColumn(at index: Int) -> Bool {
+        guard columns.indices.contains(index), index != focusedColumnIndex else { return false }
+        focusedColumnIndex = index
+        return true
+    }
+
+    /// Turns every stacked (not tabbed) column into one column per window, top to bottom, each with
+    /// the column's width. Tabbed columns stay whole. Focus stays on the same window. Returns true
+    /// if anything changed.
+    @discardableResult
+    public mutating func explodeStacks() -> Bool {
+        guard columns.contains(where: { !$0.isTabbed && $0.windows.count > 1 }) else { return false }
+        let focused = focusedWindow
+        columns = columns.flatMap { column -> [Column] in
+            guard !column.isTabbed, column.windows.count > 1 else { return [column] }
+            return column.windows.map {
+                Column(windows: [$0], widthIndex: column.widthIndex, isFullWidth: column.isFullWidth, customWidth: column.customWidth)
+            }
+        }
+        if let focused, let (index, _) = location(of: focused) { focusedColumnIndex = index }
+        return true
+    }
+
+    /// Gives every column the preset `widthIndex`, dropping custom and full widths.
+    public mutating func resetWidths(to widthIndex: Int) {
+        for index in columns.indices {
+            columns[index].widthIndex = widthIndex
+            columns[index].isFullWidth = false
+            columns[index].customWidth = nil
+        }
     }
 
     // MARK: Width

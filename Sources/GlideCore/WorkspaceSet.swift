@@ -75,12 +75,17 @@ public struct WorkspaceSet: Equatable, Sendable {
         return true
     }
 
-    /// Sends the active workspace's focused column to another workspace, where it lands right of
-    /// that workspace's focused column and takes its focus. The active workspace stays.
+    /// Sends the active workspace's focused window, and only it, to another workspace. It lands
+    /// there as a column of its own right of that workspace's focused column and takes its focus. A
+    /// window alone in its column keeps the column's width; one taken from a stack gets the default
+    /// width. The active workspace stays, with the window's column-mates.
     @discardableResult
-    public mutating func moveFocusedColumn(to index: Int) -> Bool {
-        guard workspaces.indices.contains(index), index != activeIndex,
-              let column = workspaces[activeIndex].strip.removeFocusedColumn() else { return false }
+    public mutating func moveFocusedWindow(to index: Int) -> Bool {
+        guard workspaces.indices.contains(index), index != activeIndex, let window = workspaces[activeIndex].strip.focusedWindow,
+              let column = workspaces[activeIndex].strip.removeFocusedWindow(widthIndex: settings.defaultWidthIndex) else { return false }
+        if let minimum = workspaces[activeIndex].minimumWidths.removeValue(forKey: window) {
+            workspaces[index].minimumWidths[window] = minimum
+        }
         workspaces[activeIndex].settleScroll()
         workspaces[index].strip.insert(column)
         workspaces[index].ensureFocusedVisible()
@@ -156,11 +161,15 @@ public struct WorkspaceSet: Equatable, Sendable {
         return target
     }
 
-    /// Rebuilds the set from saved strips and their layouts (none: all follow the default), e.g. after a relaunch.
-    public mutating func restore(strips: [Strip], activeIndex: Int, layouts: [LayoutMode?] = []) {
+    /// Rebuilds the set from saved strips and their layouts, tiled column counts and split ratios
+    /// (none: all follow the default), e.g. after a relaunch.
+    public mutating func restore(strips: [Strip], activeIndex: Int, layouts: [LayoutMode?] = [], tiledColumns: [Int?] = [],
+                                 tiledRatios: [[CGFloat]?] = []) {
         for index in workspaces.indices {
             workspaces[index].strip = index < strips.count ? strips[index] : Strip()
             workspaces[index].layoutOverride = index < layouts.count ? layouts[index] : nil
+            workspaces[index].tiledColumnsOverride = index < tiledColumns.count ? tiledColumns[index] : nil
+            workspaces[index].tiledRatios = index < tiledRatios.count ? tiledRatios[index] : nil
             workspaces[index].settleScroll()
         }
         self.activeIndex = workspaces.indices.contains(activeIndex) ? activeIndex : 0

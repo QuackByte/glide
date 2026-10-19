@@ -30,6 +30,7 @@ public struct Keymap: Equatable, Sendable {
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
             .toggleTiling: KeyCombo(KeyCode.t, move),
             .toggleLayout: KeyCombo(KeyCode.t, hyper),
+            .cycleTiledColumns: KeyCombo(KeyCode.g, hyper),
             .focusPreviousWorkspace: KeyCombo(KeyCode.pageUp, hyper),
             .focusNextWorkspace: KeyCombo(KeyCode.pageDown, hyper),
             .moveColumnToPreviousWorkspace: KeyCombo(KeyCode.pageUp, move),
@@ -39,7 +40,7 @@ public struct Keymap: Equatable, Sendable {
             .moveColumnToDisplayLeft: KeyCombo(KeyCode.leftArrow, move.union(.command)),
             .moveColumnToDisplayRight: KeyCombo(KeyCode.rightArrow, move.union(.command)),
         ]
-        // ⌃⌥1…9 switch workspaces; ⌃⌥⇧1…9 send the focused column there.
+        // ⌃⌥1…9 switch workspaces; ⌃⌥⇧1…9 send the focused window there.
         for (index, key) in KeyCode.digits.enumerated() {
             let number = index + 1
             if let focus = Action(rawValue: "focusWorkspace\(number)") { map[focus] = KeyCombo(key, hyper) }

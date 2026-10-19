@@ -62,8 +62,9 @@ public enum DisplayGeometry {
 
 extension Workspace {
     /// The column index a window dropped at screen `x` lands at: before the first column whose
-    /// middle is right of it.
+    /// middle is right of it. Tiled, it goes by tile positions.
     public func dropIndex(atX x: CGFloat) -> Int {
+        if layout == .tiled { return tileDropIndex(atX: x) }
         let offsets = columnOffsets()
         let stripX = x - viewport.minX - settings.gap + scrollOffset
         return strip.columns.indices.filter { offsets[$0] + width(ofColumn: $0) / 2 < stripX }.count

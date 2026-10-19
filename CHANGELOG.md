@@ -2,6 +2,18 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it. Glide shows these notes in the app's language: the translations live in `changelog/CHANGELOG.<code>.md`, and a new entry must be translated in every one of them before tagging (`ChangelogTranslationTests` checks that they match this file).
 
+## 0.10.0 — 2026-10-19
+
+### New
+
+- **Tiled is now a spiral layout.** ⌃⌥T switches a workspace to a layout where every window fits on screen: one window fills it, two share it as halves, and from the third on the last column splits again, alternating top and bottom with left and right. It uses 2 columns, or 3 with the new ⌃⌥G, which is also what Glide picks on ultrawide displays. Switching back to scrolling keeps your windows in the same order.
+- **Move around a tiled workspace by direction.** ⌃⌥ + arrows focus the tile next to the focused one, and ⌃⌥⇧ + arrows swap it with that neighbour. Cycling width (⌃⌥R) changes how the focused tile splits the room with the tiles after it, and ⌃⌥F zooms a tile to fill the screen until you press it again.
+- **Choose how many columns tiled workspaces use** in Settings › General › Tiled columns: Automatic (3 on ultrawide displays, else 2), 2 or 3.
+
+### Changes
+
+- **Sending a window to another workspace moves just that window.** ⌃⌥⇧1…9 and ⌃⌥⇧PgUp/PgDn used to take the whole column along, and now only the focused window goes, as a column of its own, while you stay on the workspace you're on.
+
 ## 0.9.4 — 2026-10-19
 
 ### Fixes

@@ -29,15 +29,21 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
         public var focusedWindow: WindowID?
         /// Optional so snapshots saved before the tiled layout existed still load; nil follows the default.
         public var layout: LayoutMode?
+        /// Likewise for the tiled layout's own column count and split ratios.
+        public var tiledColumns: Int?
+        public var tiledRatios: [Double]?
 
         init(_ workspace: Workspace) {
-            self.init(columns: workspace.strip.columns.map(ColumnState.init), focusedWindow: workspace.strip.focusedWindow, layout: workspace.layoutOverride)
+            self.init(columns: workspace.strip.columns.map(ColumnState.init), focusedWindow: workspace.strip.focusedWindow, layout: workspace.layoutOverride,
+                      tiledColumns: workspace.tiledColumnsOverride, tiledRatios: workspace.tiledRatios?.map(Double.init))
         }
 
-        init(columns: [ColumnState], focusedWindow: WindowID?, layout: LayoutMode? = nil) {
+        init(columns: [ColumnState], focusedWindow: WindowID?, layout: LayoutMode? = nil, tiledColumns: Int? = nil, tiledRatios: [Double]? = nil) {
             self.columns = columns
             self.focusedWindow = focusedWindow
             self.layout = layout
+            self.tiledColumns = tiledColumns
+            self.tiledRatios = tiledRatios?.isEmpty == false ? tiledRatios : nil
         }
     }
 
@@ -88,6 +94,9 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
         }
     }
 
+    /// What a rebuild hands back, one entry per workspace in each list.
+    public typealias Restored = (strips: [Strip], active: Int, layouts: [LayoutMode?], tiledColumns: [Int?], tiledRatios: [[CGFloat]?])
+
     private var savedWorkspaces: [WorkspaceState] {
         workspaces ?? [WorkspaceState(columns: columns, focusedWindow: focusedWindow)]
     }
@@ -107,7 +116,7 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
     }
 
     /// Rebuilds every workspace. Windows the snapshot doesn't know join the active workspace.
-    public func restoreWorkspaces(windows available: [WindowID], widthIndex: Int, presetCount: Int) -> (strips: [Strip], active: Int, layouts: [LayoutMode?]) {
+    public func restoreWorkspaces(windows available: [WindowID], widthIndex: Int, presetCount: Int) -> Restored {
         var placed: Set<WindowID> = []
         var restored = Self.rebuild(savedWorkspaces, active: activeWorkspace ?? 0, available: Set(available), placed: &placed,
                                     widthIndex: widthIndex, presetCount: presetCount)
@@ -120,7 +129,7 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
     /// workspaces to the main one. Windows the snapshot doesn't know join the active workspace of
     /// the display they're on.
     public func restoreDisplays(windows available: [(window: WindowID, display: String)], displays connected: [String],
-                                widthIndex: Int, presetCount: Int) -> [String: (strips: [Strip], active: Int, layouts: [LayoutMode?])] {
+                                widthIndex: Int, presetCount: Int) -> [String: Restored] {
         guard let main = connected.first else { return [:] }
         let saved = self.displays ?? [DisplayState(display: main, workspaces: savedWorkspaces, activeWorkspace: activeWorkspace ?? 0)]
         // Each connected display's saved workspaces, with those of displays now gone added to the main one's.
@@ -142,7 +151,7 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
 
         let availableSet = Set(available.map(\.window))
         var placed: Set<WindowID> = []
-        var result: [String: (strips: [Strip], active: Int, layouts: [LayoutMode?])] = [:]
+        var result: [String: Restored] = [:]
         for display in connected {
             let state = states[display] ?? ([], 0)
             result[display] = Self.rebuild(state.workspaces, active: state.active, available: availableSet, placed: &placed,
@@ -150,16 +159,16 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
         }
         for display in connected {
             let newcomers = available.filter { $0.display == display && !placed.contains($0.window) }.map(\.window)
-            Self.append(newcomers, to: &result[display, default: ([Strip()], 0, [nil])], widthIndex: widthIndex)
+            Self.append(newcomers, to: &result[display, default: ([Strip()], 0, [nil], [nil], [nil])], widthIndex: widthIndex)
             placed.formUnion(newcomers)
         }
         // Windows on a display that isn't in the list join the main one.
-        Self.append(available.map(\.window).filter { !placed.contains($0) }, to: &result[main, default: ([Strip()], 0, [nil])], widthIndex: widthIndex)
+        Self.append(available.map(\.window).filter { !placed.contains($0) }, to: &result[main, default: ([Strip()], 0, [nil], [nil], [nil])], widthIndex: widthIndex)
         return result
     }
 
     /// Adds windows the snapshot doesn't know to the end of the active workspace.
-    private static func append(_ windows: [WindowID], to restored: inout (strips: [Strip], active: Int, layouts: [LayoutMode?]), widthIndex: Int) {
+    private static func append(_ windows: [WindowID], to restored: inout Restored, widthIndex: Int) {
         guard !windows.isEmpty else { return }
         let strip = restored.strips[restored.active]
         var updated = Strip(columns: strip.columns + windows.map { Column(windows: [$0], widthIndex: widthIndex) })
@@ -168,10 +177,12 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
     }
 
     private static func rebuild(_ states: [WorkspaceState], active: Int, available availableSet: Set<WindowID>, placed: inout Set<WindowID>,
-                                widthIndex: Int, presetCount: Int) -> (strips: [Strip], active: Int, layouts: [LayoutMode?]) {
+                                widthIndex: Int, presetCount: Int) -> Restored {
         let active = min(max(active, 0), max(states.count - 1, 0))
         var strips: [Strip] = []
         var layouts: [LayoutMode?] = []
+        var tiledColumns: [Int?] = []
+        var tiledRatios: [[CGFloat]?] = []
 
         for state in states {
             var restored: [Column] = []
@@ -189,11 +200,15 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
             if let focused = state.focusedWindow { strip.focus(focused) }
             strips.append(strip)
             layouts.append(state.layout)
+            tiledColumns.append(state.tiledColumns)
+            tiledRatios.append(state.tiledRatios?.map { CGFloat($0) })
         }
         if strips.isEmpty {
             strips.append(Strip())
             layouts.append(nil)
+            tiledColumns.append(nil)
+            tiledRatios.append(nil)
         }
-        return (strips, active, layouts)
+        return (strips, active, layouts, tiledColumns, tiledRatios)
     }
 }

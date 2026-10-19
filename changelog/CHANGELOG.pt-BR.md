@@ -2,6 +2,18 @@
 
 Novidades de cada versão do Glide para Mac. O Glide mostra as novas entradas uma vez após se atualizar, e as notas de cada versão no GitHub vêm daqui, então escreva para quem usa o Glide. Adicione uma entrada para cada mudança que vale a pena conhecer na próxima versão antes de criar a tag. Esta é uma tradução de CHANGELOG.md, que é o original.
 
+## 0.10.0 — 2026-10-19
+
+### Novidades
+
+- **Mosaico agora é um layout em espiral.** ⌃⌥T muda um espaço de trabalho para um layout em que todas as janelas cabem na tela: uma janela a preenche, duas a dividem em metades, e a partir da terceira a última coluna se divide de novo, alternando em cima e embaixo com esquerda e direita. Ele usa 2 colunas, ou 3 com o novo ⌃⌥G, que também é o que o Glide escolhe em telas ultrawide. Voltar para Rolagem mantém suas janelas na mesma ordem.
+- **Mova-se por um espaço de trabalho em mosaico pela direção.** ⌃⌥ + setas focam o bloco ao lado do focado, e ⌃⌥⇧ + setas o trocam de lugar com esse vizinho. Percorrer as larguras (⌃⌥R) muda como o bloco focado divide o espaço com os blocos seguintes, e ⌃⌥F amplia um bloco para preencher a tela até você pressionar de novo.
+- **Escolha quantas colunas os espaços de trabalho em mosaico usam** em Ajustes › Geral › Colunas do mosaico: Automático (3 em telas ultrawide, senão 2), 2 ou 3.
+
+### Mudanças
+
+- **Enviar uma janela a outro espaço de trabalho move só essa janela.** ⌃⌥⇧1…9 e ⌃⌥⇧PgUp/PgDn levavam a coluna inteira; agora só a janela focada vai, como uma coluna própria, e você continua no espaço de trabalho em que está.
+
 ## 0.9.4 — 2026-10-19
 
 ### Correções

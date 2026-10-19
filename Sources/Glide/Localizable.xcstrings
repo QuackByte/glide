@@ -361,6 +361,53 @@
         }
       }
     },
+    "%lld columns when tiled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Spalten beim Kacheln"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld columnas en mosaico"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld colonnes en mosaïque"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイル時は%lld列"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "타일 시 %lld열"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld colunas no mosaico"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平铺时 %lld 列"
+          }
+        }
+      }
+    },
     "%lld floating" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1864,53 +1911,6 @@
         }
       }
     },
-    "Column sent to workspace %lld" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spalte an Arbeitsbereich %lld gesendet"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Columna enviada al escritorio %lld"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Colonne envoyée au bureau %lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "列をワークスペース%lldに送りました"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "열을 워크스페이스 %lld(으)로 보냈습니다"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coluna enviada ao espaço de trabalho %lld"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已将列移到工作区 %lld"
-          }
-        }
-      }
-    },
     "Continue" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3180,6 +3180,53 @@
         }
       }
     },
+    "How many columns a tiled workspace uses before splitting the last one. Automatic uses 3 on ultrawide displays. %@ switches the current workspace." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie viele Spalten ein gekachelter Arbeitsbereich nutzt, bevor die letzte geteilt wird. Automatisch nutzt auf Ultrawide-Bildschirmen 3. Mit %@ wechselst du den aktuellen Arbeitsbereich."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuántas columnas usa un escritorio en mosaico antes de dividir la última. Automático usa 3 en pantallas ultrapanorámicas. %@ cambia el escritorio actual."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de colonnes d’un bureau en mosaïque avant de diviser la dernière. Automatique en utilise 3 sur les écrans ultralarges. %@ change celui du bureau actuel."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイル表示のワークスペースが、最後の列を分割する前に使う列の数です。自動の場合、ウルトラワイドディスプレイでは3列になります。%@ で現在のワークスペースを切り替えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "타일 워크스페이스가 마지막 열을 나누기 전에 사용하는 열의 수입니다. 자동은 울트라와이드 디스플레이에서 3열을 사용합니다. %@(으)로 현재 워크스페이스를 전환합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantas colunas um espaço de trabalho em mosaico usa antes de dividir a última. Automático usa 3 em telas ultrawide. %@ alterna o espaço de trabalho atual."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平铺工作区在拆分最后一列之前使用的列数。“自动”在超宽显示器上使用 3 列。%@ 可切换当前工作区。"
+          }
+        }
+      }
+    },
     "Layout" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4402,49 +4449,49 @@
         }
       }
     },
-    "Scrolling keeps columns at set widths on a strip you scroll along; tiled fits every column on screen. New and untouched workspaces use this. %@ switches the current workspace." : {
+    "Scrolling keeps columns on a strip you scroll along; tiled fits every window on screen, splitting the space in a spiral. New and untouched workspaces use this. %@ switches the current workspace." : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scrollend hält die Spalten auf einem Band mit festen Breiten, auf dem du scrollst; gekachelt bringt alle Spalten auf den Bildschirm. Neue und unveränderte Arbeitsbereiche verwenden diese Einstellung. Mit %@ wechselst du den aktuellen Arbeitsbereich."
+            "value" : "Scrollend hält die Spalten auf einem Band, auf dem du scrollst; gekachelt bringt alle Fenster auf den Bildschirm und teilt den Platz spiralförmig auf. Neue und unveränderte Arbeitsbereiche verwenden diese Einstellung. Mit %@ wechselst du den aktuellen Arbeitsbereich."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desplazable mantiene las columnas con anchos fijos en una tira por la que te desplazas; mosaico hace que quepan todas las columnas en pantalla. Lo usan los escritorios nuevos y los que no has cambiado. %@ cambia el escritorio actual."
+            "value" : "Desplazable mantiene las columnas en una tira por la que te desplazas; mosaico hace que quepan todas las ventanas en pantalla, repartiendo el espacio en espiral. Lo usan los escritorios nuevos y los que no has cambiado. %@ cambia el escritorio actual."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le défilement garde les colonnes à largeur fixe sur une bande que l’on fait défiler ; la mosaïque fait tenir toutes les colonnes à l’écran. Les bureaux nouveaux ou jamais modifiés l’utilisent. %@ change celle du bureau actuel."
+            "value" : "Le défilement garde les colonnes sur une bande que l’on fait défiler ; la mosaïque fait tenir toutes les fenêtres à l’écran en partageant l’espace en spirale. Les bureaux nouveaux ou jamais modifiés l’utilisent. %@ change celle du bureau actuel."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "スクロールは列を決まった幅のままスクロールできるストリップに並べ、タイルはすべての列を画面に収めます。新しいワークスペースと変更していないワークスペースはこの設定を使います。%@ で現在のワークスペースを切り替えます。"
+            "value" : "スクロールは列をスクロールできるストリップに並べ、タイルはすべてのウィンドウを画面に収めて、スペースをらせん状に分割します。新しいワークスペースと変更していないワークスペースはこの設定を使います。%@ で現在のワークスペースを切り替えます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "스크롤은 열을 정해진 너비로 두고 스크롤하는 스트립에 배치하고, 타일은 모든 열을 화면에 맞춥니다. 새 워크스페이스와 직접 바꾸지 않은 워크스페이스는 이 설정을 따릅니다. %@(으)로 현재 워크스페이스를 전환합니다."
+            "value" : "스크롤은 열을 스크롤하는 스트립에 배치하고, 타일은 모든 창을 화면에 맞추며 공간을 나선형으로 나눕니다. 새 워크스페이스와 직접 바꾸지 않은 워크스페이스는 이 설정을 따릅니다. %@(으)로 현재 워크스페이스를 전환합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rolagem mantém as colunas com larguras fixas numa faixa pela qual você rola; mosaico faz caber todas as colunas na tela. Os espaços de trabalho novos e os que você não alterou usam esta opção. %@ alterna o espaço de trabalho atual."
+            "value" : "Rolagem mantém as colunas numa faixa pela qual você rola; mosaico faz caber todas as janelas na tela, dividindo o espaço em espiral. Os espaços de trabalho novos e os que você não alterou usam esta opção. %@ alterna o espaço de trabalho atual."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“滚动”让各列保持固定宽度并排在可滚动的条带上；“平铺”让所有列都显示在屏幕内。新建的和未手动切换过的工作区使用此设置。%@ 可切换当前工作区。"
+            "value" : "“滚动”让各列排在可滚动的条带上；“平铺”让所有窗口都显示在屏幕内，并以螺旋方式划分空间。新建的和未手动切换过的工作区使用此设置。%@ 可切换当前工作区。"
           }
         }
       }
@@ -4868,6 +4915,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "平铺"
+          }
+        }
+      }
+    },
+    "Tiled columns" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gekachelte Spalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columnas en mosaico"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colonnes en mosaïque"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイルの列数"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "타일 열 수"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colunas do mosaico"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平铺列数"
           }
         }
       }
@@ -5432,6 +5526,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "窗口预览需要屏幕录制权限。"
+          }
+        }
+      }
+    },
+    "Window sent to workspace %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fenster an Arbeitsbereich %lld gesendet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ventana enviada al escritorio %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fenêtre envoyée au bureau %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウィンドウをワークスペース%lldに送りました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "창을 워크스페이스 %lld(으)로 보냈습니다"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Janela enviada ao espaço de trabalho %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已将窗口移到工作区 %lld"
           }
         }
       }

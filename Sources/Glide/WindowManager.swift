@@ -141,7 +141,7 @@ final class WindowManager {
         let frames = screens.map(\.frame)
         var next = screens.enumerated().map { index, screen in
             var display = previous.first { $0.id == screen.id }
-                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: LayoutSettings(gap: Appearance.gap, defaultLayout: Appearance.defaultLayout)))
+                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: LayoutSettings(gap: Appearance.gap, defaultLayout: Appearance.defaultLayout, defaultTiledColumns: Appearance.tiledColumns)))
             display.frame = screen.frame
             display.spaces.viewport = screen.viewport
             display.spaces.hiddenCorner = DisplayGeometry.hiddenCorner(of: index, in: frames)
@@ -267,14 +267,15 @@ final class WindowManager {
         return Date(timeIntervalSince1970: TimeInterval(time.tv_sec) + TimeInterval(time.tv_usec) / 1_000_000)
     }()
 
-    /// Applies changed gap, default layout, focus ring and dimming settings.
+    /// Applies changed gap, default layout and tiled columns, focus ring and dimming settings.
     func appearanceChanged() {
         guard isEnabled else { return }
         let gapChanged = spaces.settings.gap != Appearance.gap
-        if gapChanged || spaces.settings.defaultLayout != Appearance.defaultLayout {
+        if gapChanged || spaces.settings.defaultLayout != Appearance.defaultLayout || spaces.settings.defaultTiledColumns != Appearance.tiledColumns {
             for index in displays.indices {
                 displays[index].spaces.settings.gap = Appearance.gap
                 displays[index].spaces.settings.defaultLayout = Appearance.defaultLayout
+                displays[index].spaces.settings.defaultTiledColumns = Appearance.tiledColumns
                 if gapChanged { displays[index].spaces.active.minimumWidths = [:] }
                 displays[index].spaces.settleScroll()
             }
@@ -294,7 +295,7 @@ final class WindowManager {
             return
         }
         if let command = action.workspaceCommand {
-            performWorkspace(command.target, movesColumn: command.movesColumn)
+            performWorkspace(command.target, movesWindow: command.movesWindow)
             return
         }
         if action == .toggleFloating {
@@ -310,6 +311,18 @@ final class WindowManager {
             }
             didChange()
             onWorkspaceEvent?(workspace.layout == .tiled ? String(localized: "Tiled") : String(localized: "Scrolling"))
+            return
+        }
+        if action == .cycleTiledColumns {
+            workspace.cycleTiledColumns()
+            log.debug("workspace \(self.spaces.activeIndex + 1) tiles in \(self.workspace.tiledColumns) columns (\(self.workspace.layout.rawValue, privacy: .public))")
+            applyLayout()
+            if let target = workspace.strip.focusedWindow, target != focusedWindowID() {
+                focus(target)
+            }
+            didChange()
+            let columns = workspace.tiledColumns
+            onWorkspaceEvent?(workspace.layout == .tiled ? String(localized: "\(columns) columns") : String(localized: "\(columns) columns when tiled"))
             return
         }
         guard workspace.perform(action) else {
@@ -576,7 +589,8 @@ final class WindowManager {
                                                         widthIndex: width, presetCount: workspace.settings.widthPresets.count)
                 for index in displays.indices {
                     if let layout = restored[displays[index].id] {
-                        displays[index].spaces.restore(strips: layout.strips, activeIndex: layout.active, layouts: layout.layouts)
+                        displays[index].spaces.restore(strips: layout.strips, activeIndex: layout.active, layouts: layout.layouts,
+                                                       tiledColumns: layout.tiledColumns, tiledRatios: layout.tiledRatios)
                     }
                 }
                 hide(inactiveWindows)
@@ -983,16 +997,17 @@ final class WindowManager {
         }
     }
 
-    private func performWorkspace(_ target: WorkspaceTarget, movesColumn: Bool) {
+    /// Switches workspace, or sends just the focused window to another one and stays where it is.
+    private func performWorkspace(_ target: WorkspaceTarget, movesWindow: Bool) {
         guard let index = spaces.resolve(target) else { return }
-        if movesColumn {
-            guard let moved = workspace.strip.focusedColumn?.windows, spaces.moveFocusedColumn(to: index) else { return }
-            log.debug("moved column to workspace \(index + 1): \(self.stripDescription, privacy: .public)")
-            hide(moved)
+        if movesWindow {
+            guard let moved = workspace.strip.focusedWindow, spaces.moveFocusedWindow(to: index) else { return }
+            log.debug("moved window to workspace \(index + 1): \(self.stripDescription, privacy: .public)")
+            hide([moved])
             applyLayout()
             if let next = workspace.strip.focusedWindow { focus(next) }
             didChange()
-            onWorkspaceEvent?(String(localized: "Column sent to workspace \(index + 1)"))
+            onWorkspaceEvent?(String(localized: "Window sent to workspace \(index + 1)"))
         } else {
             switchWorkspace(to: index, focusing: nil)
         }
