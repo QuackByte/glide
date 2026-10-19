@@ -525,8 +525,8 @@ public struct Workspace: Equatable, Sendable {
         switch action {
         case .focusColumnLeft: return focusTile(.left)
         case .focusColumnRight: return focusTile(.right)
-        case .focusWindowUp: return focusTile(.up)
-        case .focusWindowDown: return focusTile(.down)
+        case .focusWindowUp: return focusTabOrTile(.up)
+        case .focusWindowDown: return focusTabOrTile(.down)
         case .moveColumnLeft: return moveTile(.left)
         case .moveColumnRight: return moveTile(.right)
         case .moveWindowUp: return moveTile(.up)
@@ -548,6 +548,12 @@ public struct Workspace: Equatable, Sendable {
     private mutating func focusTile(_ side: TileSide) -> Bool {
         guard let target = TiledLayout.neighbour(of: tileFrames(tiles()), from: strip.focusedColumnIndex, side: side) else { return false }
         return strip.focusColumn(at: target)
+    }
+
+    /// Switches to the next tab of a focused tabbed tile that has one in that direction, else focuses the tile there.
+    private mutating func focusTabOrTile(_ direction: VerticalDirection) -> Bool {
+        if strip.focusedColumn?.isTabbed == true, strip.focusWindow(direction) { return true }
+        return focusTile(direction == .up ? .up : .down)
     }
 
     /// Swaps the focused tile with the one next to it on a side; focus goes with the window.
