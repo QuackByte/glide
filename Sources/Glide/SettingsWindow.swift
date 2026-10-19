@@ -127,6 +127,17 @@ struct SettingsView: View {
                         get: { controller.isTilingPreferred && controller.windowManager.isEnabled },
                         set: { controller.setTiling($0) }
                     ))
+                    Picker("Layout", selection: Binding(
+                        get: { Appearance.defaultLayout },
+                        set: { Appearance.defaultLayout = $0; controller.appearanceChanged() }
+                    )) {
+                        Text("Scrolling").tag(LayoutMode.scrolling)
+                        Text("Tiled").tag(LayoutMode.tiled)
+                    }
+                    Text("Scrolling keeps columns at set widths on a strip you scroll along; tiled fits every column on screen. New and untouched workspaces use this. \(controller.shortcuts.keymap.combo(for: .toggleLayout)?.description ?? String(localized: "A shortcut")) switches the current workspace.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                     Toggle("Animate window movement", isOn: Binding(
                         get: { WindowManager.animatesWindows },
                         set: { WindowManager.animatesWindows = $0 }
