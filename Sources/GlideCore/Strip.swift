@@ -110,6 +110,17 @@ public struct Strip: Equatable, Sendable {
         return column
     }
 
+    /// Takes just the focused window out. A window alone in its column leaves with the column (and
+    /// its width); one that shares a column leaves it to the others, as a new column of
+    /// `widthIndex`. Focus moves as it does when a window closes.
+    public mutating func removeFocusedWindow(widthIndex: Int) -> Column? {
+        guard let column = focusedColumn else { return nil }
+        guard column.windows.count > 1 else { return removeFocusedColumn() }
+        let window = column.focusedWindow
+        remove(window)
+        return Column(windows: [window], widthIndex: widthIndex)
+    }
+
     /// Removes a window. An emptied column disappears and focus moves to its left neighbour.
     @discardableResult
     public mutating func remove(_ window: WindowID) -> Bool {

@@ -294,7 +294,7 @@ final class WindowManager {
             return
         }
         if let command = action.workspaceCommand {
-            performWorkspace(command.target, movesColumn: command.movesColumn)
+            performWorkspace(command.target, movesWindow: command.movesWindow)
             return
         }
         if action == .toggleFloating {
@@ -983,16 +983,17 @@ final class WindowManager {
         }
     }
 
-    private func performWorkspace(_ target: WorkspaceTarget, movesColumn: Bool) {
+    /// Switches workspace, or sends just the focused window to another one and stays where it is.
+    private func performWorkspace(_ target: WorkspaceTarget, movesWindow: Bool) {
         guard let index = spaces.resolve(target) else { return }
-        if movesColumn {
-            guard let moved = workspace.strip.focusedColumn?.windows, spaces.moveFocusedColumn(to: index) else { return }
-            log.debug("moved column to workspace \(index + 1): \(self.stripDescription, privacy: .public)")
-            hide(moved)
+        if movesWindow {
+            guard let moved = workspace.strip.focusedWindow, spaces.moveFocusedWindow(to: index) else { return }
+            log.debug("moved window to workspace \(index + 1): \(self.stripDescription, privacy: .public)")
+            hide([moved])
             applyLayout()
             if let next = workspace.strip.focusedWindow { focus(next) }
             didChange()
-            onWorkspaceEvent?(String(localized: "Column sent to workspace \(index + 1)"))
+            onWorkspaceEvent?(String(localized: "Window sent to workspace \(index + 1)"))
         } else {
             switchWorkspace(to: index, focusing: nil)
         }

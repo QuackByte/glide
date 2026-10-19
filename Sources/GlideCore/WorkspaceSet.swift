@@ -75,12 +75,17 @@ public struct WorkspaceSet: Equatable, Sendable {
         return true
     }
 
-    /// Sends the active workspace's focused column to another workspace, where it lands right of
-    /// that workspace's focused column and takes its focus. The active workspace stays.
+    /// Sends the active workspace's focused window, and only it, to another workspace. It lands
+    /// there as a column of its own right of that workspace's focused column and takes its focus. A
+    /// window alone in its column keeps the column's width; one taken from a stack gets the default
+    /// width. The active workspace stays, with the window's column-mates.
     @discardableResult
-    public mutating func moveFocusedColumn(to index: Int) -> Bool {
-        guard workspaces.indices.contains(index), index != activeIndex,
-              let column = workspaces[activeIndex].strip.removeFocusedColumn() else { return false }
+    public mutating func moveFocusedWindow(to index: Int) -> Bool {
+        guard workspaces.indices.contains(index), index != activeIndex, let window = workspaces[activeIndex].strip.focusedWindow,
+              let column = workspaces[activeIndex].strip.removeFocusedWindow(widthIndex: settings.defaultWidthIndex) else { return false }
+        if let minimum = workspaces[activeIndex].minimumWidths.removeValue(forKey: window) {
+            workspaces[index].minimumWidths[window] = minimum
+        }
         workspaces[activeIndex].settleScroll()
         workspaces[index].strip.insert(column)
         workspaces[index].ensureFocusedVisible()

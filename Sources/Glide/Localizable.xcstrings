@@ -1864,53 +1864,6 @@
         }
       }
     },
-    "Column sent to workspace %lld" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spalte an Arbeitsbereich %lld gesendet"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Columna enviada al escritorio %lld"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Colonne envoyée au bureau %lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "列をワークスペース%lldに送りました"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "열을 워크스페이스 %lld(으)로 보냈습니다"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coluna enviada ao espaço de trabalho %lld"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已将列移到工作区 %lld"
-          }
-        }
-      }
-    },
     "Continue" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5432,6 +5385,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "窗口预览需要屏幕录制权限。"
+          }
+        }
+      }
+    },
+    "Window sent to workspace %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fenster an Arbeitsbereich %lld gesendet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ventana enviada al escritorio %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fenêtre envoyée au bureau %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウィンドウをワークスペース%lldに送りました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "창을 워크스페이스 %lld(으)로 보냈습니다"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Janela enviada ao espaço de trabalho %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已将窗口移到工作区 %lld"
           }
         }
       }

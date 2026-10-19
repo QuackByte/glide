@@ -184,11 +184,11 @@ final class TiledLayoutTests: XCTestCase {
         XCTAssertEqual(set.workspaces[1].layout, .scrolling)
     }
 
-    func testMovingAColumnLeavesBothLayoutsAlone() {
+    func testSendingAWindowAwayLeavesBothLayoutsAlone() {
         var set = WorkspaceSet(viewport: viewport)
         set.active.strip.insert(1, widthIndex: 1, at: 0)
         set.active.toggleLayout()
-        XCTAssertTrue(set.moveFocusedColumn(to: 1))
+        XCTAssertTrue(set.moveFocusedWindow(to: 1))
         XCTAssertEqual(set.workspaces[0].layoutOverride, .tiled)
         XCTAssertNil(set.workspaces[1].layoutOverride)
     }

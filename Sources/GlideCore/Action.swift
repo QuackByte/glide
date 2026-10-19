@@ -75,8 +75,8 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     /// The title in the user's language. The English text is the catalog key.
     public var title: String {
         if let command = workspaceCommand, case .index(let index) = command.target {
-            return command.movesColumn
-                ? String(localized: "Move Column to Workspace \(index + 1)", bundle: #bundle)
+            return command.movesWindow
+                ? String(localized: "Move Window to Workspace \(index + 1)", bundle: #bundle)
                 : String(localized: "Focus Workspace \(index + 1)", bundle: #bundle)
         }
         return switch self {
@@ -99,8 +99,8 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .centerColumn: String(localized: "Center Column", bundle: #bundle)
         case .focusPreviousWorkspace: String(localized: "Focus Previous Workspace", bundle: #bundle)
         case .focusNextWorkspace: String(localized: "Focus Next Workspace", bundle: #bundle)
-        case .moveColumnToPreviousWorkspace: String(localized: "Move Column to Previous Workspace", bundle: #bundle)
-        case .moveColumnToNextWorkspace: String(localized: "Move Column to Next Workspace", bundle: #bundle)
+        case .moveColumnToPreviousWorkspace: String(localized: "Move Window to Previous Workspace", bundle: #bundle)
+        case .moveColumnToNextWorkspace: String(localized: "Move Window to Next Workspace", bundle: #bundle)
         case .focusDisplayLeft: String(localized: "Focus Display Left", bundle: #bundle)
         case .focusDisplayRight: String(localized: "Focus Display Right", bundle: #bundle)
         case .moveColumnToDisplayLeft: String(localized: "Move Column to Display Left", bundle: #bundle)
@@ -136,8 +136,8 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         }
     }
 
-    /// Where a workspace action goes, and whether it takes the focused column along.
-    public var workspaceCommand: (target: WorkspaceTarget, movesColumn: Bool)? {
+    /// Where a workspace action goes, and whether it sends the focused window there (else it just switches).
+    public var workspaceCommand: (target: WorkspaceTarget, movesWindow: Bool)? {
         switch self {
         case .focusPreviousWorkspace: (.previous, false)
         case .focusNextWorkspace: (.next, false)
