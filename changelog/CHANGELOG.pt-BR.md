@@ -2,6 +2,13 @@
 
 Novidades de cada versão do Glide para Mac. O Glide mostra as novas entradas uma vez após se atualizar, e as notas de cada versão no GitHub vêm daqui, então escreva para quem usa o Glide. Adicione uma entrada para cada mudança que vale a pena conhecer na próxima versão antes de criar a tag. Esta é uma tradução de CHANGELOG.md, que é o original.
 
+## 0.9.3 — 2026-10-19
+
+### Novidades
+
+- **Layout em mosaico.** ⌃⌥T alterna o espaço de trabalho atual entre a faixa com rolagem e um layout em mosaico, em que todas as colunas dividem a tela e cabem juntas, sem rolagem. Cada espaço de trabalho mantém o próprio layout, mesmo depois de reiniciar o Glide. Percorrer as larguras de uma coluna (⌃⌥R) dá a ela uma parte maior ou menor, arrastar a borda a redimensiona, e ⌃⌥F continua deixando a coluna com largura total até você pressionar de novo.
+- **Escolha o layout com que os novos espaços de trabalho começam** em Ajustes › Geral › Layout: Rolagem, como antes, ou Mosaico. Os espaços de trabalho que você alternou com ⌃⌥T mantêm o seu.
+
 ## 0.9.2 — 2026-10-16
 
 ### Novidades

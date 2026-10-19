@@ -121,7 +121,7 @@ final class WorkspaceSetTests: XCTestCase {
         XCTAssertEqual(Action.moveColumnToWorkspace9.workspaceCommand?.movesColumn, true)
         XCTAssertEqual(Action.focusNextWorkspace.workspaceCommand?.target, .next)
         XCTAssertNil(Action.focusColumnLeft.workspaceCommand)
-        XCTAssertEqual(Action.allCases.filter { $0.group == .workspaces }.count, 22)
+        XCTAssertEqual(Action.allCases.filter { $0.group == .workspaces }.count, 23)
         XCTAssertEqual(Keymap.defaults[.focusWorkspace1], KeyCombo(18, [.control, .option]))
         XCTAssertEqual(Keymap.defaults[.moveColumnToWorkspace9], KeyCombo(25, [.control, .option, .shift]))
         XCTAssertEqual(Set(Keymap.defaults.values).count, Keymap.defaults.count, "No two actions share a default")

@@ -2,6 +2,13 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it. Glide shows these notes in the app's language: the translations live in `changelog/CHANGELOG.<code>.md`, and a new entry must be translated in every one of them before tagging (`ChangelogTranslationTests` checks that they match this file).
 
+## 0.9.3 — 2026-10-19
+
+### New
+
+- **Tiled layout.** ⌃⌥T switches the current workspace between the scrolling strip and a tiled layout, where every column shares the screen so they all fit, without scrolling. Each workspace keeps its own layout, even after Glide restarts. Cycling a column's width (⌃⌥R) gives it a bigger or smaller share, dragging its edge resizes it, and ⌃⌥F still makes it full width until you press it again.
+- **Choose the layout new workspaces start with** in Settings › General › Layout: Scrolling, as before, or Tiled. Workspaces you've switched with ⌃⌥T keep their own.
+
 ## 0.9.2 — 2026-10-16
 
 ### New

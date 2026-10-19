@@ -39,6 +39,12 @@ enum Appearance {
         }
     }
 
+    /// The layout of workspaces the user hasn't switched by hand.
+    static var defaultLayout: LayoutMode {
+        get { (defaults.string(forKey: "defaultLayout")).flatMap(LayoutMode.init(rawValue:)) ?? LayoutSettings.standard.defaultLayout }
+        set { defaults.set(newValue.rawValue, forKey: "defaultLayout") }
+    }
+
     /// A brief display of the workspace numbers when switching.
     static var showsWorkspaceHUD: Bool {
         get { defaults.object(forKey: "workspaceHUD") as? Bool ?? true }

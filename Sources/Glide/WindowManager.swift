@@ -138,7 +138,7 @@ final class WindowManager {
         let frames = screens.map(\.frame)
         var next = screens.enumerated().map { index, screen in
             var display = previous.first { $0.id == screen.id }
-                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: LayoutSettings(gap: Appearance.gap)))
+                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: LayoutSettings(gap: Appearance.gap, defaultLayout: Appearance.defaultLayout)))
             display.frame = screen.frame
             display.spaces.viewport = screen.viewport
             display.spaces.hiddenCorner = DisplayGeometry.hiddenCorner(of: index, in: frames)
@@ -264,13 +264,15 @@ final class WindowManager {
         return Date(timeIntervalSince1970: TimeInterval(time.tv_sec) + TimeInterval(time.tv_usec) / 1_000_000)
     }()
 
-    /// Applies changed gap, focus ring and dimming settings.
+    /// Applies changed gap, default layout, focus ring and dimming settings.
     func appearanceChanged() {
         guard isEnabled else { return }
-        if spaces.settings.gap != Appearance.gap {
+        let gapChanged = spaces.settings.gap != Appearance.gap
+        if gapChanged || spaces.settings.defaultLayout != Appearance.defaultLayout {
             for index in displays.indices {
                 displays[index].spaces.settings.gap = Appearance.gap
-                displays[index].spaces.active.minimumWidths = [:]
+                displays[index].spaces.settings.defaultLayout = Appearance.defaultLayout
+                if gapChanged { displays[index].spaces.active.minimumWidths = [:] }
                 displays[index].spaces.settleScroll()
             }
             applyLayout()
@@ -294,6 +296,17 @@ final class WindowManager {
         }
         if action == .toggleFloating {
             toggleFloating()
+            return
+        }
+        if action == .toggleLayout {
+            workspace.toggleLayout()
+            log.debug("workspace \(self.spaces.activeIndex + 1) is now \(self.workspace.layout.rawValue, privacy: .public): \(self.stripDescription, privacy: .public)")
+            applyLayout()
+            if let target = workspace.strip.focusedWindow, target != focusedWindowID() {
+                focus(target)
+            }
+            didChange()
+            onWorkspaceEvent?(workspace.layout == .tiled ? String(localized: "Tiled") : String(localized: "Scrolling"))
             return
         }
         guard workspace.perform(action) else {
@@ -559,7 +572,9 @@ final class WindowManager {
                 let restored = snapshot.restoreDisplays(windows: ordered.map { ($0.id, displays[$0.display].id) }, displays: displays.map(\.id),
                                                         widthIndex: width, presetCount: workspace.settings.widthPresets.count)
                 for index in displays.indices {
-                    if let layout = restored[displays[index].id] { displays[index].spaces.restore(strips: layout.strips, activeIndex: layout.active) }
+                    if let layout = restored[displays[index].id] {
+                        displays[index].spaces.restore(strips: layout.strips, activeIndex: layout.active, layouts: layout.layouts)
+                    }
                 }
                 hide(inactiveWindows)
             } else {
@@ -1533,7 +1548,7 @@ final class WindowManager {
                 guard let window = windows[id], !fullScreenWindows.contains(id), let actual = window.element.frame else { continue }
                 if userResized.contains(id), !hiddenWindows.contains(id), let applied = lastApplied[id], abs(actual.width - applied.width) > 2,
                    let (column, _) = displays[display].spaces.active.strip.location(of: id) {
-                    displays[display].spaces.active.strip.setCustomWidth(actual.width, forColumnOf: id)
+                    displays[display].spaces.active.setColumnWidthFromResize(id, to: actual.width)
                     for sibling in displays[display].spaces.active.strip.columns[column].windows { lastApplied[sibling] = nil }
                     displays[display].spaces.active.ensureFocusedVisible()
                     resized = true

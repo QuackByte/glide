@@ -971,6 +971,53 @@
         }
       }
     },
+    "A shortcut" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Tastenkürzel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un atajo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un raccourci"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ショートカット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "단축키"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um atalho"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "某个快捷键"
+          }
+        }
+      }
+    },
     "Add App…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3133,6 +3180,53 @@
         }
       }
     },
+    "Layout" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anordnung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disposición"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disposition"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "レイアウト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "레이아웃"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Layout"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "布局"
+          }
+        }
+      }
+    },
     "Login Items…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4261,6 +4355,100 @@
         }
       }
     },
+    "Scrolling" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrollend"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desplazable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Défilement"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スクロール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스크롤"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rolagem"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "滚动"
+          }
+        }
+      }
+    },
+    "Scrolling keeps columns at set widths on a strip you scroll along; tiled fits every column on screen. New and untouched workspaces use this. %@ switches the current workspace." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrollend hält die Spalten auf einem Band mit festen Breiten, auf dem du scrollst; gekachelt bringt alle Spalten auf den Bildschirm. Neue und unveränderte Arbeitsbereiche verwenden diese Einstellung. Mit %@ wechselst du den aktuellen Arbeitsbereich."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desplazable mantiene las columnas con anchos fijos en una tira por la que te desplazas; mosaico hace que quepan todas las columnas en pantalla. Lo usan los escritorios nuevos y los que no has cambiado. %@ cambia el escritorio actual."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le défilement garde les colonnes à largeur fixe sur une bande que l’on fait défiler ; la mosaïque fait tenir toutes les colonnes à l’écran. Les bureaux nouveaux ou jamais modifiés l’utilisent. %@ change celle du bureau actuel."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スクロールは列を決まった幅のままスクロールできるストリップに並べ、タイルはすべての列を画面に収めます。新しいワークスペースと変更していないワークスペースはこの設定を使います。%@ で現在のワークスペースを切り替えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스크롤은 열을 정해진 너비로 두고 스크롤하는 스트립에 배치하고, 타일은 모든 열을 화면에 맞춥니다. 새 워크스페이스와 직접 바꾸지 않은 워크스페이스는 이 설정을 따릅니다. %@(으)로 현재 워크스페이스를 전환합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rolagem mantém as colunas com larguras fixas numa faixa pela qual você rola; mosaico faz caber todas as colunas na tela. Os espaços de trabalho novos e os que você não alterou usam esta opção. %@ alterna o espaço de trabalho atual."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“滚动”让各列保持固定宽度并排在可滚动的条带上；“平铺”让所有列都显示在屏幕内。新建的和未手动切换过的工作区使用此设置。%@ 可切换当前工作区。"
+          }
+        }
+      }
+    },
     "Select" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4633,6 +4821,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "平铺窗口"
+          }
+        }
+      }
+    },
+    "Tiled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gekachelt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mosaico"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mosaïque"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "타일"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mosaico"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平铺"
           }
         }
       }

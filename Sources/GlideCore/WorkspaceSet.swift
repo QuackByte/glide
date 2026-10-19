@@ -156,10 +156,11 @@ public struct WorkspaceSet: Equatable, Sendable {
         return target
     }
 
-    /// Rebuilds the set from saved strips, e.g. after a relaunch.
-    public mutating func restore(strips: [Strip], activeIndex: Int) {
+    /// Rebuilds the set from saved strips and their layouts (none: all follow the default), e.g. after a relaunch.
+    public mutating func restore(strips: [Strip], activeIndex: Int, layouts: [LayoutMode?] = []) {
         for index in workspaces.indices {
             workspaces[index].strip = index < strips.count ? strips[index] : Strip()
+            workspaces[index].layoutOverride = index < layouts.count ? layouts[index] : nil
             workspaces[index].settleScroll()
         }
         self.activeIndex = workspaces.indices.contains(activeIndex) ? activeIndex : 0
