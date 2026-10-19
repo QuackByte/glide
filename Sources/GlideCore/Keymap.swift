@@ -30,6 +30,7 @@ public struct Keymap: Equatable, Sendable {
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
             .toggleTiling: KeyCombo(KeyCode.t, move),
             .toggleLayout: KeyCombo(KeyCode.t, hyper),
+            .cycleTiledColumns: KeyCombo(KeyCode.g, hyper),
             .focusPreviousWorkspace: KeyCombo(KeyCode.pageUp, hyper),
             .focusNextWorkspace: KeyCombo(KeyCode.pageDown, hyper),
             .moveColumnToPreviousWorkspace: KeyCombo(KeyCode.pageUp, move),

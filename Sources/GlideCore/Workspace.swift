@@ -4,7 +4,7 @@ import CoreGraphics
 public enum LayoutMode: String, CaseIterable, Codable, Sendable {
     /// Columns keep their preset widths on a strip that scrolls.
     case scrolling
-    /// Columns share the screen width, so they all fit on screen.
+    /// Every window fits on screen, tiled in a spiral: columns first, then the last column splits again and again.
     case tiled
 }
 
@@ -21,9 +21,12 @@ public struct LayoutSettings: Equatable, Sendable {
     public var tabBarSpacing: CGFloat
     /// The layout of every workspace the user hasn't switched by hand.
     public var defaultLayout: LayoutMode
+    /// How many columns tiled workspaces without their own count use, 2 or 3; nil picks by the screen's shape.
+    public var defaultTiledColumns: Int?
 
     public init(gap: CGFloat = 12, sliver: CGFloat = 4, widthPresets: [CGFloat] = [1.0 / 3, 0.5, 2.0 / 3, 1], defaultWidthIndex: Int = 1,
-                tabBarHeight: CGFloat = 28, tabBarSpacing: CGFloat = 4, defaultLayout: LayoutMode = .scrolling) {
+                tabBarHeight: CGFloat = 28, tabBarSpacing: CGFloat = 4, defaultLayout: LayoutMode = .scrolling,
+                defaultTiledColumns: Int? = nil) {
         precondition(!widthPresets.isEmpty, "At least one width preset is required")
         self.gap = gap
         self.sliver = sliver
@@ -32,6 +35,7 @@ public struct LayoutSettings: Equatable, Sendable {
         self.tabBarHeight = tabBarHeight
         self.tabBarSpacing = tabBarSpacing
         self.defaultLayout = defaultLayout
+        self.defaultTiledColumns = defaultTiledColumns.map(TiledLayout.clampColumns)
     }
 
     public static let standard = LayoutSettings()
@@ -84,6 +88,13 @@ public struct Workspace: Equatable, Sendable {
     public var hiddenCorner: HiddenCorner = .bottomRight
     /// This workspace's own layout, once the user has switched it; nil follows `LayoutSettings.defaultLayout`.
     public var layoutOverride: LayoutMode?
+    /// This workspace's own tiled column count (2 or 3), once the user has switched it; nil follows the default.
+    public var tiledColumnsOverride: Int?
+    /// What the first part of each split gets, by split (see `TiledLayout`); 0 keeps a split's default.
+    /// Only used while it has one entry per split, so it starts over when windows come or go.
+    public var tiledRatios: [CGFloat]?
+    /// The window whose tile fills the screen (tiled "full width"); only counts while that tile has focus.
+    public private(set) var zoomedWindow: WindowID?
 
     public init(strip: Strip = Strip(), viewport: CGRect, settings: LayoutSettings = .standard) {
         self.strip = strip
@@ -93,10 +104,26 @@ public struct Workspace: Equatable, Sendable {
 
     public var layout: LayoutMode { layoutOverride ?? settings.defaultLayout }
 
-    /// Switches between scrolling and tiled, for this workspace only.
+    /// How many columns this workspace tiles into: its own count, else the default, else 3 on an ultrawide screen and 2 elsewhere.
+    public var tiledColumns: Int {
+        TiledLayout.clampColumns(tiledColumnsOverride ?? settings.defaultTiledColumns ?? TiledLayout.autoColumns(for: viewport))
+    }
+
+    /// Switches between scrolling and tiled, for this workspace only. Going tiled gives every
+    /// window of a stack its own column; going back to scrolling gives every column the default width.
     public mutating func toggleLayout() {
         layoutOverride = layout == .scrolling ? .tiled : .scrolling
+        if layout == .scrolling {
+            strip.resetWidths(to: settings.defaultWidthIndex)
+            zoomedWindow = nil
+        }
         settleScroll()
+    }
+
+    /// Switches this workspace between 2 and 3 tiled columns, starting its splits over.
+    public mutating func cycleTiledColumns() {
+        tiledColumnsOverride = tiledColumns == TiledLayout.minColumns ? TiledLayout.maxColumns : TiledLayout.minColumns
+        tiledRatios = nil
     }
 
     // MARK: Geometry
@@ -110,63 +137,21 @@ public struct Workspace: Equatable, Sendable {
         return CGRect(origin: CGPoint(x: x, y: viewport.maxY - 1), size: size)
     }
 
-    public func width(ofColumn index: Int) -> CGFloat {
-        layout == .tiled ? widths()[index] : scrollingWidth(ofColumn: index)
-    }
-
     /// A column's width on the strip: its preset or custom width, at least as wide as its windows allow.
-    private func scrollingWidth(ofColumn index: Int) -> CGFloat {
+    public func width(ofColumn index: Int) -> CGFloat {
         let column = strip.columns[index]
-        let preset = column.isFullWidth ? presetWidth(1) : weight(of: column)
-        return min(max(preset, minimumWidth(of: column)), usableWidth)
-    }
-
-    /// What a column asks for: its custom width, else its preset's width. Tiled columns share the screen in this proportion.
-    private func weight(of column: Column) -> CGFloat {
         let presets = settings.widthPresets
-        return column.customWidth?.rounded() ?? presetWidth(presets[min(max(column.widthIndex, 0), presets.count - 1)])
+        let preset = column.isFullWidth ? presetWidth(1)
+            : column.customWidth?.rounded() ?? presetWidth(presets[min(max(column.widthIndex, 0), presets.count - 1)])
+        return min(max(preset, minimumWidth(of: column)), usableWidth)
     }
 
     private func minimumWidth(of column: Column) -> CGFloat {
         column.windows.compactMap { minimumWidths[$0] }.max() ?? 0
     }
 
-    /// Every column's width, worked out once. Tiled columns split what's left after full-width ones.
-    private func widths() -> [CGFloat] {
-        let columns = strip.columns
-        guard layout == .tiled else { return columns.indices.map(scrollingWidth) }
-
-        var widths = [CGFloat](repeating: 0, count: columns.count)
-        var shared: [Int] = []
-        for index in columns.indices {
-            if columns[index].isFullWidth { widths[index] = scrollingWidth(ofColumn: index) } else { shared.append(index) }
-        }
-        guard !shared.isEmpty else { return widths }
-
-        // Columns split the room in proportion to their weights, but never below a window's minimum:
-        // those keep their minimum and the rest share what remains.
-        let room = usableWidth - settings.gap * CGFloat(shared.count - 1)
-        let weights = Dictionary(uniqueKeysWithValues: shared.map { ($0, max(weight(of: columns[$0]), 1)) })
-        var pinned: Set<Int> = []
-        while true {
-            let open = shared.filter { !pinned.contains($0) }
-            let left = room - pinned.reduce(0) { $0 + minimumWidth(of: columns[$1]) }
-            let total = open.reduce(0) { $0 + weights[$1]! }
-            guard let squeezed = open.first(where: { minimumWidth(of: columns[$0]) > left * weights[$0]! / total }) else { break }
-            pinned.insert(squeezed)
-        }
-        let remaining = room - pinned.reduce(0) { $0 + minimumWidth(of: columns[$1]) }
-        let sharing = shared.filter { !pinned.contains($0) }
-        let weightTotal = sharing.reduce(0) { $0 + weights[$1]! }
-        for index in shared {
-            widths[index] = pinned.contains(index) ? minimumWidth(of: columns[index]) : (remaining * weights[index]! / weightTotal).rounded()
-        }
-        // Rounding leaves a point or two over or short; the last shared column takes it so they fill the screen exactly.
-        if let last = sharing.last {
-            widths[last] = max(widths[last] + room - shared.reduce(0) { $0 + widths[$1] }, 1)
-        }
-        return widths.map { min($0, usableWidth) }
-    }
+    /// Every column's width on the strip, worked out once.
+    private func widths() -> [CGFloat] { strip.columns.indices.map(width(ofColumn:)) }
 
     /// Preset fractions are of the whole viewport, so two ½ columns exactly fill it, gaps included.
     public func presetWidth(_ fraction: CGFloat) -> CGFloat {
@@ -194,8 +179,21 @@ public struct Workspace: Equatable, Sendable {
 
     // MARK: Scrolling
 
+    /// Tiled workspaces don't scroll: everything is on screen. They keep one tile per column
+    /// instead (a window dropped onto another's column becomes the next tile) and forget a zoom
+    /// whose window has gone.
+    private mutating func keepTiledShape() {
+        strip.explodeStacks()
+        scrollOffset = 0
+        if let zoomed = zoomedWindow, !strip.contains(zoomed) { zoomedWindow = nil }
+    }
+
     /// Scrolls as little as possible to bring the focused column fully on screen.
     public mutating func ensureFocusedVisible() {
+        if layout == .tiled {
+            keepTiledShape()
+            return
+        }
         guard !strip.isEmpty else {
             scrollOffset = 0
             return
@@ -212,7 +210,7 @@ public struct Workspace: Equatable, Sendable {
     }
 
     public mutating func centerFocusedColumn() {
-        guard !strip.isEmpty else { return }
+        guard !strip.isEmpty, layout == .scrolling else { return }
         let index = strip.focusedColumnIndex
         let widths = widths()
         scrollOffset = (offsets(for: widths)[index] + widths[index] / 2 - usableWidth / 2).rounded()
@@ -221,6 +219,10 @@ public struct Workspace: Equatable, Sendable {
     /// Removes empty space past either end of the strip, then keeps focus visible.
     /// Use after windows leave or the viewport changes.
     public mutating func settleScroll() {
+        if layout == .tiled {
+            keepTiledShape()
+            return
+        }
         let maximum = max(contentWidth - usableWidth, 0)
         scrollOffset = min(max(scrollOffset, 0), maximum)
         ensureFocusedVisible()
@@ -229,11 +231,12 @@ public struct Workspace: Equatable, Sendable {
     // MARK: Gesture scrolling
 
     /// The scroll range that shows no empty space past the strip's ends.
-    public var scrollBounds: ClosedRange<CGFloat> { 0...max(contentWidth - usableWidth, 0) }
+    public var scrollBounds: ClosedRange<CGFloat> { 0...(layout == .tiled ? 0 : max(contentWidth - usableWidth, 0)) }
 
     /// Moves the strip with the fingers. Past either end it follows at a third of the speed,
     /// up to a quarter of the screen, like a rubber band.
     public mutating func scroll(by delta: CGFloat) {
+        guard layout == .scrolling else { return }
         let bounds = scrollBounds
         let limit = usableWidth / 4
         let outside = scrollOffset < bounds.lowerBound || scrollOffset > bounds.upperBound
@@ -262,7 +265,7 @@ public struct Workspace: Equatable, Sendable {
     /// the middle). Returns true if focus moved.
     @discardableResult
     public mutating func settleSwipe(projectedOffset: CGFloat) -> Bool {
-        guard !strip.isEmpty else {
+        guard !strip.isEmpty, layout == .scrolling else {
             scrollOffset = 0
             return false
         }
@@ -289,6 +292,11 @@ public struct Workspace: Equatable, Sendable {
     /// Applies a layout action. Returns false if it changed nothing or is not a layout action.
     @discardableResult
     public mutating func perform(_ action: Action) -> Bool {
+        if action == .cycleTiledColumns {
+            cycleTiledColumns()
+            return true
+        }
+        if layout == .tiled, let tiledChanged = performTiled(action) { return tiledChanged }
         let changed: Bool
         switch action {
         case .focusColumnLeft: changed = strip.focusColumn(.left)
@@ -321,7 +329,7 @@ public struct Workspace: Equatable, Sendable {
             return false
         }
         if changed {
-            // Tiled columns fit on screen, so the strip goes back to the start when a zoomed column returns to its share.
+            // Tiled keeps one tile per column, so a tab toggle can add or remove tiles; a stack's expelled window may close a gap.
             if action == .consumeOrExpelLeft || action == .consumeOrExpelRight || layout == .tiled {
                 settleScroll()
             } else {
@@ -345,26 +353,194 @@ public struct Workspace: Equatable, Sendable {
         return strip.setWidthIndex(index)
     }
 
-    /// Gives the column holding `window` the width the user just dragged it to. On the strip that
-    /// is its width; tiled, the width is a share of the screen, so it becomes the weight that lands
-    /// the column near `width` with the other columns' weights unchanged. Returns false if the
-    /// window isn't here.
+    /// Adopts the width the user just dragged `window` to. On the strip that is its column's width.
+    /// Tiled, it moves the nearest column split that decides the tile's width, so the layout stays
+    /// a spiral; a tile whose width no split decides (it is alone) snaps back. Returns false if
+    /// nothing changed.
     @discardableResult
     public mutating func setColumnWidthFromResize(_ window: WindowID, to width: CGFloat) -> Bool {
-        guard layout == .tiled, let index = strip.location(of: window)?.column else {
-            return strip.setCustomWidth(width, forColumnOf: window)
+        guard layout == .tiled else { return strip.setCustomWidth(width, forColumnOf: window) }
+        let tiles = tiles()
+        guard let index = tiles.firstIndex(where: { tileWindows($0).contains(window) }), zoomedWindow == nil else { return false }
+        let count = tiles.count
+        let splits = TiledLayout.splits(in: viewport, count: count, columns: tiledColumns, gap: settings.gap, ratios: effectiveRatios(count))
+        // The split that sizes the tile across: its own if that one is side by side (the tile is its first part), else the nearest earlier one (it is in the second part).
+        let split: Int
+        let isFirstPart: Bool
+        if index < count - 1, splits[index].sideBySide {
+            (split, isFirstPart) = (index, true)
+        } else if let earlier = (0..<min(index, count - 1)).reversed().first(where: { splits[$0].sideBySide }) {
+            (split, isFirstPart) = (earlier, false)
+        } else {
+            return false
         }
-        let others = strip.columns.indices.filter { $0 != index && !strip.columns[$0].isFullWidth }.map { weight(of: strip.columns[$0]) }
-        guard !others.isEmpty else { return strip.setCustomWidth(width, forColumnOf: window) }
-        // With W the wanted width, w / (w + others) = W / room, so w = W × others / (room - W).
-        let room = usableWidth - settings.gap * CGFloat(others.count)
-        let wanted = min(max(width, room * 0.1), room * 0.9)
-        return strip.setCustomWidth(wanted * others.reduce(0, +) / (room - wanted), forColumnOf: window)
+        let available = splits[split].room.width - settings.gap
+        guard available > 0 else { return false }
+        let share = min(max(width / available, 0.1), 0.9)
+        return setTiledRatio(split: split, count: count, to: isFirstPart ? share : 1 - share)
+    }
+
+    // MARK: Tiled
+
+    /// A tile: a column's one window, or a whole tabbed column (`row` is then nil).
+    private struct Tile {
+        var column: Int
+        var row: Int?
+    }
+
+    /// The tiles in order: columns left to right, a stack's windows top to bottom.
+    private func tiles() -> [Tile] {
+        strip.columns.enumerated().flatMap { index, column -> [Tile] in
+            column.isTabbed ? [Tile(column: index, row: nil)] : column.windows.indices.map { Tile(column: index, row: $0) }
+        }
+    }
+
+    private func tileWindows(_ tile: Tile) -> [WindowID] {
+        let windows = strip.columns[tile.column].windows
+        return tile.row.map { [windows[$0]] } ?? windows
+    }
+
+    /// The splits' ratios, if they were set for this many tiles.
+    private func effectiveRatios(_ count: Int) -> [CGFloat]? {
+        guard let ratios = tiledRatios, ratios.count == count - 1 else { return nil }
+        return ratios
+    }
+
+    /// The tile holding the zoomed window, while it has focus.
+    private func zoomedTile(in tiles: [Tile]) -> Int? {
+        guard let zoomed = zoomedWindow, let focused = strip.focusedColumn, focused.windows.contains(zoomed) else { return nil }
+        return tiles.firstIndex { $0.column == strip.focusedColumnIndex && ($0.row == nil || focused.windows[$0.row!] == zoomed) }
+    }
+
+    /// Every tile's frame as the spiral lays it out, before minimum widths and zoom: what focus
+    /// and move go by, and what the ratios shape.
+    private func tileFrames(_ tiles: [Tile]) -> [CGRect] {
+        TiledLayout.frames(in: viewport, count: tiles.count, columns: tiledColumns, gap: settings.gap, ratios: effectiveRatios(tiles.count))
+    }
+
+    /// The frames tiles are sent to: a tile narrower than a window in it allows gets that window's
+    /// minimum width within its own x, overlapping its neighbour if it must; a zoomed tile fills the screen.
+    private func placedFrames(_ tiles: [Tile]) -> [CGRect] {
+        var frames = tileFrames(tiles)
+        let gap = settings.gap
+        let right = viewport.maxX - gap
+        for index in frames.indices {
+            let minimum = tileWindows(tiles[index]).compactMap { minimumWidths[$0] }.max() ?? 0
+            guard frames[index].width < minimum else { continue }
+            let width = min(minimum, usableWidth)
+            frames[index].origin.x = min(frames[index].minX, max(right - width, viewport.minX + gap))
+            frames[index].size.width = width
+        }
+        if let zoomed = zoomedTile(in: tiles) {
+            frames[zoomed] = CGRect(x: viewport.minX + gap, y: viewport.minY + gap, width: usableWidth, height: max(viewport.height - 2 * gap, 0))
+        }
+        return frames
+    }
+
+    /// Focus, move, width and zoom in a tiled workspace. nil for actions that work as they do on the strip.
+    private mutating func performTiled(_ action: Action) -> Bool? {
+        keepTiledShape()
+        if strip.isEmpty { return action == .toggleLayout || action == .toggleTabbed || action == .centerColumn ? nil : false }
+        let changed = performTiledAction(action)
+        // A zoom ends when focus leaves its tile.
+        if let zoomed = zoomedWindow, strip.focusedColumn?.windows.contains(zoomed) != true { zoomedWindow = nil }
+        return changed
+    }
+
+    private mutating func performTiledAction(_ action: Action) -> Bool? {
+        switch action {
+        case .focusColumnLeft: return focusTile(.left)
+        case .focusColumnRight: return focusTile(.right)
+        case .focusWindowUp: return focusTile(.up)
+        case .focusWindowDown: return focusTile(.down)
+        case .moveColumnLeft: return moveTile(.left)
+        case .moveColumnRight: return moveTile(.right)
+        case .moveWindowUp: return moveTile(.up)
+        case .moveWindowDown: return moveTile(.down)
+        case .focusFirstColumn: return strip.focusFirstColumn()
+        case .focusLastColumn: return strip.focusLastColumn()
+        // Tiles are windows, never stacks: there is nothing to consume or expel.
+        case .consumeOrExpelLeft, .consumeOrExpelRight: return false
+        case .cycleColumnWidth: return cycleTiledRatio(forward: true)
+        case .cycleColumnWidthBackward: return cycleTiledRatio(forward: false)
+        case .toggleFullWidth:
+            zoomedWindow = zoomedTile(in: tiles()) == nil ? strip.focusedWindow : nil
+            return true
+        default: return nil
+        }
+    }
+
+    /// Moves focus to the tile next to the focused one on a side.
+    private mutating func focusTile(_ side: TileSide) -> Bool {
+        guard let target = TiledLayout.neighbour(of: tileFrames(tiles()), from: strip.focusedColumnIndex, side: side) else { return false }
+        return strip.focusColumn(at: target)
+    }
+
+    /// Swaps the focused tile with the one next to it on a side; focus goes with the window.
+    private mutating func moveTile(_ side: TileSide) -> Bool {
+        guard let target = TiledLayout.neighbour(of: tileFrames(tiles()), from: strip.focusedColumnIndex, side: side) else { return false }
+        return strip.swapColumns(strip.focusedColumnIndex, target)
+    }
+
+    /// Steps the split that cuts the focused tile off from the tiles after it through 1/3, 1/2 and
+    /// 2/3 of its room, for the tile's share of it. The last tile has no split of its own and
+    /// changes the one before it.
+    private mutating func cycleTiledRatio(forward: Bool) -> Bool {
+        let count = strip.columns.count
+        guard count >= 2 else { return false }
+        let index = strip.focusedColumnIndex
+        let split = min(index, count - 2)
+        let current = TiledLayout.ratio(split: split, count: count, columns: tiledColumns, ratios: effectiveRatios(count))
+        let isLast = index == count - 1
+        let share = isLast ? 1 - current : current
+        let presets = TiledLayout.ratioPresets
+        let tolerance: CGFloat = 0.01
+        let next = forward ? presets.first { $0 > share + tolerance } ?? presets[0]
+                           : presets.last { $0 < share - tolerance } ?? presets[presets.count - 1]
+        return setTiledRatio(split: split, count: count, to: isLast ? 1 - next : next)
+    }
+
+    /// Sets one split's ratio, keeping the others as they are. Returns false if it already was that.
+    private mutating func setTiledRatio(split: Int, count: Int, to ratio: CGFloat) -> Bool {
+        let current = effectiveRatios(count)
+        var updated = (0..<(count - 1)).map { TiledLayout.isSet(split: $0, in: current) ? current![$0] : 0 }
+        guard abs(updated[split] - ratio) >= 0.001 else { return false }
+        updated[split] = ratio
+        tiledRatios = updated
+        return true
+    }
+
+    /// Where a window dropped at screen `x` lands among the tiles: after those whose middle is left of it.
+    public func tileDropIndex(atX x: CGFloat) -> Int {
+        tileFrames(tiles()).filter { $0.midX < x }.count
     }
 
     // MARK: Placement
 
-    public func placements() -> [WindowPlacement] {
+    public func placements() -> [WindowPlacement] { layout == .tiled ? tiledPlacements() : scrollingPlacements() }
+
+    private func tiledPlacements() -> [WindowPlacement] {
+        let tiles = tiles()
+        let frames = placedFrames(tiles)
+        var result: [WindowPlacement] = []
+        for (index, tile) in tiles.enumerated() {
+            let column = strip.columns[tile.column]
+            guard column.isTabbed else {
+                result.append(WindowPlacement(window: column.windows[tile.row!], frame: frames[index], visibility: .visible))
+                continue
+            }
+            let reserved = settings.tabBarHeight + settings.tabBarSpacing
+            let shown = CGRect(x: frames[index].minX, y: frames[index].minY + reserved, width: frames[index].width, height: max(frames[index].height - reserved, 0))
+            for (row, window) in column.windows.enumerated() {
+                result.append(row == column.focusedRow
+                    ? WindowPlacement(window: window, frame: shown, visibility: .visible)
+                    : WindowPlacement(window: window, frame: hiddenFrame(size: shown.size), visibility: .hiddenTab))
+            }
+        }
+        return result
+    }
+
+    private func scrollingPlacements() -> [WindowPlacement] {
         let gap = settings.gap
         let columnHeight = max(viewport.height - 2 * gap, 0)
         var result: [WindowPlacement] = []
@@ -401,6 +577,16 @@ public struct Workspace: Equatable, Sendable {
 
     /// Tab bars for the tabbed columns that are at least partly on screen.
     public func tabBars() -> [TabBarPlacement] {
+        if layout == .tiled {
+            let tiles = tiles()
+            let frames = placedFrames(tiles)
+            return tiles.enumerated().compactMap { index, tile in
+                let column = strip.columns[tile.column]
+                guard column.isTabbed else { return nil }
+                let frame = CGRect(x: frames[index].minX, y: frames[index].minY, width: frames[index].width, height: settings.tabBarHeight)
+                return TabBarPlacement(column: tile.column, frame: frame, windows: column.windows, activeIndex: column.focusedRow)
+            }
+        }
         let widths = widths()
         let offsets = offsets(for: widths)
         return strip.columns.indices.compactMap { index in
@@ -435,6 +621,9 @@ public struct Workspace: Equatable, Sendable {
 
     /// A slim bar in the gap where a column inserted at `index` would go, for a drop between columns.
     public func insertionFrame(at index: Int, thickness: CGFloat = 4) -> CGRect {
+        // Tiled, a dropped window takes a tile's place and pushes the rest on: show that tile.
+        let tiles = layout == .tiled ? tiles() : []
+        if !tiles.isEmpty { return tileFrames(tiles)[min(max(index, 0), tiles.count - 1)] }
         let offsets = columnOffsets()
         let edge = index < offsets.count ? offsets[index] : contentWidth + settings.gap
         let x = viewport.minX + settings.gap + edge - scrollOffset - settings.gap / 2

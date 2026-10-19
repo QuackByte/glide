@@ -134,7 +134,19 @@ struct SettingsView: View {
                         Text("Scrolling").tag(LayoutMode.scrolling)
                         Text("Tiled").tag(LayoutMode.tiled)
                     }
-                    Text("Scrolling keeps columns at set widths on a strip you scroll along; tiled fits every column on screen. New and untouched workspaces use this. \(controller.shortcuts.keymap.combo(for: .toggleLayout)?.description ?? String(localized: "A shortcut")) switches the current workspace.")
+                    Text("Scrolling keeps columns on a strip you scroll along; tiled fits every window on screen, splitting the space in a spiral. New and untouched workspaces use this. \(controller.shortcuts.keymap.combo(for: .toggleLayout)?.description ?? String(localized: "A shortcut")) switches the current workspace.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Picker("Tiled columns", selection: Binding(
+                        get: { Appearance.tiledColumns },
+                        set: { Appearance.tiledColumns = $0; controller.appearanceChanged() }
+                    )) {
+                        Text("Automatic").tag(Int?.none)
+                        Text(verbatim: "2").tag(Int?.some(2))
+                        Text(verbatim: "3").tag(Int?.some(3))
+                    }
+                    Text("How many columns a tiled workspace uses before splitting the last one. Automatic uses 3 on ultrawide displays. \(controller.shortcuts.keymap.combo(for: .cycleTiledColumns)?.description ?? String(localized: "A shortcut")) switches the current workspace.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

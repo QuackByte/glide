@@ -234,6 +234,53 @@ public struct Strip: Equatable, Sendable {
         return true
     }
 
+    /// Swaps two columns' places, with focus following the focused column to its new one.
+    @discardableResult
+    public mutating func swapColumns(_ first: Int, _ second: Int) -> Bool {
+        guard first != second, columns.indices.contains(first), columns.indices.contains(second) else { return false }
+        columns.swapAt(first, second)
+        if focusedColumnIndex == first {
+            focusedColumnIndex = second
+        } else if focusedColumnIndex == second {
+            focusedColumnIndex = first
+        }
+        return true
+    }
+
+    /// Focuses a column by index, keeping the row it last had. Returns false if it already had focus.
+    @discardableResult
+    public mutating func focusColumn(at index: Int) -> Bool {
+        guard columns.indices.contains(index), index != focusedColumnIndex else { return false }
+        focusedColumnIndex = index
+        return true
+    }
+
+    /// Turns every stacked (not tabbed) column into one column per window, top to bottom, each with
+    /// the column's width. Tabbed columns stay whole. Focus stays on the same window. Returns true
+    /// if anything changed.
+    @discardableResult
+    public mutating func explodeStacks() -> Bool {
+        guard columns.contains(where: { !$0.isTabbed && $0.windows.count > 1 }) else { return false }
+        let focused = focusedWindow
+        columns = columns.flatMap { column -> [Column] in
+            guard !column.isTabbed, column.windows.count > 1 else { return [column] }
+            return column.windows.map {
+                Column(windows: [$0], widthIndex: column.widthIndex, isFullWidth: column.isFullWidth, customWidth: column.customWidth)
+            }
+        }
+        if let focused, let (index, _) = location(of: focused) { focusedColumnIndex = index }
+        return true
+    }
+
+    /// Gives every column the preset `widthIndex`, dropping custom and full widths.
+    public mutating func resetWidths(to widthIndex: Int) {
+        for index in columns.indices {
+            columns[index].widthIndex = widthIndex
+            columns[index].isFullWidth = false
+            columns[index].customWidth = nil
+        }
+    }
+
     // MARK: Width
 
     @discardableResult
