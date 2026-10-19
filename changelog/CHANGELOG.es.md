@@ -2,6 +2,16 @@
 
 Novedades de cada versión de Glide para Mac. Glide muestra las entradas nuevas una sola vez tras actualizarse, y las notas de cada versión en GitHub salen de aquí. Esta es una traducción de CHANGELOG.md, que es el original.
 
+## 0.10.2 — 2026-10-19
+
+### Novedades
+
+- **En el layout en mosaico, ⌃⌥↑ y ⌃⌥↓ cambian primero las pestañas.** En un grupo de pestañas, cambian de pestaña antes de pasar al mosaico en esa dirección.
+
+### Correcciones
+
+- **En el layout en mosaico, los vecinos se encogen para ajustarse al ancho mínimo de una app.** Si una app tiene un ancho mínimo, los mosaicos contiguos se reducen en lugar de superponerse, y Glide indica por qué un cambio de tamaño se detiene en ese ancho.
+
 ## 0.10.1 — 2026-10-19
 
 ### Correcciones

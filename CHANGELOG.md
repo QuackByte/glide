@@ -2,6 +2,16 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it. Glide shows these notes in the app's language: the translations live in `changelog/CHANGELOG.<code>.md`, and a new entry must be translated in every one of them before tagging (`ChangelogTranslationTests` checks that they match this file).
 
+## 0.10.2 — 2026-10-19
+
+### New
+
+- **Tiled layout: ⌃⌥↑ and ⌃⌥↓ switch tabs first.** In a tab group, they switch tabs before moving to the tile in that direction.
+
+### Fixes
+
+- **Tiled layout: neighbours shrink to fit an app's minimum width.** When an app has a minimum width, the tiles beside it shrink to fit instead of overlapping, and Glide says why a resize stops at that width.
+
 ## 0.10.1 — 2026-10-19
 
 ### Fixes
