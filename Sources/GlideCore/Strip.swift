@@ -234,6 +234,21 @@ public struct Strip: Equatable, Sendable {
         return true
     }
 
+    /// Moves the focused column's window into the column at `index` as its active tab, which makes
+    /// that column tabbed, and leaves the focused column out. Returns false unless the focused
+    /// column holds just that window and `index` is another column.
+    @discardableResult
+    public mutating func joinColumn(at index: Int) -> Bool {
+        guard index != focusedColumnIndex, columns.indices.contains(index), columns[focusedColumnIndex].windows.count == 1 else { return false }
+        let window = columns.remove(at: focusedColumnIndex).windows[0]
+        let target = index > focusedColumnIndex ? index - 1 : index
+        columns[target].windows.append(window)
+        columns[target].isTabbed = true
+        columns[target].focusedRow = columns[target].windows.count - 1
+        focusedColumnIndex = target
+        return true
+    }
+
     /// Swaps two columns' places, with focus following the focused column to its new one.
     @discardableResult
     public mutating func swapColumns(_ first: Int, _ second: Int) -> Bool {

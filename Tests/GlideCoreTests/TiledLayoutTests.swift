@@ -189,11 +189,14 @@ final class TiledLayoutTests: XCTestCase {
         XCTAssertFalse(ws.perform(.moveWindowUp))
     }
 
-    func testConsumeAndExpelDoNothingWhileTiled() {
-        var ws = make(3, focused: 1)
-        XCTAssertFalse(ws.perform(.consumeOrExpelLeft))
+    func testConsumeDoesNothingWithoutANeighbourOnThatSide() {
+        var ws = make(3, focused: 2) // [0][1 over 2]: window 3 is bottom right
         XCTAssertFalse(ws.perform(.consumeOrExpelRight))
         XCTAssertEqual(layout(ws.strip), [[1], [2], [3]])
+        XCTAssertEqual(ws.strip.focusedWindow, 3)
+        var single = make(1)
+        XCTAssertFalse(single.perform(.consumeOrExpelLeft))
+        XCTAssertFalse(single.perform(.consumeOrExpelRight))
     }
 
     func testCenterColumnAndScrollingDoNothingWhileTiled() {

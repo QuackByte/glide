@@ -2,6 +2,12 @@
 
 Novedades de cada versión de Glide para Mac. Glide muestra las entradas nuevas una sola vez tras actualizarse, y las notas de cada versión en GitHub salen de aquí. Esta es una traducción de CHANGELOG.md, que es el original.
 
+## 0.10.1 — 2026-10-19
+
+### Correcciones
+
+- **Los grupos de pestañas funcionan en la disposición en mosaico.** ⌃⌥[ y ⌃⌥] añaden una ventana a un grupo de pestañas (una columna con pestañas), y una pestaña puede sacarse a su propio mosaico, como ya se podía al desplazarse.
+
 ## 0.10.0 — 2026-10-19
 
 ### Novedades

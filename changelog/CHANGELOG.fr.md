@@ -2,6 +2,12 @@
 
 Ce fichier est la traduction française de CHANGELOG.md, qui reste l’original. Il présente les nouveautés de chaque version de Glide pour Mac. Glide affiche les nouvelles entrées une seule fois après une mise à jour, et les notes de chaque version sur GitHub en sont issues.
 
+## 0.10.1 — 2026-10-19
+
+### Corrections
+
+- **Les groupes d'onglets fonctionnent dans la disposition en mosaïque.** ⌃⌥[ et ⌃⌥] ajoutent une fenêtre à un groupe d'onglets (une colonne à onglets), et un onglet peut être sorti pour avoir sa propre tuile, comme c'était déjà le cas en défilant.
+
 ## 0.10.0 — 2026-10-19
 
 ### Nouveautés

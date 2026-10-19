@@ -67,6 +67,52 @@ final class TabTests: XCTestCase {
         XCTAssertFalse(ws.strip.columns[1].isTabbed)
     }
 
+    private func tiled(_ columns: [Column], focused: Int = 0) -> Workspace {
+        var ws = Workspace(strip: Strip(columns: columns, focusedColumnIndex: focused), viewport: viewport)
+        ws.layoutOverride = .tiled
+        return ws
+    }
+
+    func testTiledLoneWindowJoinsTheTileOnItsLeftAsAFocusedTab() {
+        var ws = tiled([Column(windows: [1], widthIndex: 1), Column(windows: [2], widthIndex: 1), Column(windows: [3], widthIndex: 1)], focused: 1)
+        XCTAssertTrue(ws.perform(.consumeOrExpelLeft))
+        XCTAssertEqual(ws.strip.columns.map(\.windows), [[1, 2], [3]], "One tile fewer")
+        XCTAssertTrue(ws.strip.columns[0].isTabbed, "Stays one tile rather than splitting back into columns")
+        XCTAssertEqual(ws.strip.focusedWindow, 2)
+        XCTAssertEqual(ws.tabBars().map(\.column), [0])
+        XCTAssertEqual(ws.tabBars()[0].activeWindow, 2)
+        XCTAssertEqual(placements(ws)[2]?.frame, CGRect(x: 12, y: 84, width: 588, height: 744))
+        XCTAssertEqual(placements(ws)[1]?.visibility, .hiddenTab)
+    }
+
+    func testTiledLoneWindowJoinsAnExistingTabGroupOnItsRight() {
+        var ws = tiled([Column(windows: [1], widthIndex: 1), Column(windows: [2, 3], widthIndex: 1, isTabbed: true), Column(windows: [4], widthIndex: 1)])
+        XCTAssertTrue(ws.perform(.consumeOrExpelRight))
+        XCTAssertEqual(ws.strip.columns.map(\.windows), [[2, 3, 1], [4]])
+        XCTAssertTrue(ws.strip.columns[0].isTabbed)
+        XCTAssertEqual(ws.strip.focusedWindow, 1)
+        XCTAssertEqual(ws.tabBars()[0].activeWindow, 1)
+    }
+
+    func testTiledTabExpelsIntoANewTileOnItsSide() {
+        var ws = tiled([Column(windows: [4], widthIndex: 1), Column(windows: [1, 2, 3], focusedRow: 1, widthIndex: 1, isTabbed: true)], focused: 1)
+        XCTAssertTrue(ws.perform(.consumeOrExpelLeft))
+        XCTAssertEqual(ws.strip.columns.map(\.windows), [[4], [2], [1, 3]])
+        XCTAssertEqual(ws.strip.focusedWindow, 2)
+        XCTAssertFalse(ws.strip.columns[1].isTabbed)
+        XCTAssertTrue(ws.strip.columns[2].isTabbed)
+        XCTAssertEqual(placements(ws)[2]?.visibility, .visible)
+        XCTAssertEqual(ws.tabBars().map(\.column), [2])
+    }
+
+    func testTiledTabExpelsRight() {
+        var ws = tiled([Column(windows: [1, 2, 3], focusedRow: 1, widthIndex: 1, isTabbed: true), Column(windows: [4], widthIndex: 1)])
+        XCTAssertTrue(ws.perform(.consumeOrExpelRight))
+        XCTAssertEqual(ws.strip.columns.map(\.windows), [[1, 3], [2], [4]])
+        XCTAssertEqual(ws.strip.focusedWindow, 2)
+        XCTAssertEqual(placements(ws)[2]?.visibility, .visible)
+    }
+
     func testParkedTabbedColumnHasNoTabBar() {
         let columns = [Column(windows: [1, 2], widthIndex: 1, isTabbed: true)] + (3...5).map { Column(windows: [WindowID($0)], widthIndex: 1) }
         var ws = Workspace(strip: Strip(columns: columns), viewport: viewport)

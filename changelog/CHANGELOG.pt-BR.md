@@ -2,6 +2,12 @@
 
 Novidades de cada versão do Glide para Mac. O Glide mostra as novas entradas uma vez após se atualizar, e as notas de cada versão no GitHub vêm daqui, então escreva para quem usa o Glide. Adicione uma entrada para cada mudança que vale a pena conhecer na próxima versão antes de criar a tag. Esta é uma tradução de CHANGELOG.md, que é o original.
 
+## 0.10.1 — 2026-10-19
+
+### Correções
+
+- **Grupos de abas funcionam no layout em blocos.** ⌃⌥[ e ⌃⌥] adicionam uma janela a um grupo de abas (uma coluna com abas), e uma aba pode ser movida para o próprio bloco, como já acontecia ao rolar.
+
 ## 0.10.0 — 2026-10-19
 
 ### Novidades
