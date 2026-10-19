@@ -2,6 +2,12 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.10.1 — 2026-10-19
+
+### Fehlerbehebungen
+
+- **Tab-Gruppen funktionieren im gekachelten Layout.** ⌃⌥[ und ⌃⌥] fügen ein Fenster einer Tab-Gruppe (einer Spalte mit Tabs) hinzu, und ein Tab kann in eine eigene Kachel verschoben werden, wie es beim Scrollen schon ging.
+
 ## 0.10.0 — 2026-10-19
 
 ### Neu

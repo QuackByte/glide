@@ -2,6 +2,12 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it. Glide shows these notes in the app's language: the translations live in `changelog/CHANGELOG.<code>.md`, and a new entry must be translated in every one of them before tagging (`ChangelogTranslationTests` checks that they match this file).
 
+## 0.10.1 — 2026-10-19
+
+### Fixes
+
+- **Tab groups work in the Tiled layout.** ⌃⌥[ and ⌃⌥] add a window to a tab group (a tabbed column), and a tab can be moved out into its own tile, as they already did when scrolling.
+
 ## 0.10.0 — 2026-10-19
 
 ### New
