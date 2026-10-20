@@ -513,6 +513,7 @@ public struct Workspace: Equatable, Sendable {
     }
 
     private mutating func performTiledAction(_ action: Action) -> Bool? {
+        if isZoomed, let changed = performZoomed(action) { return changed }
         switch action {
         case .focusColumnLeft: return focusTile(.left)
         case .focusColumnRight: return focusTile(.right)
@@ -534,6 +535,26 @@ public struct Workspace: Equatable, Sendable {
             return true
         default: return nil
         }
+    }
+
+    /// Zoomed, only the focused window shows, so the arrows go in order rather than by where tiles sit
+    /// underneath: → and ↑ to the next window, tabs included, ← and ↓ to the one before, wrapping
+    /// around; with ⇧ they move the focused tile one place. nil for other actions.
+    private mutating func performZoomed(_ action: Action) -> Bool? {
+        switch action {
+        case .focusColumnRight, .focusWindowUp: return focusInOrder(forward: true)
+        case .focusColumnLeft, .focusWindowDown: return focusInOrder(forward: false)
+        case .moveColumnRight, .moveWindowUp: return strip.moveColumn(.right)
+        case .moveColumnLeft, .moveWindowDown: return strip.moveColumn(.left)
+        default: return nil
+        }
+    }
+
+    /// Focuses the next or previous window in tile order, a tab group's tabs in turn, wrapping around.
+    private mutating func focusInOrder(forward: Bool) -> Bool {
+        let windows = strip.windows
+        guard windows.count > 1, let focused = strip.focusedWindow, let index = windows.firstIndex(of: focused) else { return false }
+        return strip.focus(windows[(index + (forward ? 1 : windows.count - 1)) % windows.count])
     }
 
     /// Moves focus to the tile next to the focused one on a side.

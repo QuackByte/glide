@@ -178,7 +178,7 @@ final class TabTests: XCTestCase {
         ws.layoutOverride = .tiled
         ws.perform(.toggleFullWidth)
         XCTAssertEqual(ws.tabBars().map(\.column), [0])
-        ws.perform(.focusColumnRight)
+        ws.perform(.focusLastColumn)
         XCTAssertEqual(ws.tabBars().map(\.column), [1])
     }
 
@@ -186,7 +186,7 @@ final class TabTests: XCTestCase {
         var ws = tiledWithTabGroup()
         ws.strip.focus(10)
         ws.perform(.toggleFullWidth)
-        XCTAssertTrue(ws.perform(.focusWindowDown))
+        XCTAssertTrue(ws.perform(.focusWindowUp), "Zoomed, up is the next window: the next tab")
         XCTAssertTrue(ws.isZoomed)
         XCTAssertEqual(ws.tabBars()[0].activeWindow, 11)
         XCTAssertEqual(placements(ws)[11]?.visibility, .visible)

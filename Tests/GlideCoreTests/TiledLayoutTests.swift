@@ -266,17 +266,53 @@ final class TiledLayoutTests: XCTestCase {
         XCTAssertEqual(frames(ws), before)
     }
 
-    func testFocusMovesThroughZoomedTilesAndTheZoomStays() {
+    func testZoomedArrowsGoInOrderAndWrapAround() {
         var ws = make(3, focused: 0)
         ws.perform(.toggleFullWidth)
         XCTAssertTrue(ws.perform(.focusColumnRight))
         XCTAssertEqual(ws.strip.focusedWindow, 2)
-        XCTAssertTrue(ws.perform(.focusWindowDown), "Direction still follows the spiral underneath")
+        XCTAssertTrue(ws.perform(.focusWindowUp), "Up is next too, whatever sits above underneath")
         XCTAssertEqual(ws.strip.focusedWindow, 3)
-        XCTAssertTrue(ws.perform(.focusFirstColumn))
-        XCTAssertEqual(ws.strip.focusedWindow, 1)
+        XCTAssertTrue(ws.perform(.focusColumnRight))
+        XCTAssertEqual(ws.strip.focusedWindow, 1, "Past the last, back to the first")
+        XCTAssertTrue(ws.perform(.focusWindowDown))
+        XCTAssertEqual(ws.strip.focusedWindow, 3, "Down is the one before, wrapping too")
+        XCTAssertTrue(ws.perform(.focusColumnLeft))
+        XCTAssertEqual(ws.strip.focusedWindow, 2)
         XCTAssertTrue(ws.isZoomed)
         XCTAssertEqual(Set(frames(ws).values), [fullScreen])
+    }
+
+    func testZoomedArrowsStepThroughATabGroupsTabs() {
+        var ws = workspace([Column(windows: [1], widthIndex: 1), Column(windows: [2, 3], widthIndex: 1, isTabbed: true),
+                            Column(windows: [4], widthIndex: 1)], focused: 0)
+        ws.perform(.toggleFullWidth)
+        var order: [WindowID] = []
+        for _ in 0..<4 {
+            ws.perform(.focusColumnRight)
+            order.append(ws.strip.focusedWindow!)
+        }
+        XCTAssertEqual(order, [2, 3, 4, 1])
+    }
+
+    func testZoomedMovesShiftTheTileOnePlaceInOrder() {
+        var ws = make(3, focused: 0)
+        ws.perform(.toggleFullWidth)
+        XCTAssertTrue(ws.perform(.moveWindowUp))
+        XCTAssertEqual(ws.strip.windows, [2, 1, 3])
+        XCTAssertTrue(ws.perform(.moveColumnRight))
+        XCTAssertEqual(ws.strip.windows, [2, 3, 1])
+        XCTAssertFalse(ws.perform(.moveColumnRight), "Moves stop at the ends")
+        XCTAssertTrue(ws.perform(.moveWindowDown))
+        XCTAssertEqual(ws.strip.windows, [2, 1, 3])
+        XCTAssertEqual(ws.strip.focusedWindow, 1)
+    }
+
+    func testUnzoomedArrowsStillGoByDirection() {
+        var ws = make(3, focused: 1)
+        XCTAssertTrue(ws.perform(.focusWindowDown))
+        XCTAssertEqual(ws.strip.focusedWindow, 3)
+        XCTAssertFalse(ws.perform(.focusColumnRight))
     }
 
     func testAZoomOutlastsItsWindowsAndCoversNewOnes() {
