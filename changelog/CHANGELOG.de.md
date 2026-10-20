@@ -2,6 +2,12 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.11.0 — 2026-10-20
+
+### Neu
+
+- **Gekachelt: ⌃⌥F schaltet den ganzen Arbeitsbereich auf Vollbild.** Jedes Fenster füllt den Bildschirm, das fokussierte liegt oben, bis du ⌃⌥F erneut drückst. Mit ⌃⌥ + Pfeiltasten wechselst du zwischen den Fenstern, ohne das Vollbild zu verlassen, und neue Fenster öffnen sich ebenfalls im Vollbild.
+
 ## 0.10.2 — 2026-10-19
 
 ### Neu

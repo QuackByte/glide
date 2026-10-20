@@ -2,6 +2,12 @@
 
 Ce fichier est la traduction française de CHANGELOG.md, qui reste l’original. Il présente les nouveautés de chaque version de Glide pour Mac. Glide affiche les nouvelles entrées une seule fois après une mise à jour, et les notes de chaque version sur GitHub en sont issues.
 
+## 0.11.0 — 2026-10-20
+
+### Nouveautés
+
+- **Disposition en mosaïque : ⌃⌥F met tout le bureau en plein écran.** Chaque fenêtre remplit l’écran, celle qui a le focus au-dessus, jusqu’à ce que vous appuyiez de nouveau sur ⌃⌥F. ⌃⌥ + flèches passent d’une fenêtre à l’autre sans quitter le plein écran, et les nouvelles fenêtres s’ouvrent aussi en plein écran.
+
 ## 0.10.2 — 2026-10-19
 
 ### Nouveautés

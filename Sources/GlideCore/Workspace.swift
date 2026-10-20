@@ -93,8 +93,9 @@ public struct Workspace: Equatable, Sendable {
     /// What the first part of each split gets, by split (see `TiledLayout`); 0 keeps a split's default.
     /// Only used while it has one entry per split, so it starts over when windows come or go.
     public var tiledRatios: [CGFloat]?
-    /// The window whose tile fills the screen (tiled "full width"); only counts while that tile has focus.
-    public private(set) var zoomedWindow: WindowID?
+    /// Tiled full screen ("full width" on a tiled workspace): every tile fills the screen, stacked, and
+    /// focus moves through them in the usual order, the focused one on top. Lasts until toggled off.
+    public private(set) var isZoomed = false
     /// The window whose learned minimum width held back the last width change, so the caller can say why; nil otherwise.
     public private(set) var stoppedByMinimum: WindowID?
 
@@ -117,7 +118,7 @@ public struct Workspace: Equatable, Sendable {
         layoutOverride = layout == .scrolling ? .tiled : .scrolling
         if layout == .scrolling {
             strip.resetWidths(to: settings.defaultWidthIndex)
-            zoomedWindow = nil
+            isZoomed = false
         }
         settleScroll()
     }
@@ -197,12 +198,10 @@ public struct Workspace: Equatable, Sendable {
     // MARK: Scrolling
 
     /// Tiled workspaces don't scroll: everything is on screen. They keep one tile per column
-    /// instead (a window dropped onto another's column becomes the next tile) and forget a zoom
-    /// whose window has gone.
+    /// instead (a window dropped onto another's column becomes the next tile).
     private mutating func keepTiledShape() {
         strip.explodeStacks()
         scrollOffset = 0
-        if let zoomed = zoomedWindow, !strip.contains(zoomed) { zoomedWindow = nil }
     }
 
     /// Scrolls as little as possible to bring the focused column fully on screen.
@@ -395,7 +394,7 @@ public struct Workspace: Equatable, Sendable {
             return strip.setCustomWidth(width, forColumnOf: window)
         }
         let tiles = tiles()
-        guard let index = tiles.firstIndex(where: { tileWindows($0).contains(window) }), zoomedWindow == nil else { return false }
+        guard let index = tiles.firstIndex(where: { tileWindows($0).contains(window) }), !isZoomed else { return false }
         let count = tiles.count
         let ratios = displayedRatios(tiles)
         guard let sizing = sizing(ofTile: index, count: count, ratios: ratios) else { return false }
@@ -479,12 +478,6 @@ public struct Workspace: Equatable, Sendable {
         return (earlier, false, splits[earlier].room.width - settings.gap)
     }
 
-    /// The tile holding the zoomed window, while it has focus.
-    private func zoomedTile(in tiles: [Tile]) -> Int? {
-        guard let zoomed = zoomedWindow, let focused = strip.focusedColumn, focused.windows.contains(zoomed) else { return nil }
-        return tiles.firstIndex { $0.column == strip.focusedColumnIndex && ($0.row == nil || focused.windows[$0.row!] == zoomed) }
-    }
-
     /// Every tile's frame as the spiral lays it out, with the ratios fitted to minimum widths but before
     /// zoom: what focus and move go by, and what the ratios shape.
     private func tileFrames(_ tiles: [Tile]) -> [CGRect] {
@@ -493,10 +486,14 @@ public struct Workspace: Equatable, Sendable {
 
     /// The frames tiles are sent to. A tile narrower than a window in it allows gets that window's minimum
     /// width within its own x, overlapping its neighbour, but only when the minimums can't all fit (see
-    /// `fittedRatios`); a zoomed tile fills the screen.
+    /// `fittedRatios`); zoomed, every tile fills the screen.
     private func placedFrames(_ tiles: [Tile]) -> [CGRect] {
-        var frames = tileFrames(tiles)
         let gap = settings.gap
+        if isZoomed {
+            let screen = CGRect(x: viewport.minX + gap, y: viewport.minY + gap, width: usableWidth, height: max(viewport.height - 2 * gap, 0))
+            return Array(repeating: screen, count: tiles.count)
+        }
+        var frames = tileFrames(tiles)
         let right = viewport.maxX - gap
         for index in frames.indices {
             let minimum = tileWindows(tiles[index]).compactMap { minimumWidths[$0] }.max() ?? 0
@@ -505,9 +502,6 @@ public struct Workspace: Equatable, Sendable {
             frames[index].origin.x = min(frames[index].minX, max(right - width, viewport.minX + gap))
             frames[index].size.width = width
         }
-        if let zoomed = zoomedTile(in: tiles) {
-            frames[zoomed] = CGRect(x: viewport.minX + gap, y: viewport.minY + gap, width: usableWidth, height: max(viewport.height - 2 * gap, 0))
-        }
         return frames
     }
 
@@ -515,10 +509,7 @@ public struct Workspace: Equatable, Sendable {
     private mutating func performTiled(_ action: Action) -> Bool? {
         keepTiledShape()
         if strip.isEmpty { return action == .toggleLayout || action == .toggleTabbed || action == .centerColumn ? nil : false }
-        let changed = performTiledAction(action)
-        // A zoom ends when focus leaves its tile.
-        if let zoomed = zoomedWindow, strip.focusedColumn?.windows.contains(zoomed) != true { zoomedWindow = nil }
-        return changed
+        return performTiledAction(action)
     }
 
     private mutating func performTiledAction(_ action: Action) -> Bool? {
@@ -535,10 +526,11 @@ public struct Workspace: Equatable, Sendable {
         case .focusLastColumn: return strip.focusLastColumn()
         case .consumeOrExpelLeft: return consumeOrExpelTile(.left)
         case .consumeOrExpelRight: return consumeOrExpelTile(.right)
-        case .cycleColumnWidth: return cycleTiledRatio(forward: true)
-        case .cycleColumnWidthBackward: return cycleTiledRatio(forward: false)
+        // Zoomed, the splits don't show, so there is nothing to see change.
+        case .cycleColumnWidth: return !isZoomed && cycleTiledRatio(forward: true)
+        case .cycleColumnWidthBackward: return !isZoomed && cycleTiledRatio(forward: false)
         case .toggleFullWidth:
-            zoomedWindow = zoomedTile(in: tiles()) == nil ? strip.focusedWindow : nil
+            isZoomed.toggle()
             return true
         default: return nil
         }
@@ -685,7 +677,8 @@ public struct Workspace: Equatable, Sendable {
             let frames = placedFrames(tiles)
             return tiles.enumerated().compactMap { index, tile in
                 let column = strip.columns[tile.column]
-                guard column.isTabbed else { return nil }
+                // Zoomed, the tiles are stacked and only the focused one shows.
+                guard column.isTabbed, !isZoomed || tile.column == strip.focusedColumnIndex else { return nil }
                 let frame = CGRect(x: frames[index].minX, y: frames[index].minY, width: frames[index].width, height: settings.tabBarHeight)
                 return TabBarPlacement(column: tile.column, frame: frame, windows: column.windows, activeIndex: column.focusedRow)
             }

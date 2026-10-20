@@ -254,37 +254,51 @@ final class TiledLayoutTests: XCTestCase {
 
     // MARK: Zoom
 
-    func testFullWidthZoomsTheFocusedTileUntilToggledAgain() {
+    private let fullScreen = CGRect(x: 12, y: 52, width: 1188, height: 776)
+
+    func testFullWidthMakesEveryTileFillTheScreenUntilToggledAgain() {
         var ws = make(3, focused: 1)
         let before = frames(ws)
         XCTAssertTrue(ws.perform(.toggleFullWidth))
-        let zoomed = frames(ws)
-        XCTAssertEqual(zoomed[2], CGRect(x: 12, y: 52, width: 1188, height: 776))
-        XCTAssertEqual(zoomed[1], before[1], "The others stay put, underneath")
-        XCTAssertEqual(zoomed[3], before[3])
+        XCTAssertTrue(ws.isZoomed)
+        XCTAssertEqual(Set(frames(ws).values), [fullScreen], "Every tile fills the screen, stacked")
         XCTAssertTrue(ws.perform(.toggleFullWidth))
         XCTAssertEqual(frames(ws), before)
     }
 
-    func testAZoomEndsWhenFocusLeavesAndDoesNotComeBack() {
+    func testFocusMovesThroughZoomedTilesAndTheZoomStays() {
         var ws = make(3, focused: 0)
         ws.perform(.toggleFullWidth)
         XCTAssertTrue(ws.perform(.focusColumnRight))
-        XCTAssertNil(ws.zoomedWindow)
-        ws.perform(.focusColumnLeft)
-        XCTAssertNotEqual(frames(ws)[1], CGRect(x: 12, y: 52, width: 1188, height: 776))
+        XCTAssertEqual(ws.strip.focusedWindow, 2)
+        XCTAssertTrue(ws.perform(.focusWindowDown), "Direction still follows the spiral underneath")
+        XCTAssertEqual(ws.strip.focusedWindow, 3)
+        XCTAssertTrue(ws.perform(.focusFirstColumn))
+        XCTAssertEqual(ws.strip.focusedWindow, 1)
+        XCTAssertTrue(ws.isZoomed)
+        XCTAssertEqual(Set(frames(ws).values), [fullScreen])
     }
 
-    func testAZoomEndsWhenItsWindowLeaves() {
+    func testAZoomOutlastsItsWindowsAndCoversNewOnes() {
         var set = WorkspaceSet(viewport: viewport)
         set.active.layoutOverride = .tiled
         for id: WindowID in [1, 2] { set.insert(id, widthIndex: 1, focus: true) }
         set.active.perform(.toggleFullWidth)
-        XCTAssertEqual(set.active.zoomedWindow, 2)
         set.remove(2)
-        XCTAssertNil(set.active.zoomedWindow)
-        set.insert(2, widthIndex: 1, focus: true)
-        XCTAssertEqual(frames(set.active)[2], CGRect(x: 612, y: 52, width: 588, height: 776))
+        XCTAssertTrue(set.active.isZoomed)
+        XCTAssertEqual(frames(set.active)[1], fullScreen)
+        set.insert(3, widthIndex: 1, focus: true)
+        XCTAssertEqual(frames(set.active)[3], fullScreen)
+        XCTAssertEqual(set.active.strip.focusedWindow, 3)
+    }
+
+    func testZoomedWidthStepsAndResizesDoNothing() {
+        var ws = make(2, focused: 0)
+        ws.perform(.toggleFullWidth)
+        XCTAssertFalse(ws.perform(.cycleColumnWidth))
+        XCTAssertFalse(ws.setColumnWidthFromResize(1, to: 400))
+        ws.perform(.toggleFullWidth)
+        XCTAssertEqual(placed(ws), expected(ws))
     }
 
     func testATabbedTileCanBeZoomedToo() {
@@ -483,7 +497,7 @@ final class TiledLayoutTests: XCTestCase {
         ws.perform(.toggleFullWidth)
         ws.toggleLayout()
         ws.toggleLayout()
-        XCTAssertNil(ws.zoomedWindow)
+        XCTAssertFalse(ws.isZoomed)
     }
 
     func testThereAndBackKeepsTheOrderAndTheFocus() {

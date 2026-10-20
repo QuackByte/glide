@@ -2,6 +2,12 @@
 
 Novedades de cada versión de Glide para Mac. Glide muestra las entradas nuevas una sola vez tras actualizarse, y las notas de cada versión en GitHub salen de aquí. Esta es una traducción de CHANGELOG.md, que es el original.
 
+## 0.11.0 — 2026-10-20
+
+### Novedades
+
+- **En el layout en mosaico, ⌃⌥F pone todo el escritorio a pantalla completa.** Cada ventana llena la pantalla, con la enfocada encima, hasta que vuelvas a pulsar ⌃⌥F. ⌃⌥ + flechas pasan de una ventana a otra sin salir de la pantalla completa, y las ventanas nuevas también se abren a pantalla completa.
+
 ## 0.10.2 — 2026-10-19
 
 ### Novedades

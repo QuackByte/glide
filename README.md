@@ -36,7 +36,7 @@ Status: early development (milestone 1: one display). There's also [Glide for Wi
 - **Order**: tiles follow the strip's columns left to right. Switching to tiled gives every window of a stack its own column (a tabbed column stays one tile, with its tab bar on top); switching back gives every column the default width. The order and focus survive both ways. A new window becomes the next tile after the focused one, and a window dropped onto another's column becomes the next tile too.
 - **⌃⌥ + arrows** focus the tile next to the focused one in that direction, and **⌃⌥⇧ + arrows** swap it with that neighbour. ⌃⌥Home / End focus the first / last tile. ⌃⌥[ and ⌃⌥] and ⌃⌥C do nothing, and neither do the trackpad swipe or the mouse wheel.
 - **⌃⌥R** steps the split between the focused tile and the rest through ⅓, ½ and ⅔ (the last tile changes the split before it). Dragging a tile's edge moves the same split; a tile with no split to move snaps back. The splits start over when a window opens or closes.
-- **⌃⌥F** zooms the focused tile to fill the screen until you press it again, or move focus away.
+- **⌃⌥F** zooms the workspace: every tile fills the screen, stacked, with the focused one on top, until you press it again. Focus moves through them as before (⌃⌥ + arrows follow the layout underneath), new windows open zoomed too, and only the focused tab group shows its tab bar. ⌃⌥R and dragging an edge do nothing while zoomed.
 - Windows with a minimum width that doesn't fit their tile get that width, overlapping their neighbour if they have to.
 - Each workspace's column count and splits are remembered with its layout.
 
@@ -59,7 +59,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Move window up / down (within a column, or reorder tabs) | ⌃⌥⇧↑ / ⌃⌥⇧↓ |
 | Consume or expel window left / right | ⌃⌥[ / ⌃⌥] |
 | Cycle column width (⅓ → ½ → ⅔ → full); tiled: the split | ⌃⌥R (⌃⌥⇧R cycles backward) |
-| Toggle full width; tiled: zoom the tile | ⌃⌥F |
+| Toggle full width; tiled: zoom every tile | ⌃⌥F |
 | Toggle tabbed column | ⌃⌥W |
 | Switch the workspace between scrolling and tiled | ⌃⌥T |
 | Switch the tiled workspace between 2 and 3 columns | ⌃⌥G |

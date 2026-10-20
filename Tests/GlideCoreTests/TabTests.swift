@@ -172,12 +172,22 @@ final class TabTests: XCTestCase {
         XCTAssertFalse(ws.perform(.focusWindowDown))
     }
 
+    func testZoomedOnlyTheFocusedTilesTabBarShows() {
+        var ws = Workspace(strip: Strip(columns: [Column(windows: [1, 2], widthIndex: 1, isTabbed: true),
+                                                  Column(windows: [3, 4], widthIndex: 1, isTabbed: true)]), viewport: viewport)
+        ws.layoutOverride = .tiled
+        ws.perform(.toggleFullWidth)
+        XCTAssertEqual(ws.tabBars().map(\.column), [0])
+        ws.perform(.focusColumnRight)
+        XCTAssertEqual(ws.tabBars().map(\.column), [1])
+    }
+
     func testAZoomedTabGroupStaysZoomedAndShowsTheNewTab() {
         var ws = tiledWithTabGroup()
         ws.strip.focus(10)
         ws.perform(.toggleFullWidth)
         XCTAssertTrue(ws.perform(.focusWindowDown))
-        XCTAssertNotNil(ws.zoomedWindow, "Zoom only ends when focus leaves the tile")
+        XCTAssertTrue(ws.isZoomed)
         XCTAssertEqual(ws.tabBars()[0].activeWindow, 11)
         XCTAssertEqual(placements(ws)[11]?.visibility, .visible)
         XCTAssertEqual(placements(ws)[11]?.frame, CGRect(x: 12, y: 84, width: 1188, height: 744))

@@ -2,6 +2,12 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it. Glide shows these notes in the app's language: the translations live in `changelog/CHANGELOG.<code>.md`, and a new entry must be translated in every one of them before tagging (`ChangelogTranslationTests` checks that they match this file).
 
+## 0.11.0 — 2026-10-20
+
+### New
+
+- **Tiled layout: ⌃⌥F makes the whole workspace full screen.** Every window fills the screen, with the focused one on top, until you press ⌃⌥F again. ⌃⌥ + arrows move through the windows without leaving it, and new windows open full screen too.
+
 ## 0.10.2 — 2026-10-19
 
 ### New
