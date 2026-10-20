@@ -2,6 +2,12 @@
 
 Novidades de cada versão do Glide para Mac. O Glide mostra as novas entradas uma vez após se atualizar, e as notas de cada versão no GitHub vêm daqui, então escreva para quem usa o Glide. Adicione uma entrada para cada mudança que vale a pena conhecer na próxima versão antes de criar a tag. Esta é uma tradução de CHANGELOG.md, que é o original.
 
+## 0.11.1 — 2026-10-20
+
+### Mudanças
+
+- **Layout em blocos: em tela cheia, as setas percorrem as janelas em ordem.** ⌃⌥→ e ⌃⌥↑ vão para a próxima janela, ⌃⌥← e ⌃⌥↓ para a anterior, voltando ao início ao chegar ao fim, então você não precisa lembrar onde cada janela fica por baixo. As abas de um grupo vêm uma por uma, e com ⇧ as setas movem a janela focada uma posição.
+
 ## 0.11.0 — 2026-10-20
 
 ### Novidades
