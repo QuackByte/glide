@@ -2,6 +2,12 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.11.1 — 2026-10-20
+
+### Änderungen
+
+- **Gekachelt: Im Vollbild gehen die Pfeiltasten der Reihe nach durch die Fenster.** ⌃⌥→ und ⌃⌥↑ wechseln zum nächsten Fenster, ⌃⌥← und ⌃⌥↓ zum vorherigen, und an den Enden geht es von vorn los. So musst du dir nicht merken, wo jedes Fenster darunter liegt. Die Tabs einer Tab-Gruppe kommen einzeln an die Reihe, und mit ⇧ verschieben die Pfeiltasten das fokussierte Fenster um eine Stelle.
+
 ## 0.11.0 — 2026-10-20
 
 ### Neu

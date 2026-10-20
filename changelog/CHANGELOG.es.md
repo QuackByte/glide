@@ -2,6 +2,12 @@
 
 Novedades de cada versión de Glide para Mac. Glide muestra las entradas nuevas una sola vez tras actualizarse, y las notas de cada versión en GitHub salen de aquí. Esta es una traducción de CHANGELOG.md, que es el original.
 
+## 0.11.1 — 2026-10-20
+
+### Cambios
+
+- **En el layout en mosaico, a pantalla completa las flechas recorren las ventanas en orden.** ⌃⌥→ y ⌃⌥↑ pasan a la ventana siguiente, ⌃⌥← y ⌃⌥↓ a la anterior, y al llegar a un extremo vuelven a empezar, así que no hace falta recordar dónde está cada ventana debajo. Las pestañas de un grupo van de una en una, y con ⇧ las flechas mueven la ventana enfocada un puesto.
+
 ## 0.11.0 — 2026-10-20
 
 ### Novedades
