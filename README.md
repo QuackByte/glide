@@ -57,7 +57,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Focus column left / right | ⌃⌥← / ⌃⌥→ |
 | Focus window up / down (within a column, or switch tabs) | ⌃⌥↑ / ⌃⌥↓ |
 | Focus first / last column | ⌃⌥Home / ⌃⌥End (fn⌃⌥← / fn⌃⌥→ on laptops) |
-| Back to the previously focused window (again to come back) | ⌃⌥` |
+| Back to the previously focused window (again to come back) | ⌃⌥\` |
 | Move column left / right | ⌃⌥⇧← / ⌃⌥⇧→ |
 | Move window up / down (within a column, or reorder tabs) | ⌃⌥⇧↑ / ⌃⌥⇧↓ |
 | Consume or expel window left / right | ⌃⌥[ / ⌃⌥] |

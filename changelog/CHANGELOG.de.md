@@ -2,6 +2,20 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.12.0 — 2026-10-30
+
+### Neu
+
+- **Hin und zurück.** ⌃⌥\` springt zurück zum Fenster, in dem du vorher warst, auf jedem Arbeitsbereich und Bildschirm, und ⌃⌥⇥ zum letzten Arbeitsbereich. Nochmal drücken, und du bist wieder da.
+- **H J K L für Richtungen.** Einstellungen › Tastenkürzel › Richtungstasten ersetzt die Pfeiltasten der Fokus- und Verschiebe-Tastenkürzel durch H, J, K und L, wie in vim. Die Tastenkürzel für Bildschirme behalten die Pfeiltasten.
+- **Eigene Spaltenbreiten.** Einstellungen › Allgemein › Spaltenbreiten nimmt die Breiten, die ⌃⌥R durchläuft, in Prozent des Bildschirms. Neue Fenster öffnen mit der Breite, die 50 am nächsten liegt.
+- **Spalten auf dem Bildschirm angleichen.** ⌃⌥E gibt den Spalten auf dem Bildschirm, auch teilweise sichtbaren, gleiche Breiten, die ihn zusammen füllen. Gekachelt setzt es die Teilungen zurück.
+- **Fokus folgt der Maus,** wenn du es unter Einstellungen › Allgemein einschaltest. Ruht der Zeiger auf einem gekachelten Fenster, das ganz zu sehen ist, wird es fokussiert; schwebende Fenster, Menüs und das Dock bleiben unberührt.
+- **Notizfenster.** ⌃⌥⇧S macht das fokussierte Fenster (ein Terminal, Notizen, einen Chat) zum Notizfenster und blendet es aus. ⌃⌥S holt es hervor, schwebend in der Mitte des Bildschirms, und blendet es wieder aus.
+- **Befehlszeile und Links.** `glide focus-workspace 3` oder ein Link wie glide://focus-workspace-3 führt jede Aktion aus, aus Skripten, Raycast, Alfred, Stream Deck oder Kurzbefehlen. Einstellungen › Allgemein › Befehlszeilenprogramm kopiert den Befehl, der `glide` installiert.
+- **Dein Layout kommt nach einem Neustart zurück.** Glide erkennt Fenster nach einem Neustart des Mac jetzt an App und Titel wieder und setzt jedes beim Öffnen zurück auf seinen Arbeitsbereich, mit seiner Breite und in seinen Stapel.
+- **Einstellungen exportieren und importieren.** Einstellungen › Allgemein › Einstellungsdatei speichert Tastenkürzel, App-Regeln, Layout und Darstellung als lesbare JSON-Datei und lädt sie auf einem anderen Mac.
+
 ## 0.11.2 — 2026-10-30
 
 ### Neu

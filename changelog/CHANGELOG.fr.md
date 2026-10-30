@@ -2,6 +2,20 @@
 
 Ce fichier est la traduction française de CHANGELOG.md, qui reste l’original. Il présente les nouveautés de chaque version de Glide pour Mac. Glide affiche les nouvelles entrées une seule fois après une mise à jour, et les notes de chaque version sur GitHub en sont issues.
 
+## 0.12.0 — 2026-10-30
+
+### Nouveautés
+
+- **Aller-retour.** ⌃⌥\` revient à la fenêtre où vous étiez avant, sur n’importe quel bureau ou écran, et ⌃⌥⇥ au dernier bureau. Appuyez de nouveau pour revenir.
+- **H J K L pour les directions.** Réglages › Raccourcis › Touches de direction remplace les flèches des raccourcis d’activation et de déplacement par H, J, K et L, comme dans vim. Les raccourcis des écrans gardent les flèches.
+- **Vos propres largeurs de colonne.** Réglages › Général › Largeurs de colonne accepte les largeurs que ⌃⌥R parcourt, en pourcentage de l’écran. Les nouvelles fenêtres s’ouvrent avec la plus proche de 50.
+- **Égalisez les colonnes à l’écran.** ⌃⌥E donne aux colonnes visibles, même en partie, la même largeur pour qu’elles remplissent l’écran ensemble. En disposition en mosaïque, il réinitialise les séparations.
+- **Le focus suit la souris,** si vous l’activez dans Réglages › Général. Laisser le pointeur sur une fenêtre en mosaïque entièrement visible l’active ; les fenêtres flottantes, les menus et le Dock ne sont pas concernés.
+- **Fenêtre d’appoint.** ⌃⌥⇧S fait de la fenêtre active (un terminal, des notes, une messagerie) la fenêtre d’appoint et la masque. ⌃⌥S l’affiche, flottante au milieu de l’écran, et la masque de nouveau.
+- **Ligne de commande et liens.** `glide focus-workspace 3`, ou un lien glide://focus-workspace-3, lance n’importe quelle action depuis des scripts, Raycast, Alfred, Stream Deck ou Raccourcis. Réglages › Général › Outil en ligne de commande copie la commande qui installe `glide`.
+- **Votre disposition revient après un redémarrage.** Glide retrouve désormais les fenêtres par leur app et leur titre après le redémarrage du Mac, et remet chacune sur son bureau, à sa largeur et dans sa pile à mesure qu’elle s’ouvre.
+- **Exportez et importez vos réglages.** Réglages › Général › Fichier de réglages enregistre raccourcis, règles d’apps, disposition et apparence dans un fichier JSON lisible, et le charge sur un autre Mac.
+
 ## 0.11.2 — 2026-10-30
 
 ### Nouveautés

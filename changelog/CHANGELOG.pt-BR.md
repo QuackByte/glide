@@ -2,6 +2,20 @@
 
 Novidades de cada versão do Glide para Mac. O Glide mostra as novas entradas uma vez após se atualizar, e as notas de cada versão no GitHub vêm daqui, então escreva para quem usa o Glide. Adicione uma entrada para cada mudança que vale a pena conhecer na próxima versão antes de criar a tag. Esta é uma tradução de CHANGELOG.md, que é o original.
 
+## 0.12.0 — 2026-10-30
+
+### Novidades
+
+- **Ir e voltar.** ⌃⌥\` volta para a janela em que você estava antes, em qualquer espaço de trabalho ou tela, e ⌃⌥⇥ para o último espaço de trabalho. Aperte de novo para retornar.
+- **H J K L para as direções.** Ajustes › Atalhos › Teclas de direção troca as setas dos atalhos de focar e mover por H, J, K e L, como no vim. Os atalhos de telas continuam com as setas.
+- **Suas próprias larguras de coluna.** Ajustes › Geral › Larguras de coluna aceita as larguras que ⌃⌥R percorre, em porcentagem da tela. Janelas novas abrem com a mais próxima de 50.
+- **Iguale as colunas na tela.** ⌃⌥E dá às colunas que aparecem na tela, mesmo em parte, a mesma largura para que juntas preencham a tela. No layout em blocos, redefine as divisões.
+- **O foco segue o mouse,** se você ativar em Ajustes › Geral. Deixar o ponteiro sobre uma janela em mosaico que aparece inteira a foca; janelas flutuantes, menus e o Dock ficam de fora.
+- **Janela rápida.** ⌃⌥⇧S transforma a janela focada (um terminal, notas, um chat) na janela rápida e a oculta. ⌃⌥S a mostra, flutuando no meio da tela, e a oculta de novo.
+- **Linha de comando e links.** `glide focus-workspace 3`, ou um link glide://focus-workspace-3, executa qualquer ação a partir de scripts, Raycast, Alfred, Stream Deck ou Atalhos. Ajustes › Geral › Ferramenta de linha de comando copia o comando que instala o `glide`.
+- **Seu layout volta depois de reiniciar.** O Glide agora reconhece as janelas pelo app e pelo título depois que o Mac reinicia, e devolve cada uma ao seu espaço de trabalho, com sua largura e na sua pilha, conforme abre.
+- **Exporte e importe os ajustes.** Ajustes › Geral › Arquivo de ajustes salva atalhos, regras de apps, layout e aparência em um arquivo JSON legível, e o carrega em outro Mac.
+
 ## 0.11.2 — 2026-10-30
 
 ### Novidades
