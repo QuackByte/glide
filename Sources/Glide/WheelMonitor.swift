@@ -4,7 +4,8 @@ import GlideCore
 /// One mouse-wheel tick. Notches are positive when the content should move right.
 struct WheelTick {
     var horizontal: Bool
-    var chordHeld: Bool
+    /// The modifiers held during the tick.
+    var modifiers: KeyModifiers
     var notches: Double
 }
 
@@ -47,7 +48,11 @@ final class WheelMonitor {
     fileprivate func process(_ event: CGEvent) -> Bool {
         guard event.getIntegerValueField(.scrollWheelEventIsContinuous) == 0, let handle else { return false }
         let flags = event.flags
-        let chordHeld = flags.contains(.maskControl) && flags.contains(.maskAlternate)
+        var modifiers: KeyModifiers = []
+        if flags.contains(.maskControl) { modifiers.insert(.control) }
+        if flags.contains(.maskAlternate) { modifiers.insert(.option) }
+        if flags.contains(.maskShift) { modifiers.insert(.shift) }
+        if flags.contains(.maskCommand) { modifiers.insert(.command) }
         // Tilt (axis 2) is positive to the right; the vertical wheel (axis 1) is positive when scrolling up.
         let horizontal = event.getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis2) != 0
         let notches: Double
@@ -57,7 +62,7 @@ final class WheelMonitor {
             notches = -event.getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1)
         }
         guard notches != 0 else { return false }
-        return handle(WheelTick(horizontal: horizontal, chordHeld: chordHeld, notches: notches))
+        return handle(WheelTick(horizontal: horizontal, modifiers: modifiers, notches: notches))
     }
 }
 

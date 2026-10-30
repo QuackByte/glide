@@ -310,10 +310,11 @@ final class AppController {
 
     private func handleWheel(_ tick: WheelTick) -> Bool {
         guard windowManager.isEnabled else { return false }
-        // A full-screen video or game keeps its wheel; ⌃⌥ is asked for, so it still goes to the strip.
-        if windowManager.gesturesPassThrough, !tick.chordHeld { return false }
+        // A full-screen video or game keeps its wheel; the Glide modifier is asked for, so it still goes to the strip.
+        let chordHeld = tick.modifiers.isSuperset(of: shortcuts.modifier.modifiers)
+        if windowManager.gesturesPassThrough, !chordHeld { return false }
         let mode = horizontalWheelMode
-        guard WheelRouting.movesStrip(horizontal: tick.horizontal, chordHeld: tick.chordHeld, mode: mode) else { return false }
+        guard WheelRouting.movesStrip(horizontal: tick.horizontal, chordHeld: chordHeld, mode: mode) else { return false }
         windowManager.scrollWheel(notches: tick.notches)
         return true
     }

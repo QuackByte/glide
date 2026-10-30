@@ -90,6 +90,8 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 
 ## Changing shortcuts
 
+**Settings › Shortcuts › Glide modifier** switches every default from ⌃⌥ to ⌥ alone, as AeroSpace and similar apps use (⌥→ focuses right, ⌥⇧→ moves, ⌥⌘→ goes to the next display, and the mouse wheel follows too). It's easier to press, but ⌥ + arrows then stop jumping by word in text fields, and ⌥ + letters and digits stop typing characters like é, ñ or ©. Shortcuts you changed by hand stay as they are, and win over a new default on the same keys. The choice is saved under the `glideModifier` key.
+
 Open **Settings…** from the menu bar icon, click a shortcut and press the new combo. Esc cancels; ⌫ removes the shortcut. Shortcuts must include ⌃, ⌥ or ⌘ (F-keys may stand alone). Glide warns when a combo would shadow a text-editing or macOS shortcut. Assigning a combo that another Glide action uses moves it. Shortcuts are saved in `UserDefaults` (`dev.quackbyte.glide`, key `shortcuts`, overrides only), and **Restore Defaults** clears them.
 
 If a shortcut can't be registered, the menu bar icon turns into a warning triangle. The menu and the Settings row then name the shortcut and the reason. macOS has no public API to see every other app's shortcuts: Glide detects collisions with enabled macOS shortcuts, but not with an app that grabs keys through an event tap or registers the same combo after Glide starts.
