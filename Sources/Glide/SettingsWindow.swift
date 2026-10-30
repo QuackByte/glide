@@ -152,6 +152,11 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     WidthPresetsField(controller: controller)
+                    Toggle("Focus follows the mouse", isOn: Binding(
+                        get: { WindowManager.focusFollowsMouse },
+                        set: { WindowManager.focusFollowsMouse = $0; controller.windowManager.updateMouseMonitor() }
+                    ))
+                    .help("Resting the pointer on a tiled window that's fully on screen focuses it. Floating windows and the strip's edges are left alone.")
                     Toggle("Animate window movement", isOn: Binding(
                         get: { WindowManager.animatesWindows },
                         set: { WindowManager.animatesWindows = $0 }

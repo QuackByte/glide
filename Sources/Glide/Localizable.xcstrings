@@ -2716,6 +2716,53 @@
         }
       }
     },
+    "Focus follows the mouse" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fokus folgt der Maus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El foco sigue al ratón"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le focus suit la souris"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マウスの位置にフォーカス"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마우스를 따라 포커스"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O foco segue o mouse"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "焦点跟随鼠标"
+          }
+        }
+      }
+    },
     "Focus ring" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4592,6 +4639,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重置"
+          }
+        }
+      }
+    },
+    "Resting the pointer on a tiled window that's fully on screen focuses it. Floating windows and the strip's edges are left alone." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruht der Zeiger auf einem gekachelten Fenster, das ganz zu sehen ist, wird es fokussiert. Schwebende Fenster und die Ränder des Bands bleiben unberührt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al dejar el puntero sobre una ventana en mosaico que se ve entera, se enfoca. Las ventanas flotantes y los bordes de la tira no se tocan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laisser le pointeur sur une fenêtre en mosaïque entièrement visible l’active. Les fenêtres flottantes et les bords de la bande ne sont pas concernés."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画面に全体が表示されているタイルウインドウにポインタを置くと、そのウインドウにフォーカスします。フローティングウインドウとストリップの端は対象外です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화면에 전부 보이는 타일 윈도우 위에 포인터를 두면 그 윈도우에 포커스합니다. 플로팅 윈도우와 스트립 가장자리는 그대로 둡니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deixar o ponteiro sobre uma janela em mosaico que aparece inteira na tela a foca. Janelas flutuantes e as bordas da faixa ficam de fora."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指针停在完整显示在屏幕上的平铺窗口上时，会聚焦该窗口。浮动窗口和条带边缘不受影响。"
           }
         }
       }

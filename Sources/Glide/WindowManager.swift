@@ -98,6 +98,8 @@ final class WindowManager {
 
     /// Managed windows in the order they last had focus, the most recent last.
     private var focusHistory: [WindowID] = []
+    private var mouseMonitor: Any?
+    private var hoverWork: DispatchWorkItem?
 
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
     var rules = AppRules()
@@ -179,6 +181,7 @@ final class WindowManager {
         let apps = NSWorkspace.shared.runningApplications.filter(isManageable)
         for app in apps { observe(app) }
         reconcile(Set(apps.map(\.processIdentifier)), adopting: true)
+        updateMouseMonitor()
     }
 
     /// Stops tiling and moves every window somewhere fully on screen.
@@ -207,6 +210,7 @@ final class WindowManager {
         departures = [:]
         focusHistory = []
         isEnabled = false
+        updateMouseMonitor()
         reassertWork?.cancel()
         for observer in observers.values {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .commonModes)
@@ -1202,6 +1206,63 @@ final class WindowManager {
     // MARK: Applying frames
 
     /// Whether layout changes slide into place. Read each time so the setting applies at once.
+    // MARK: Focus follows mouse
+
+    static var focusFollowsMouse: Bool {
+        get { UserDefaults.standard.bool(forKey: "focusFollowsMouse") }
+        set { UserDefaults.standard.set(newValue, forKey: "focusFollowsMouse") }
+    }
+
+    /// Watches the pointer while focus follows the mouse and tiling is on.
+    func updateMouseMonitor() {
+        let wanted = isEnabled && Self.focusFollowsMouse
+        if wanted, mouseMonitor == nil {
+            mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
+                MainActor.assumeIsolated { self?.pointerMoved() }
+            }
+        } else if !wanted, let monitor = mouseMonitor {
+            NSEvent.removeMonitor(monitor)
+            mouseMonitor = nil
+            hoverWork?.cancel()
+        }
+    }
+
+    /// Focuses the tiled window under the pointer once it rests there briefly.
+    private func pointerMoved() {
+        hoverWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.focusWindowUnderPointer() }
+        hoverWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: work)
+    }
+
+    /// Only a tiled window fully on screen, and the frontmost window there, takes focus: the
+    /// strip never scrolls under the pointer, and floating windows, menus and other apps' panels
+    /// in front keep the pointer to themselves.
+    private func focusWindowUnderPointer() {
+        // Glide's own windows (overview, Settings) keep it active while they're up.
+        guard isEnabled, !NSApp.isActive, NSEvent.pressedMouseButtons == 0, !isSwiping, motions.isEmpty, draggedWindow == nil else { return }
+        let point = ScreenGeometry.axPoint(fromCocoa: NSEvent.mouseLocation)
+        guard let display = DisplayGeometry.display(at: point, in: displayFrames),
+              let target = frontmostWindow(at: point), target != focusedWindowID(),
+              displays[display].spaces.active.placements().contains(where: { $0.window == target && $0.visibility == .visible }) else { return }
+        focusFromOverview(target)
+    }
+
+    /// The window in front at a point, leaving out Glide's own overlays.
+    private func frontmostWindow(at point: CGPoint) -> WindowID? {
+        guard let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return nil }
+        let ownPID = ProcessInfo.processInfo.processIdentifier
+        for entry in info {
+            guard let pid = entry[kCGWindowOwnerPID as String] as? pid_t, pid != ownPID,
+                  let bounds = (entry[kCGWindowBounds as String] as? NSDictionary).flatMap({ CGRect(dictionaryRepresentation: $0 as CFDictionary) }),
+                  bounds.contains(point) else { continue }
+            let layer = entry[kCGWindowLayer as String] as? Int ?? 0
+            // Menus, the Dock and other system panels sit above the normal layer.
+            return layer == 0 ? entry[kCGWindowNumber as String] as? WindowID : nil
+        }
+        return nil
+    }
+
     static var animatesWindows: Bool {
         get { UserDefaults.standard.object(forKey: "animateWindows") as? Bool ?? true }
         set { UserDefaults.standard.set(newValue, forKey: "animateWindows") }
