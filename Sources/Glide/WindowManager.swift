@@ -99,6 +99,9 @@ final class WindowManager {
     /// Managed windows in the order they last had focus, the most recent last.
     private var focusHistory: [WindowID] = []
     private var mouseMonitor: Any?
+    /// The window that shows and hides with one shortcut, floating over everything, and whether it shows.
+    private var scratchpad: WindowID?
+    private var scratchpadShown = false
     private var hoverWork: DispatchWorkItem?
 
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
@@ -198,6 +201,10 @@ final class WindowManager {
             if let frame = restored[window.id] { window.element.setFrame(frame) }
         }
 
+        if let id = scratchpad, !scratchpadShown, let window = windows[id] {
+            window.element.setFrame(floatingFrame(for: window.element, on: focusedDisplay))
+        }
+        scratchpad = nil
         saveSnapshot()
         dropHighlightTimer?.invalidate()
         dropHighlightTimer = nil
@@ -313,6 +320,14 @@ final class WindowManager {
             focusPreviousWindow()
             return
         }
+        if action == .toggleScratchpad {
+            toggleScratchpad()
+            return
+        }
+        if action == .moveToScratchpad {
+            moveToScratchpad()
+            return
+        }
         if action == .toggleLayout {
             workspace.toggleLayout()
             log.debug("workspace \(self.spaces.activeIndex + 1) is now \(self.workspace.layout.rawValue, privacy: .public): \(self.stripDescription, privacy: .public)")
@@ -357,6 +372,10 @@ final class WindowManager {
             track(id, pid: pid, element: element)
         }
         guard let window = windows[id] else { return NSSound.beep() }
+        if id == scratchpad {
+            scratchpad = nil
+            scratchpadShown = false
+        }
 
         if let display = displayIndex(of: id) {
             displays[display].spaces.remove(id)
@@ -377,6 +396,67 @@ final class WindowManager {
             applyLayout()
         }
         didChange()
+    }
+
+    // MARK: Scratchpad
+
+    /// Makes the focused window the scratchpad and hides it. Pressed on the scratchpad itself, it
+    /// tiles the window again. A previous scratchpad stays where it is, as a floating window.
+    private func moveToScratchpad() {
+        guard let id = focusedWindowID() else { return NSSound.beep() }
+        if windows[id] == nil, let element = focusedWindowElement(), let pid = element.pid,
+           WindowClassifier.classify(element) != .ignored {
+            track(id, pid: pid, element: element)
+        }
+        guard windows[id] != nil else { return NSSound.beep() }
+        if id == scratchpad {
+            // Tiling it again clears the scratchpad.
+            toggleFloating()
+            onWorkspaceEvent?(String(localized: "No scratchpad"))
+            return
+        }
+        if let display = displayIndex(of: id) {
+            displays[display].spaces.remove(id)
+            userTiled.remove(id)
+            lastApplied[id] = nil
+            applyLayout()
+        }
+        userFloating.insert(id)
+        if let previous = scratchpad, previous != id, !scratchpadShown, let window = windows[previous] {
+            window.element.setFrame(floatingFrame(for: window.element, on: focusedDisplay))
+        }
+        scratchpad = id
+        hideScratchpad()
+        didChange()
+        onWorkspaceEvent?(String(localized: "Scratchpad set"))
+    }
+
+    /// Shows the scratchpad over the focused display, or hides it if it has focus.
+    private func toggleScratchpad() {
+        guard let id = scratchpad, windows[id] != nil else { return NSSound.beep() }
+        if scratchpadShown && focusedWindowID() == id {
+            hideScratchpad()
+        } else {
+            showScratchpad()
+        }
+    }
+
+    private func showScratchpad() {
+        guard let id = scratchpad, let window = windows[id] else { return }
+        if !scratchpadShown {
+            window.element.setFrame(floatingFrame(for: window.element, on: focusedDisplay))
+            scratchpadShown = true
+        }
+        focus(id)
+    }
+
+    /// Moves the scratchpad to its display's hidden corner and focuses what was there before it.
+    private func hideScratchpad() {
+        guard let id = scratchpad, let window = windows[id] else { return }
+        let size = window.element.size ?? .zero
+        window.element.setPosition(displays[focusedDisplay].spaces.active.hiddenFrame(size: size).origin)
+        scratchpadShown = false
+        if let next = workspace.strip.focusedWindow { focus(next) } else { refreshOverlays() }
     }
 
     /// A floated window keeps its size (up to 70% of the screen) and moves to the center of its display.
@@ -788,6 +868,7 @@ final class WindowManager {
         motions[id] = nil
         hiddenWindows.remove(id)
         focusHistory.removeAll { $0 == id }
+        if scratchpad == id { scratchpad = nil }
     }
 
     private func onScreenWindowIDs() -> Set<WindowID> {
@@ -909,7 +990,14 @@ final class WindowManager {
         if windows[id] != nil { checkFullScreen(id) }
         updateForegroundFullScreen()
         if let lock = focusLock, Date() < lock.until, lock.window != id { return }
+        // ⌘-Tab or a click in the Dock reached the hidden scratchpad: bring it out. (Hidden while
+        // focused, it still has focus until something else takes it.)
+        let focusMoved = focusHistory.last != id
         if windows[id] != nil { noteFocus(id) }
+        if id == scratchpad, !scratchpadShown, focusMoved {
+            showScratchpad()
+            return
+        }
         guard let display = displayIndex(of: id), let index = displays[display].spaces.index(of: id) else {
             if windows[id] == nil, let pid = focusedWindowElement()?.pid { scheduleReconcile(pid) }
             return

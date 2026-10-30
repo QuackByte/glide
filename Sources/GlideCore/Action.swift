@@ -51,6 +51,8 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case toggleOverview
     case showShortcuts
     case toggleFloating
+    case toggleScratchpad
+    case moveToScratchpad
     case toggleTiling
     case toggleLayout
     case cycleTiledColumns
@@ -115,6 +117,8 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .toggleOverview: String(localized: "Show or Hide Overview", bundle: #bundle)
         case .showShortcuts: String(localized: "Show Shortcuts", bundle: #bundle)
         case .toggleFloating: String(localized: "Toggle Floating", bundle: #bundle)
+        case .toggleScratchpad: String(localized: "Show or Hide Scratchpad", bundle: #bundle)
+        case .moveToScratchpad: String(localized: "Make Window the Scratchpad", bundle: #bundle)
         case .toggleTiling: String(localized: "Enable or Disable Tiling", bundle: #bundle)
         case .toggleLayout: String(localized: "Switch Between Scrolling and Tiled", bundle: #bundle)
         case .cycleTiledColumns: String(localized: "Switch Between 2 and 3 Columns", bundle: #bundle)
@@ -138,7 +142,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
             .column
         case .focusDisplayLeft, .focusDisplayRight, .moveColumnToDisplayLeft, .moveColumnToDisplayRight:
             .displays
-        case .toggleOverview, .showShortcuts, .toggleFloating, .toggleTiling:
+        case .toggleOverview, .showShortcuts, .toggleFloating, .toggleTiling, .toggleScratchpad, .moveToScratchpad:
             .general
         default:
             .workspaces

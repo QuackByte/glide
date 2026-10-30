@@ -65,6 +65,8 @@ public struct Keymap: Equatable, Sendable {
             .toggleOverview: KeyCombo(KeyCode.o, hyper),
             .showShortcuts: KeyCombo(KeyCode.slash, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
+            .toggleScratchpad: KeyCombo(KeyCode.s, hyper),
+            .moveToScratchpad: KeyCombo(KeyCode.s, move),
             .toggleTiling: KeyCombo(KeyCode.t, move),
             .toggleLayout: KeyCombo(KeyCode.t, hyper),
             .cycleTiledColumns: KeyCombo(KeyCode.g, hyper),

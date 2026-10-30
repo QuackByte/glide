@@ -16,6 +16,7 @@ Status: early development. There's also [Glide for Windows](https://github.com/Q
 - A column can also be **tabbed** (⌃⌥W): it shows one window at full height under a tab bar, and the others wait as tabs. ⌃⌥↑/↓ switch tabs, ⌃⌥⇧↑/↓ reorder them, clicking a tab selects it, and consume/expel (⌃⌥[ / ⌃⌥]) adds or removes tabs. Tabs can be windows of different apps. macOS won't let a window go fully off screen, so hidden tabs wait in the bottom-right corner with a point showing.
 - Dialogs, sheets, panels, popovers, full-screen windows and fixed-size windows float: Glide leaves them alone. You can float or tile any window by hand.
 - **Full screen stays full screen.** A tiled window that goes full screen (the green button, a video, a game) keeps its place in the strip but is left alone: no focus ring, dimming or tab bar over it, and the horizontal wheel and three-finger swipes on its display reach it instead of gliding the strip (⌃⌥ + wheel still glides). When it leaves full screen, it goes back to its column.
+- **Scratchpad:** ⌃⌥⇧S turns the focused window (a terminal, notes, a chat) into the scratchpad and hides it. ⌃⌥S brings it out, floating in the middle of the focused display, and hides it again. Switching to it with ⌘-Tab or the Dock brings it out too. ⌃⌥⇧S on the scratchpad tiles it again.
 - **App rules** (Settings › App Rules): per app, always float, always tile, or let Glide decide, plus the width and workspace its new windows open with. A new window sent to another workspace by a rule takes you there. Float and tile apply at once to open windows; width and workspace apply to new ones. System Settings floats out of the box. ⌃⌥V on a single window still wins over its app's rule.
 - Closing, minimizing or hiding a window removes it from the strip. A minimized window, or one whose app was hidden, returns to the spot it left: same workspace, same width, and back into its stack or tabs if they're still there.
 - **Workspaces:** nine of them, each its own strip with its own scroll position. ⌃⌥1…9 switch workspaces and ⌃⌥⇧1…9 send the focused window to one: just that window, as a column of its own right of the workspace's focused column (keeping the column's width if it was alone in it, else the default width), while you stay where you are. ⌃⌥PgUp/PgDn (fn⌃⌥↑/↓ on a laptop) step to the previous or next workspace, and adding ⇧ sends the focused window there. The menu bar icon shows the active workspace's number, and the menu lists the occupied ones. Inactive workspaces' windows wait in the bottom-right corner like hidden tabs, since macOS Spaces can't be driven reliably from outside. Focusing a window on another workspace (⌘-Tab, the Dock, a notification) switches to it. New windows open on the active workspace.
@@ -77,6 +78,8 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Overview | ⌃⌥O |
 | Show every shortcut | ⌃⌥/ |
 | Toggle floating for the focused window | ⌃⌥V |
+| Show or hide the scratchpad | ⌃⌥S |
+| Make the focused window the scratchpad (on the scratchpad: tile it again) | ⌃⌥⇧S |
 | Enable or disable tiling | ⌃⌥⇧T |
 
 **Consume or expel** works like niri: a window alone in its column joins the bottom of the neighbouring column on that side. A window in a stack leaves its column and gets a new column on that side.
