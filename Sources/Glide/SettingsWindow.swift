@@ -202,6 +202,13 @@ struct SettingsView: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+                    LabeledContent("Settings file") {
+                        HStack {
+                            Button("Export…") { SettingsTransfer.exportWithPanel() }
+                            Button("Import…") { SettingsTransfer.importWithPanel() }
+                        }
+                    }
+                    .help("Shortcuts, app rules, layout and appearance as a JSON file, to use on another Mac or keep with your dotfiles.")
                     LabeledContent("Something wrong?") {
                         Button("Report a Problem…") { controller.reportProblem() }
                     }

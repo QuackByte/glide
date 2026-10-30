@@ -13,6 +13,7 @@
 		06BD64AC4BB36B7D23006468 /* SwipeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0218104AF30AC3A25988DD7 /* SwipeTracker.swift */; };
 		08619B001FD6F8C2700A2AEF /* CHANGELOG.ko.md in Resources */ = {isa = PBXBuildFile; fileRef = B7D12B025F20F840EF8CF5D1 /* CHANGELOG.ko.md */; };
 		099BBA34005BADFA62071358 /* GlideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DC58FA05CD84A7E6606359 /* GlideApp.swift */; };
+		0B13550CA01133CF1BD61254 /* SettingsTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7AAF8BC4562EFBE6B5F643 /* SettingsTransfer.swift */; };
 		0E058A48302ABAE139350059 /* TiledLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940360AD9FE5D11131C5B46C /* TiledLayoutTests.swift */; };
 		0ED63ED44A92CE6CA26A3553 /* FrameCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CA66AB46C4FA25CC262293 /* FrameCheckTests.swift */; };
 		13064E5791605EB01D0B61C1 /* ShortcutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECA1EB3CA83CD0F5481A0CA /* ShortcutSheet.swift */; };
@@ -186,6 +187,7 @@
 		9DB05702BE4EF9C631E22A1D /* Overview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Overview.swift; sourceTree = "<group>"; };
 		9F7723B886DE20AE2F7F7E0E /* AXWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindow.swift; sourceTree = "<group>"; };
 		A81C06183F18F46F0E197D11 /* StripSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripSnapshot.swift; sourceTree = "<group>"; };
+		AC7AAF8BC4562EFBE6B5F643 /* SettingsTransfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTransfer.swift; sourceTree = "<group>"; };
 		B7D12B025F20F840EF8CF5D1 /* CHANGELOG.ko.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.ko.md; sourceTree = "<group>"; };
 		B932133198BF26973212958C /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		BB274D5EB7F5944002D274AB /* CHANGELOG.fr.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.fr.md; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 				913303FC6FE0EAFF5B404A4A /* OverviewWindow.swift */,
 				98A651CC71C1F5C9B99C817E /* ProblemReport.swift */,
 				0E3B1D8E1B8FC2E7B626F008 /* RuleStore.swift */,
+				AC7AAF8BC4562EFBE6B5F643 /* SettingsTransfer.swift */,
 				D7DE076DCB01EB56D2207378 /* SettingsWindow.swift */,
 				FECA1EB3CA83CD0F5481A0CA /* ShortcutSheet.swift */,
 				59ABF59D6A9737FB2874BB5B /* ShortcutStore.swift */,
@@ -559,6 +562,7 @@
 				2A52C44D2CC367F4A3ACD154 /* OverviewWindow.swift in Sources */,
 				FFC86AAF3ABE6178A7CFC693 /* ProblemReport.swift in Sources */,
 				A71CF1F962ED1ADD49DFC800 /* RuleStore.swift in Sources */,
+				0B13550CA01133CF1BD61254 /* SettingsTransfer.swift in Sources */,
 				B43D06626F88A29E9F6C511E /* SettingsWindow.swift in Sources */,
 				13064E5791605EB01D0B61C1 /* ShortcutSheet.swift in Sources */,
 				FBDA779A3D9620B228EE028F /* ShortcutStore.swift in Sources */,
