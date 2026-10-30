@@ -120,6 +120,34 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertEqual(frames(ws)[1]?.minX, 12 + 0 - 400)
     }
 
+    func testEvenOutColumnsOnScreen() {
+        var ws = workspace([[1], [2], [3], [4]], widths: [0, 1, 0, 1])
+        // ⅓, ½ and part of the third ⅓ are on screen.
+        XCTAssertTrue(ws.perform(.evenOutColumns))
+        XCTAssertEqual(ws.width(ofColumn: 0), 388)
+        XCTAssertEqual(ws.width(ofColumn: 1), 388)
+        XCTAssertEqual(ws.width(ofColumn: 2), 388)
+        XCTAssertEqual(ws.width(ofColumn: 3), 588, "Off screen, so untouched")
+        XCTAssertEqual(ws.scrollOffset, 0)
+        XCTAssertEqual(visibility(ws)[3], .visible)
+
+        var single = workspace([[1]], widths: [1])
+        XCTAssertFalse(single.perform(.evenOutColumns), "Nothing to even out")
+    }
+
+    func testWidthPresetsFromText() {
+        XCTAssertEqual(LayoutSettings.widthPresets(from: "50, 25 100"), [0.25, 0.5, 1])
+        XCTAssertEqual(LayoutSettings.widthPresets(from: "40%, 60%, 40"), [0.4, 0.6])
+        XCTAssertNil(LayoutSettings.widthPresets(from: ""))
+        XCTAssertNil(LayoutSettings.widthPresets(from: "5, 50"), "Too narrow")
+        XCTAssertNil(LayoutSettings.widthPresets(from: "50, wide"))
+        XCTAssertNil(LayoutSettings.widthPresets(from: "10 20 30 40 50 60 70 80 90"), "Too many")
+        XCTAssertEqual(LayoutSettings.describe(widthPresets: LayoutSettings.standard.widthPresets), "33.3, 50, 66.7, 100")
+        XCTAssertEqual(LayoutSettings.widthPresets(from: LayoutSettings.describe(widthPresets: [0.25, 0.4])), [0.25, 0.4])
+        XCTAssertEqual(LayoutSettings.defaultWidthIndex(for: [0.25, 0.4, 0.75, 1]), 1)
+        XCTAssertEqual(LayoutSettings.defaultWidthIndex(for: LayoutSettings.standard.widthPresets), 1)
+    }
+
     func testCenterColumn() {
         var ws = workspace([[1], [2], [3]], widths: [0, 0, 0], focused: 0)
         XCTAssertTrue(ws.perform(.centerColumn))

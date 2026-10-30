@@ -20,6 +20,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case toggleFullWidth
     case toggleTabbed
     case centerColumn
+    case evenOutColumns
     case focusPreviousWorkspace
     case focusNextWorkspace
     case moveColumnToPreviousWorkspace
@@ -101,6 +102,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .toggleFullWidth: String(localized: "Toggle Full Width", bundle: #bundle)
         case .toggleTabbed: String(localized: "Toggle Tabbed Column", bundle: #bundle)
         case .centerColumn: String(localized: "Center Column", bundle: #bundle)
+        case .evenOutColumns: String(localized: "Even Out Columns on Screen", bundle: #bundle)
         case .focusPreviousWorkspace: String(localized: "Focus Previous Workspace", bundle: #bundle)
         case .focusNextWorkspace: String(localized: "Focus Next Workspace", bundle: #bundle)
         case .moveColumnToPreviousWorkspace: String(localized: "Move Window to Previous Workspace", bundle: #bundle)
@@ -132,7 +134,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
             .focus
         case .moveColumnLeft, .moveColumnRight, .moveWindowUp, .moveWindowDown, .consumeOrExpelLeft, .consumeOrExpelRight:
             .move
-        case .cycleColumnWidth, .cycleColumnWidthBackward, .toggleFullWidth, .toggleTabbed, .centerColumn:
+        case .cycleColumnWidth, .cycleColumnWidthBackward, .toggleFullWidth, .toggleTabbed, .centerColumn, .evenOutColumns:
             .column
         case .focusDisplayLeft, .focusDisplayRight, .moveColumnToDisplayLeft, .moveColumnToDisplayRight:
             .displays

@@ -144,7 +144,7 @@ final class WindowManager {
         let frames = screens.map(\.frame)
         var next = screens.enumerated().map { index, screen in
             var display = previous.first { $0.id == screen.id }
-                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: LayoutSettings(gap: Appearance.gap, defaultLayout: Appearance.defaultLayout, defaultTiledColumns: Appearance.tiledColumns)))
+                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: Appearance.layoutSettings))
             display.frame = screen.frame
             display.spaces.viewport = screen.viewport
             display.spaces.hiddenCorner = DisplayGeometry.hiddenCorner(of: index, in: frames)
@@ -274,12 +274,11 @@ final class WindowManager {
     /// Applies changed gap, default layout and tiled columns, focus ring and dimming settings.
     func appearanceChanged() {
         guard isEnabled else { return }
-        let gapChanged = spaces.settings.gap != Appearance.gap
-        if gapChanged || spaces.settings.defaultLayout != Appearance.defaultLayout || spaces.settings.defaultTiledColumns != Appearance.tiledColumns {
+        let settings = Appearance.layoutSettings
+        let gapChanged = spaces.settings.gap != settings.gap
+        if spaces.settings != settings {
             for index in displays.indices {
-                displays[index].spaces.settings.gap = Appearance.gap
-                displays[index].spaces.settings.defaultLayout = Appearance.defaultLayout
-                displays[index].spaces.settings.defaultTiledColumns = Appearance.tiledColumns
+                displays[index].spaces.settings = settings
                 if gapChanged { displays[index].spaces.active.minimumWidths = [:] }
                 displays[index].spaces.settleScroll()
             }

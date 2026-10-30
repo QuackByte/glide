@@ -9,7 +9,7 @@ Status: early development. There's also [Glide for Windows](https://github.com/Q
 ## How it works
 
 - Each standard window is a **column** on the strip. New windows open to the right of the focused column and take focus.
-- Columns use preset widths (⅓, ½, ⅔, full) and fill the screen height, minus a gap (12 pt by default). A column can stack several windows vertically.
+- Columns use preset widths (⅓, ½, ⅔, full; change them under **Settings › General › Column widths**, as percentages) and fill the screen height, minus a gap (12 pt by default). New columns open at the preset nearest ½. A column can stack several windows vertically.
 - **Resize with the mouse:** drag a tiled window's edge and its column keeps the new width; the strip reflows around it. ⌃⌥R / ⌃⌥⇧R then step to the next preset in that direction. **Drag a window** (rather than its edge) onto a tab bar and it becomes a tab there; onto another window and it stacks into that window's column; onto another display and it joins that display's strip. While you drag, an outline in the focus ring color shows the column it would join, or a bar where it would land on another display. Dropped anywhere else, it snaps back into its slot. A floating window dropped on a tile joins the tiles.
 - **Tiled layout:** ⌃⌥T switches the current workspace between the scrolling strip and a tiled layout, where every window fits on screen and nothing scrolls. Each workspace on each display keeps its own layout, even after a restart. **Settings › General › Layout** sets the layout of workspaces you haven't switched by hand, and applies at once. [Details below.](#tiled-layout)
 - Glide keeps the focused column fully on screen, scrolling the strip as little as possible. macOS doesn't let windows sit entirely off screen, so columns scrolled out of view are parked as 4 pt slivers at the left and right screen edges.
@@ -65,6 +65,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Switch the workspace between scrolling and tiled | ⌃⌥T |
 | Switch the tiled workspace between 2 and 3 columns | ⌃⌥G |
 | Center focused column | ⌃⌥C |
+| Even out the columns on screen so they share it equally; tiled: reset the splits | ⌃⌥E |
 | Switch to workspace 1…9 | ⌃⌥1 … ⌃⌥9 |
 | Send focused window to workspace 1…9 | ⌃⌥⇧1 … ⌃⌥⇧9 |
 | Previous / next workspace | ⌃⌥PgUp / ⌃⌥PgDn (fn⌃⌥↑ / fn⌃⌥↓ on laptops) |

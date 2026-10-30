@@ -61,6 +61,7 @@ public struct Keymap: Equatable, Sendable {
             .toggleFullWidth: KeyCombo(KeyCode.f, hyper),
             .toggleTabbed: KeyCombo(KeyCode.w, hyper),
             .centerColumn: KeyCombo(KeyCode.c, hyper),
+            .evenOutColumns: KeyCombo(KeyCode.e, hyper),
             .toggleOverview: KeyCombo(KeyCode.o, hyper),
             .showShortcuts: KeyCombo(KeyCode.slash, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),

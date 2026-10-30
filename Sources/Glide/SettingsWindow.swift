@@ -151,6 +151,7 @@ struct SettingsView: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+                    WidthPresetsField(controller: controller)
                     Toggle("Animate window movement", isOn: Binding(
                         get: { WindowManager.animatesWindows },
                         set: { WindowManager.animatesWindows = $0 }
@@ -271,6 +272,48 @@ struct SettingsView: View {
     }
 }
 
+/// The column widths, typed as percentages of the screen.
+private struct WidthPresetsField: View {
+    let controller: AppController
+    @State private var text = LayoutSettings.describe(widthPresets: Appearance.widthPresets)
+    @State private var isInvalid = false
+
+    var body: some View {
+        LabeledContent("Column widths") {
+            HStack {
+                TextField("Column widths", text: $text)
+                    .labelsHidden()
+                    .frame(width: 160)
+                    .onSubmit(apply)
+                    .onDisappear(perform: apply)
+                Text(verbatim: "%")
+                Button("Reset") {
+                    text = LayoutSettings.describe(widthPresets: LayoutSettings.standard.widthPresets)
+                    apply()
+                }
+                .disabled(Appearance.widthPresets == LayoutSettings.standard.widthPresets && !isInvalid)
+            }
+        }
+        Text(isInvalid
+             ? String(localized: "Type one to eight widths from 10 to 100, separated by commas.")
+             : String(localized: "The widths \(controller.shortcuts.keymap.combo(for: .cycleColumnWidth)?.description ?? String(localized: "A shortcut")) steps through, as percentages of the screen. New windows open at the one nearest 50."))
+            .font(.callout)
+            .foregroundStyle(isInvalid ? .red : .secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func apply() {
+        guard let presets = LayoutSettings.widthPresets(from: text) else {
+            isInvalid = true
+            return
+        }
+        isInvalid = false
+        Appearance.widthPresets = presets
+        text = LayoutSettings.describe(widthPresets: presets)
+        controller.appearanceChanged()
+    }
+}
+
 private struct AppRulesSection: View {
     let store: RuleStore
     let floatCombo: String
@@ -339,9 +382,16 @@ private struct AppRuleRow: View {
                 }
                 Picker("Width", selection: binding(\.widthIndex)) {
                     Text("Default width").tag(Int?.none)
-                    let names: [LocalizedStringResource] = ["⅓ width", "½ width", "⅔ width", "Full width"]
-                    ForEach(Array(names.enumerated()), id: \.offset) { index, name in
-                        Text(name).tag(Int?.some(index))
+                    let presets = Appearance.widthPresets
+                    if presets == LayoutSettings.standard.widthPresets {
+                        let names: [LocalizedStringResource] = ["⅓ width", "½ width", "⅔ width", "Full width"]
+                        ForEach(Array(names.enumerated()), id: \.offset) { index, name in
+                            Text(name).tag(Int?.some(index))
+                        }
+                    } else {
+                        ForEach(Array(presets.enumerated()), id: \.offset) { index, preset in
+                            Text("\(LayoutSettings.describe(widthPresets: [preset]) + "%") width").tag(Int?.some(index))
+                        }
                     }
                 }
                 .disabled(rule.mode == .float)

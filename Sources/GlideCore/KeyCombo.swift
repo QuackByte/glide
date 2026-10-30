@@ -69,6 +69,7 @@ public enum KeyCode {
     public static let slash: UInt32 = 44
     public static let grave: UInt32 = 50
     public static let c: UInt32 = 8
+    public static let e: UInt32 = 14
     public static let f: UInt32 = 3
     public static let g: UInt32 = 5
     public static let h: UInt32 = 4

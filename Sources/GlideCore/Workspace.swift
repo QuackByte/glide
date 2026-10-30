@@ -39,6 +39,33 @@ public struct LayoutSettings: Equatable, Sendable {
     }
 
     public static let standard = LayoutSettings()
+
+    /// The preset nearest half the screen, which new columns get.
+    public static func defaultWidthIndex(for presets: [CGFloat]) -> Int {
+        presets.indices.min { abs(presets[$0] - 0.5) < abs(presets[$1] - 0.5) } ?? 0
+    }
+
+    /// Width presets typed as percentages, e.g. "33, 50, 67, 100": sorted, without repeats. nil if
+    /// any is not a number from 10 to 100, or there are none or more than eight.
+    public static func widthPresets(from text: String) -> [CGFloat]? {
+        let parts = text.split { $0 == "," || $0 == " " || $0 == "%" || $0 == ";" }
+        var percents: [Double] = []
+        for part in parts {
+            guard let value = Double(part), (10...100).contains(value) else { return nil }
+            percents.append(value)
+        }
+        let unique = Array(Set(percents.map { ($0 * 100).rounded() / 100 })).sorted()
+        guard (1...8).contains(unique.count) else { return nil }
+        return unique.map { CGFloat($0 / 100) }
+    }
+
+    /// Presets as percentages for showing and editing, e.g. "33, 50, 67, 100".
+    public static func describe(widthPresets: [CGFloat]) -> String {
+        widthPresets.map { fraction in
+            let tenths = Int((fraction * 1000).rounded())
+            return tenths % 10 == 0 ? "\(tenths / 10)" : "\(tenths / 10).\(tenths % 10)"
+        }.joined(separator: ", ")
+    }
 }
 
 /// Where a column sits relative to the viewport.
@@ -303,6 +330,25 @@ public struct Workspace: Equatable, Sendable {
         return true
     }
 
+    /// Gives the columns on screen, even partly, equal widths that fill the screen together, and
+    /// scrolls them into view. Returns false with fewer than two on screen.
+    private mutating func evenOutColumnsOnScreen() -> Bool {
+        let before = widths()
+        let offsets = offsets(for: before)
+        let onScreen = strip.columns.indices.filter {
+            offsets[$0] + before[$0] > scrollOffset + 0.5 && offsets[$0] < scrollOffset + usableWidth - 0.5
+        }
+        guard onScreen.count > 1, let first = onScreen.first else { return false }
+        let gaps = settings.gap * CGFloat(onScreen.count - 1)
+        let width = ((usableWidth - gaps) / CGFloat(onScreen.count)).rounded(.down)
+        for index in onScreen {
+            strip.setCustomWidth(width, forColumnOf: strip.columns[index].focusedWindow)
+        }
+        scrollOffset = self.offsets(for: widths())[first]
+        settleScroll()
+        return true
+    }
+
     // MARK: Actions
 
     /// Applies a layout action. Returns false if it changed nothing or is not a layout action.
@@ -336,6 +382,8 @@ public struct Workspace: Equatable, Sendable {
             let before = scrollOffset
             centerFocusedColumn()
             return scrollOffset != before
+        case .evenOutColumns:
+            return evenOutColumnsOnScreen()
         case .toggleLayout:
             toggleLayout()
             return true
@@ -532,6 +580,10 @@ public struct Workspace: Equatable, Sendable {
         case .cycleColumnWidthBackward: return !isZoomed && cycleTiledRatio(forward: false)
         case .toggleFullWidth:
             isZoomed.toggle()
+            return true
+        case .evenOutColumns:
+            guard tiledRatios != nil else { return false }
+            tiledRatios = nil
             return true
         default: return nil
         }
