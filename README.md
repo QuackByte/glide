@@ -4,7 +4,7 @@ A scrolling window manager for macOS. Windows are laid out as columns on an endl
 
 Keyboard-first: every action has a default shortcut out of the box, and every shortcut can be rebound.
 
-Status: early development (milestone 1: one display). There's also [Glide for Windows](https://github.com/QuackByte/glide-windows); [quackbyte.dev/glide](https://quackbyte.dev/glide/#platforms) shows what each one does.
+Status: early development. There's also [Glide for Windows](https://github.com/QuackByte/glide-windows); [quackbyte.dev/glide](https://quackbyte.dev/glide/#platforms) shows what each one does.
 
 ## How it works
 
@@ -55,6 +55,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Focus column left / right | ⌃⌥← / ⌃⌥→ |
 | Focus window up / down (within a column, or switch tabs) | ⌃⌥↑ / ⌃⌥↓ |
 | Focus first / last column | ⌃⌥Home / ⌃⌥End (fn⌃⌥← / fn⌃⌥→ on laptops) |
+| Back to the previously focused window (again to come back) | ⌃⌥` |
 | Move column left / right | ⌃⌥⇧← / ⌃⌥⇧→ |
 | Move window up / down (within a column, or reorder tabs) | ⌃⌥⇧↑ / ⌃⌥⇧↓ |
 | Consume or expel window left / right | ⌃⌥[ / ⌃⌥] |
@@ -68,6 +69,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 | Send focused window to workspace 1…9 | ⌃⌥⇧1 … ⌃⌥⇧9 |
 | Previous / next workspace | ⌃⌥PgUp / ⌃⌥PgDn (fn⌃⌥↑ / fn⌃⌥↓ on laptops) |
 | Send window to previous / next workspace | ⌃⌥⇧PgUp / ⌃⌥⇧PgDn |
+| Back to the last workspace (again to come back) | ⌃⌥⇥ |
 | Focus display left / right | ⌃⌥⌘← / ⌃⌥⌘→ |
 | Send column to display left / right | ⌃⌥⌘⇧← / ⌃⌥⌘⇧→ |
 | Overview | ⌃⌥O |

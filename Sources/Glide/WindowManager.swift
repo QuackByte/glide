@@ -96,6 +96,9 @@ final class WindowManager {
     /// The displays showing a full-screen window, as of `at`.
     private var fullScreenDisplays: (at: CFTimeInterval, displays: Set<Int>) = (0, [])
 
+    /// Managed windows in the order they last had focus, the most recent last.
+    private var focusHistory: [WindowID] = []
+
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
     var rules = AppRules()
 
@@ -202,6 +205,7 @@ final class WindowManager {
         fullScreenWindows = []
         foregroundFullScreenDisplay = nil
         departures = [:]
+        focusHistory = []
         isEnabled = false
         reassertWork?.cancel()
         for observer in observers.values {
@@ -300,6 +304,10 @@ final class WindowManager {
         }
         if action == .toggleFloating {
             toggleFloating()
+            return
+        }
+        if action == .focusPreviousWindow {
+            focusPreviousWindow()
             return
         }
         if action == .toggleLayout {
@@ -776,6 +784,7 @@ final class WindowManager {
         lastObserved[id] = nil
         motions[id] = nil
         hiddenWindows.remove(id)
+        focusHistory.removeAll { $0 == id }
     }
 
     private func onScreenWindowIDs() -> Set<WindowID> {
@@ -897,6 +906,7 @@ final class WindowManager {
         if windows[id] != nil { checkFullScreen(id) }
         updateForegroundFullScreen()
         if let lock = focusLock, Date() < lock.until, lock.window != id { return }
+        if windows[id] != nil { noteFocus(id) }
         guard let display = displayIndex(of: id), let index = displays[display].spaces.index(of: id) else {
             if windows[id] == nil, let pid = focusedWindowElement()?.pid { scheduleReconcile(pid) }
             return
@@ -926,6 +936,28 @@ final class WindowManager {
         refreshOverlays()
         // Apps raise windows asynchronously; restack once the raise has landed.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.refreshOverlays() }
+    }
+
+    private func noteFocus(_ id: WindowID) {
+        guard focusHistory.last != id else { return }
+        focusHistory.removeAll { $0 == id }
+        focusHistory.append(id)
+        if focusHistory.count > 20 { focusHistory.removeFirst() }
+    }
+
+    /// Goes back to the window that had focus before this one, on whichever workspace or display
+    /// it is. Pressed again, it comes back.
+    private func focusPreviousWindow() {
+        let current = focusedWindowID()
+        let target = focusHistory.reversed().first { id in
+            id != current && windows[id].map { !$0.element.isMinimized } == true
+        }
+        guard let target else { return NSSound.beep() }
+        if displayIndex(of: target) != nil {
+            focusFromOverview(target)
+        } else {
+            focus(target)
+        }
     }
 
     // MARK: Workspaces
