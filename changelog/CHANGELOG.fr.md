@@ -2,6 +2,12 @@
 
 Ce fichier est la traduction française de CHANGELOG.md, qui reste l’original. Il présente les nouveautés de chaque version de Glide pour Mac. Glide affiche les nouvelles entrées une seule fois après une mise à jour, et les notes de chaque version sur GitHub en sont issues.
 
+## 0.11.2 — 2026-10-30
+
+### Nouveautés
+
+- **Utilisez ⌥ seule comme touche de modification de Glide.** Réglages › Raccourcis › Touche de modification de Glide fait passer tous les raccourcis par défaut de ⌃⌥ à ⌥, comme AeroSpace et les apps similaires : ⌥→ active la fenêtre de droite, ⌥⇧→ déplace la fenêtre et ⌥ + molette fait glisser la bande. ⌥ + flèches ne sautent alors plus de mot en mot dans le texte, et ⌥ + lettres et chiffres ne tapent plus de caractères comme é ou ©. Les raccourcis que vous avez modifiés vous-même restent tels quels.
+
 ## 0.11.1 — 2026-10-20
 
 ### Modifications

@@ -2,6 +2,12 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it. Glide shows these notes in the app's language: the translations live in `changelog/CHANGELOG.<code>.md`, and a new entry must be translated in every one of them before tagging (`ChangelogTranslationTests` checks that they match this file).
 
+## 0.11.2 — 2026-10-30
+
+### New
+
+- **Use ⌥ alone as the Glide modifier.** Settings › Shortcuts › Glide modifier switches every default shortcut from ⌃⌥ to ⌥, as AeroSpace and similar apps do: ⌥→ focuses right, ⌥⇧→ moves the window, and ⌥ + wheel glides the strip. ⌥ + arrows then stop jumping by word in text, and ⌥ + letters and digits stop typing characters like é or ©. Shortcuts you changed yourself stay as they are.
+
 ## 0.11.1 — 2026-10-20
 
 ### Changes
