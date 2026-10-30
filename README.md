@@ -92,7 +92,7 @@ Raw finger positions come from Apple's private MultitouchSupport framework, the 
 
 ## Changing shortcuts
 
-**Settings › Shortcuts › Glide modifier** switches every default from ⌃⌥ to ⌥ alone, as AeroSpace and similar apps use (⌥→ focuses right, ⌥⇧→ moves, ⌥⌘→ goes to the next display, and the mouse wheel follows too). It's easier to press, but ⌥ + arrows then stop jumping by word in text fields, and ⌥ + letters and digits stop typing characters like é, ñ or ©. Shortcuts you changed by hand stay as they are, and win over a new default on the same keys. The choice is saved under the `glideModifier` key.
+**Settings › Shortcuts › Glide modifier** switches every default from ⌃⌥ to ⌥ alone, as AeroSpace and similar apps use (⌥→ focuses right, ⌥⇧→ moves, ⌥⌘→ goes to the next display, and the mouse wheel follows too). It's easier to press, but ⌥ + arrows then stop jumping by word in text fields, and ⌥ + letters and digits stop typing characters like é, ñ or ©. Shortcuts you changed by hand stay as they are, and win over a new default on the same keys. The choice is saved under the `glideModifier` key. **Direction keys** next to it swaps the arrows of the focus and move shortcuts for H J K L, as in vim (display shortcuts keep the arrows); it's saved under `directionKeys`.
 
 Open **Settings…** from the menu bar icon, click a shortcut and press the new combo. Esc cancels; ⌫ removes the shortcut. Shortcuts must include ⌃, ⌥ or ⌘ (F-keys may stand alone). Glide warns when a combo would shadow a text-editing or macOS shortcut. Assigning a combo that another Glide action uses moves it. Shortcuts are saved in `UserDefaults` (`dev.quackbyte.glide`, key `shortcuts`, overrides only), and **Restore Defaults** clears them.
 

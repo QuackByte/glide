@@ -7,12 +7,14 @@ import Observation
 final class ShortcutStore {
     private static let key = "shortcuts"
     private static let modifierKey = "glideModifier"
+    private static let directionsKey = "directionKeys"
     private let defaults: UserDefaults
 
     private(set) var keymap: Keymap {
         didSet {
             defaults.set(keymap.storage, forKey: Self.key)
             defaults.set(keymap.modifier.rawValue, forKey: Self.modifierKey)
+            defaults.set(keymap.directions.rawValue, forKey: Self.directionsKey)
             onChange?()
         }
     }
@@ -22,12 +24,18 @@ final class ShortcutStore {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         let modifier = defaults.string(forKey: Self.modifierKey).flatMap(GlideModifier.init(rawValue:)) ?? .controlOption
-        keymap = Keymap(modifier: modifier, storage: defaults.dictionary(forKey: Self.key) as? [String: String] ?? [:])
+        let directions = defaults.string(forKey: Self.directionsKey).flatMap(DirectionKeys.init(rawValue:)) ?? .arrows
+        keymap = Keymap(modifier: modifier, directions: directions, storage: defaults.dictionary(forKey: Self.key) as? [String: String] ?? [:])
     }
 
     var modifier: GlideModifier {
         get { keymap.modifier }
         set { keymap.setModifier(newValue) }
+    }
+
+    var directions: DirectionKeys {
+        get { keymap.directions }
+        set { keymap.setDirections(newValue) }
     }
 
     @discardableResult

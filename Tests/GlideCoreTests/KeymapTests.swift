@@ -118,6 +118,24 @@ final class KeymapTests: XCTestCase {
         XCTAssertEqual(Keymap(modifier: .option, storage: keymap.storage), keymap)
     }
 
+    func testLetterDirections() {
+        let defaults = Keymap.defaults(for: .controlOption, directions: .letters)
+        XCTAssertEqual(Set(defaults.values).count, defaults.count)
+        XCTAssertEqual(defaults[.focusColumnLeft]?.description, "⌃⌥H")
+        XCTAssertEqual(defaults[.focusWindowDown]?.description, "⌃⌥J")
+        XCTAssertEqual(defaults[.moveWindowUp]?.description, "⌃⌥⇧K")
+        XCTAssertEqual(defaults[.moveColumnRight]?.description, "⌃⌥⇧L")
+        XCTAssertEqual(defaults[.focusDisplayLeft]?.description, "⌃⌥⌘←", "Displays keep the arrows")
+        for (action, combo) in defaults {
+            XCTAssertEqual(ShortcutPolicy.evaluate(combo), .ok, "\(action) default \(combo) is flagged")
+        }
+
+        var keymap = Keymap(modifier: .option)
+        keymap.setDirections(.letters)
+        XCTAssertEqual(keymap.combo(for: .focusColumnLeft), KeyCombo(KeyCode.h, .option))
+        XCTAssertEqual(Keymap(modifier: .option, directions: .letters, storage: keymap.storage), keymap)
+    }
+
     func testCarbonFlags() {
         XCTAssertEqual(KeyModifiers([.control, .option]).carbonFlags, 0x1800)
         XCTAssertEqual(KeyModifiers([.command, .shift]).carbonFlags, 0x0300)

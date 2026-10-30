@@ -219,14 +219,24 @@ struct SettingsView: View {
                         Text("⌃⌥ Control-Option").tag(GlideModifier.controlOption)
                         Text("⌥ Option").tag(GlideModifier.option)
                     }
+                    Picker("Direction keys", selection: Binding(
+                        get: { controller.shortcuts.directions },
+                        set: { recorder.stop(); controller.shortcuts.directions = $0 }
+                    )) {
+                        Text("Arrows").tag(DirectionKeys.arrows)
+                        Text(verbatim: "H J K L").tag(DirectionKeys.letters)
+                    }
                 } header: {
                     Text("Shortcuts")
                 } footer: {
-                    Group {
+                    VStack(alignment: .leading, spacing: 4) {
                         if controller.shortcuts.modifier == .option {
                             Text("Every default shortcut uses ⌥, and ⇧ to move windows. ⌥ + arrows no longer jump by word in text, and ⌥ + letters and digits no longer type special characters like é or ©. Shortcuts you changed stay as they are.")
                         } else {
                             Text("Every default shortcut uses ⌃⌥, and ⇧ to move windows. Shortcuts you changed stay as they are.")
+                        }
+                        if controller.shortcuts.directions == .letters {
+                            Text("H, J, K and L go left, down, up and right, as in vim. Display shortcuts keep the arrows.")
                         }
                     }
                     .font(.callout)

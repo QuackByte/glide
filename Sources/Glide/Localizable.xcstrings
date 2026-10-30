@@ -1682,6 +1682,53 @@
         }
       }
     },
+    "Arrows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pfeiltasten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flechas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flèches"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "矢印キー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화살표"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setas"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "箭头键"
+          }
+        }
+      }
+    },
     "Automatic" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2242,6 +2289,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "调暗"
+          }
+        }
+      }
+    },
+    "Direction keys" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richtungstasten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teclas de dirección"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touches de direction"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "方向キー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "방향 키"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teclas de direção"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "方向键"
           }
         }
       }
@@ -3323,6 +3417,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "授予辅助功能权限…"
+          }
+        }
+      }
+    },
+    "H, J, K and L go left, down, up and right, as in vim. Display shortcuts keep the arrows." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "H, J, K und L gehen nach links, unten, oben und rechts, wie in vim. Die Tastenkürzel für Bildschirme behalten die Pfeiltasten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "H, J, K y L van a la izquierda, abajo, arriba y derecha, como en vim. Los atajos de pantallas siguen usando las flechas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "H, J, K et L vont à gauche, en bas, en haut et à droite, comme dans vim. Les raccourcis des écrans gardent les flèches."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vimと同じく、H、J、K、Lで左、下、上、右に移動します。ディスプレイのショートカットは矢印キーのままです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vim처럼 H, J, K, L은 왼쪽, 아래, 위, 오른쪽으로 이동합니다. 디스플레이 단축키는 그대로 화살표를 사용합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "H, J, K e L vão para a esquerda, para baixo, para cima e para a direita, como no vim. Os atalhos de telas continuam usando as setas."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "与 vim 一样，H、J、K、L 分别向左、下、上、右移动。显示器快捷键仍使用箭头键。"
           }
         }
       }
