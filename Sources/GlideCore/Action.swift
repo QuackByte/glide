@@ -181,6 +181,27 @@ public enum Action: String, CaseIterable, Codable, Sendable {
 }
 
 extension Action {
+    /// The name the command line and `glide://` URLs use: the raw value in kebab case, e.g.
+    /// "focus-column-left" or "focus-workspace-3".
+    public var commandName: String {
+        var name = ""
+        var previous: Character?
+        for character in rawValue {
+            if let previous, character.isUppercase || (character.isNumber && !previous.isNumber) { name.append("-") }
+            name.append(contentsOf: character.lowercased())
+            previous = character
+        }
+        return name
+    }
+
+    /// Reads a command name, case and separators ignored: "focus-column-left", "focus_column_left"
+    /// and "focusColumnLeft" all work.
+    public init?(commandName: String) {
+        let key = commandName.lowercased().filter { $0.isLetter || $0.isNumber }
+        guard let action = Action.allCases.first(where: { $0.rawValue.lowercased() == key }) else { return nil }
+        self = action
+    }
+
     /// For display actions: which way (-1 left, +1 right), and whether the focused column goes along.
     public var displayCommand: (direction: Int, movesColumn: Bool)? {
         switch self {

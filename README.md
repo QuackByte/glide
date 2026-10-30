@@ -103,6 +103,20 @@ Open **Settings…** from the menu bar icon, click a shortcut and press the new 
 
 If a shortcut can't be registered, the menu bar icon turns into a warning triangle. The menu and the Settings row then name the shortcut and the reason. macOS has no public API to see every other app's shortcuts: Glide detects collisions with enabled macOS shortcuts, but not with an app that grabs keys through an event tap or registers the same combo after Glide starts.
 
+## Command line and URLs
+
+Every action can also run from a terminal or a link, for scripts, Raycast, Alfred, Stream Deck or Shortcuts. **Settings › General › Command line tool** copies the command that links Glide's executable as `glide` in `/usr/local/bin`:
+
+```sh
+glide focus-column-left
+glide focus-workspace 3      # same as focus-workspace-3
+glide toggle-overview
+glide list                   # every command and what it does
+open -g glide://focus-workspace-3
+```
+
+Command names are the actions in kebab case. Glide has to be running; the command hands the action to it and exits (64 for an unknown command, 69 if Glide isn't running).
+
 ## Install and permissions
 
 Requires macOS 27 or later (Glide follows the current Xcode 27 project defaults).

@@ -2105,6 +2105,53 @@
         }
       }
     },
+    "Command line tool" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Befehlszeilenprogramm"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herramienta de línea de comandos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outil en ligne de commande"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コマンドラインツール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "명령줄 도구"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferramenta de linha de comando"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令行工具"
+          }
+        }
+      }
+    },
     "Continue" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2148,6 +2195,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "继续"
+          }
+        }
+      }
+    },
+    "Copy Install Command" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installationsbefehl kopieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar comando de instalación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier la commande d’installation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストールコマンドをコピー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치 명령 복사"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar comando de instalação"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拷贝安装命令"
           }
         }
       }
@@ -4263,6 +4357,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "其他 App…"
+          }
+        }
+      }
+    },
+    "Paste the command in Terminal to add “glide”. Then “glide focus-workspace 3” or a glide://focus-workspace-3 link runs any action, from scripts, Raycast, Alfred or Shortcuts. “glide list” shows them all." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge den Befehl im Terminal ein, um „glide“ hinzuzufügen. Danach führt „glide focus-workspace 3“ oder ein Link wie glide://focus-workspace-3 jede Aktion aus, aus Skripten, Raycast, Alfred oder Kurzbefehlen. „glide list“ zeigt alle."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pega el comando en Terminal para añadir «glide». Después, «glide focus-workspace 3» o un enlace glide://focus-workspace-3 ejecuta cualquier acción desde scripts, Raycast, Alfred o Atajos. «glide list» las muestra todas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collez la commande dans Terminal pour ajouter « glide ». Ensuite, « glide focus-workspace 3 » ou un lien glide://focus-workspace-3 lance n’importe quelle action, depuis des scripts, Raycast, Alfred ou Raccourcis. « glide list » les affiche toutes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルにコマンドを貼り付けると「glide」が追加されます。その後は「glide focus-workspace 3」や glide://focus-workspace-3 のリンクで、スクリプト、Raycast、Alfred、ショートカットからどのアクションでも実行できます。「glide list」ですべて表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터미널에 명령을 붙여 넣으면 ‘glide’가 추가됩니다. 그런 다음 ‘glide focus-workspace 3’이나 glide://focus-workspace-3 링크로 스크립트, Raycast, Alfred, 단축어에서 어떤 동작이든 실행할 수 있습니다. ‘glide list’로 전체 목록을 볼 수 있습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cole o comando no Terminal para adicionar “glide”. Depois, “glide focus-workspace 3” ou um link glide://focus-workspace-3 executa qualquer ação a partir de scripts, Raycast, Alfred ou Atalhos. “glide list” mostra todas."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在“终端”中粘贴该命令即可添加“glide”。之后，“glide focus-workspace 3”或 glide://focus-workspace-3 链接可以从脚本、Raycast、Alfred 或“快捷指令”运行任何操作。“glide list”会列出全部操作。"
           }
         }
       }

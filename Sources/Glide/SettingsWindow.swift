@@ -192,6 +192,16 @@ struct SettingsView: View {
                     LabeledContent("Remembered places") {
                         Button("Forget") { controller.windowManager.forgetRememberedApps() }
                     }
+                    LabeledContent("Command line tool") {
+                        Button("Copy Install Command") {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(CommandLineTool.installCommand, forType: .string)
+                        }
+                    }
+                    Text("Paste the command in Terminal to add “glide”. Then “glide focus-workspace 3” or a glide://focus-workspace-3 link runs any action, from scripts, Raycast, Alfred or Shortcuts. “glide list” shows them all.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                     LabeledContent("Something wrong?") {
                         Button("Report a Problem…") { controller.reportProblem() }
                     }

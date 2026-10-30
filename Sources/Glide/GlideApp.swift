@@ -10,6 +10,9 @@ enum GlideMain {
         if let index = arguments.firstIndex(of: CrashWatchdog.argument), index + 1 < arguments.count, let parent = pid_t(arguments[index + 1]) {
             CrashWatchdog.run(parent: parent)
         }
+        if let command = CommandLineTool.arguments(from: arguments) {
+            CommandLineTool.run(command)
+        }
         GlideApp.main()
     }
 }
@@ -30,6 +33,16 @@ final class GlideAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         controller.launch()
+    }
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            if let action = CommandLineTool.action(from: url) {
+                controller.perform(action)
+            } else {
+                NSLog("Glide: unknown command URL \(url.absoluteString)")
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -56,6 +69,7 @@ final class AppController {
 
     @ObservationIgnored private var statusMenu: StatusMenu?
     @ObservationIgnored private var watchdog: Process?
+    @ObservationIgnored private var commandListener: NSObjectProtocol?
     @ObservationIgnored private lazy var overview = OverviewController(manager: windowManager)
     @ObservationIgnored private let workspaceHUD = WorkspaceHUD()
     @ObservationIgnored private let shortcutSheet = ShortcutSheetController()
@@ -77,6 +91,7 @@ final class AppController {
         updates.start()
         statusMenu = StatusMenu(controller: self)
         hotkeys.onAction = { [weak self] action in self?.perform(action) }
+        commandListener = CommandLineTool.listen { [weak self] action in self?.perform(action) }
         shortcuts.onChange = { [weak self] in self?.registerHotkeys() }
         windowManager.onChange = { [weak self] in self?.stateChanged() }
         windowManager.rules = appRules.rules
