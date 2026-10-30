@@ -53,6 +53,29 @@ enum Appearance {
         }
     }
 
+    /// The widths columns cycle through, as fractions of the screen.
+    static var widthPresets: [CGFloat] {
+        get {
+            guard let values = defaults.array(forKey: "widthPresets") as? [Double], (1...8).contains(values.count),
+                  values.allSatisfy({ (0.1...1).contains($0) }) else { return LayoutSettings.standard.widthPresets }
+            return values.sorted().map { CGFloat($0) }
+        }
+        set {
+            if newValue == LayoutSettings.standard.widthPresets {
+                defaults.removeObject(forKey: "widthPresets")
+            } else {
+                defaults.set(newValue.map(Double.init), forKey: "widthPresets")
+            }
+        }
+    }
+
+    /// The settings every workspace lays out with.
+    static var layoutSettings: LayoutSettings {
+        let presets = widthPresets
+        return LayoutSettings(gap: gap, widthPresets: presets, defaultWidthIndex: LayoutSettings.defaultWidthIndex(for: presets),
+                              defaultLayout: defaultLayout, defaultTiledColumns: tiledColumns)
+    }
+
     /// A brief display of the workspace numbers when switching.
     static var showsWorkspaceHUD: Bool {
         get { defaults.object(forKey: "workspaceHUD") as? Bool ?? true }

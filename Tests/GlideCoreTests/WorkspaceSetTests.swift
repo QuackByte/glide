@@ -29,6 +29,17 @@ final class WorkspaceSetTests: XCTestCase {
         XCTAssertEqual(set.workspaces[0].strip.windows, [1, 2, 3], "Other workspaces keep their windows")
     }
 
+    func testLastGoesBackAndForth() {
+        var set = set()
+        XCTAssertNil(set.resolve(.last), "Nothing to go back to yet")
+        set.activate(4)
+        XCTAssertEqual(set.resolve(.last), 0)
+        set.activate(0)
+        XCTAssertEqual(set.resolve(.last), 4)
+        set.restore(strips: [], activeIndex: 2)
+        XCTAssertNil(set.resolve(.last))
+    }
+
     func testResolvePreviousAndNextStopAtTheEnds() {
         var set = set()
         XCTAssertNil(set.resolve(.previous))
@@ -156,7 +167,8 @@ final class WorkspaceSetTests: XCTestCase {
         XCTAssertEqual(Action.moveColumnToWorkspace9.workspaceCommand?.movesWindow, true)
         XCTAssertEqual(Action.focusNextWorkspace.workspaceCommand?.target, .next)
         XCTAssertNil(Action.focusColumnLeft.workspaceCommand)
-        XCTAssertEqual(Action.allCases.filter { $0.group == .workspaces }.count, 24)
+        XCTAssertEqual(Action.allCases.filter { $0.group == .workspaces }.count, 25)
+        XCTAssertEqual(Action.focusLastWorkspace.workspaceCommand?.target, .last)
         XCTAssertEqual(Keymap.defaults[.focusWorkspace1], KeyCombo(18, [.control, .option]))
         XCTAssertEqual(Keymap.defaults[.moveColumnToWorkspace9], KeyCombo(25, [.control, .option, .shift]))
         XCTAssertEqual(Set(Keymap.defaults.values).count, Keymap.defaults.count, "No two actions share a default")

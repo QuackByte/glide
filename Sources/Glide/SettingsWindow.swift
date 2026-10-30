@@ -151,6 +151,12 @@ struct SettingsView: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+                    WidthPresetsField(controller: controller)
+                    Toggle("Focus follows the mouse", isOn: Binding(
+                        get: { WindowManager.focusFollowsMouse },
+                        set: { WindowManager.focusFollowsMouse = $0; controller.windowManager.updateMouseMonitor() }
+                    ))
+                    .help("Resting the pointer on a tiled window that's fully on screen focuses it. Floating windows and the strip's edges are left alone.")
                     Toggle("Animate window movement", isOn: Binding(
                         get: { WindowManager.animatesWindows },
                         set: { WindowManager.animatesWindows = $0 }
@@ -186,6 +192,23 @@ struct SettingsView: View {
                     LabeledContent("Remembered places") {
                         Button("Forget") { controller.windowManager.forgetRememberedApps() }
                     }
+                    LabeledContent("Command line tool") {
+                        Button("Copy Install Command") {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(CommandLineTool.installCommand, forType: .string)
+                        }
+                    }
+                    Text("Paste the command in Terminal to add “glide”. Then “glide focus-workspace 3” or a glide://focus-workspace-3 link runs any action, from scripts, Raycast, Alfred or Shortcuts. “glide list” shows them all.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    LabeledContent("Settings file") {
+                        HStack {
+                            Button("Export…") { SettingsTransfer.exportWithPanel() }
+                            Button("Import…") { SettingsTransfer.importWithPanel() }
+                        }
+                    }
+                    .help("Shortcuts, app rules, layout and appearance as a JSON file, to use on another Mac or keep with your dotfiles.")
                     LabeledContent("Something wrong?") {
                         Button("Report a Problem…") { controller.reportProblem() }
                     }
@@ -219,14 +242,24 @@ struct SettingsView: View {
                         Text("⌃⌥ Control-Option").tag(GlideModifier.controlOption)
                         Text("⌥ Option").tag(GlideModifier.option)
                     }
+                    Picker("Direction keys", selection: Binding(
+                        get: { controller.shortcuts.directions },
+                        set: { recorder.stop(); controller.shortcuts.directions = $0 }
+                    )) {
+                        Text("Arrows").tag(DirectionKeys.arrows)
+                        Text(verbatim: "H J K L").tag(DirectionKeys.letters)
+                    }
                 } header: {
                     Text("Shortcuts")
                 } footer: {
-                    Group {
+                    VStack(alignment: .leading, spacing: 4) {
                         if controller.shortcuts.modifier == .option {
                             Text("Every default shortcut uses ⌥, and ⇧ to move windows. ⌥ + arrows no longer jump by word in text, and ⌥ + letters and digits no longer type special characters like é or ©. Shortcuts you changed stay as they are.")
                         } else {
                             Text("Every default shortcut uses ⌃⌥, and ⇧ to move windows. Shortcuts you changed stay as they are.")
+                        }
+                        if controller.shortcuts.directions == .letters {
+                            Text("H, J, K and L go left, down, up and right, as in vim. Display shortcuts keep the arrows.")
                         }
                     }
                     .font(.callout)
@@ -258,6 +291,48 @@ struct SettingsView: View {
         }
         .padding(20)
         .frame(width: 620, height: 780)
+    }
+}
+
+/// The column widths, typed as percentages of the screen.
+private struct WidthPresetsField: View {
+    let controller: AppController
+    @State private var text = LayoutSettings.describe(widthPresets: Appearance.widthPresets)
+    @State private var isInvalid = false
+
+    var body: some View {
+        LabeledContent("Column widths") {
+            HStack {
+                TextField("Column widths", text: $text)
+                    .labelsHidden()
+                    .frame(width: 160)
+                    .onSubmit(apply)
+                    .onDisappear(perform: apply)
+                Text(verbatim: "%")
+                Button("Reset") {
+                    text = LayoutSettings.describe(widthPresets: LayoutSettings.standard.widthPresets)
+                    apply()
+                }
+                .disabled(Appearance.widthPresets == LayoutSettings.standard.widthPresets && !isInvalid)
+            }
+        }
+        Text(isInvalid
+             ? String(localized: "Type one to eight widths from 10 to 100, separated by commas.")
+             : String(localized: "The widths \(controller.shortcuts.keymap.combo(for: .cycleColumnWidth)?.description ?? String(localized: "A shortcut")) steps through, as percentages of the screen. New windows open at the one nearest 50."))
+            .font(.callout)
+            .foregroundStyle(isInvalid ? .red : .secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func apply() {
+        guard let presets = LayoutSettings.widthPresets(from: text) else {
+            isInvalid = true
+            return
+        }
+        isInvalid = false
+        Appearance.widthPresets = presets
+        text = LayoutSettings.describe(widthPresets: presets)
+        controller.appearanceChanged()
     }
 }
 
@@ -329,9 +404,16 @@ private struct AppRuleRow: View {
                 }
                 Picker("Width", selection: binding(\.widthIndex)) {
                     Text("Default width").tag(Int?.none)
-                    let names: [LocalizedStringResource] = ["⅓ width", "½ width", "⅔ width", "Full width"]
-                    ForEach(Array(names.enumerated()), id: \.offset) { index, name in
-                        Text(name).tag(Int?.some(index))
+                    let presets = Appearance.widthPresets
+                    if presets == LayoutSettings.standard.widthPresets {
+                        let names: [LocalizedStringResource] = ["⅓ width", "½ width", "⅔ width", "Full width"]
+                        ForEach(Array(names.enumerated()), id: \.offset) { index, name in
+                            Text(name).tag(Int?.some(index))
+                        }
+                    } else {
+                        ForEach(Array(presets.enumerated()), id: \.offset) { index, preset in
+                            Text("\(LayoutSettings.describe(widthPresets: [preset]) + "%") width").tag(Int?.some(index))
+                        }
                     }
                 }
                 .disabled(rule.mode == .float)

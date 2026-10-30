@@ -7,6 +7,8 @@ public struct WorkspaceSet: Equatable, Sendable {
 
     public private(set) var workspaces: [Workspace]
     public private(set) var activeIndex = 0
+    /// The workspace that was active before the current one.
+    public private(set) var lastIndex: Int?
 
     public init(viewport: CGRect, settings: LayoutSettings = .standard) {
         workspaces = Array(repeating: Workspace(viewport: viewport, settings: settings), count: Self.count)
@@ -62,6 +64,7 @@ public struct WorkspaceSet: Equatable, Sendable {
         case .index(let index): index
         case .previous: activeIndex - 1
         case .next: activeIndex + 1
+        case .last: lastIndex ?? -1
         }
         return workspaces.indices.contains(index) ? index : nil
     }
@@ -70,6 +73,7 @@ public struct WorkspaceSet: Equatable, Sendable {
     @discardableResult
     public mutating func activate(_ index: Int) -> Bool {
         guard workspaces.indices.contains(index), index != activeIndex else { return false }
+        lastIndex = activeIndex
         activeIndex = index
         workspaces[index].settleScroll()
         return true
@@ -124,6 +128,15 @@ public struct WorkspaceSet: Equatable, Sendable {
         public var widthIndex: Int
         public var isFullWidth: Bool
         public var customWidth: CGFloat?
+
+        public init(workspace: Int, sibling: WindowID?, leftNeighbour: WindowID?, widthIndex: Int, isFullWidth: Bool, customWidth: CGFloat?) {
+            self.workspace = workspace
+            self.sibling = sibling
+            self.leftNeighbour = leftNeighbour
+            self.widthIndex = widthIndex
+            self.isFullWidth = isFullWidth
+            self.customWidth = customWidth
+        }
     }
 
     public func departure(of window: WindowID) -> Departure? {
@@ -173,5 +186,6 @@ public struct WorkspaceSet: Equatable, Sendable {
             workspaces[index].settleScroll()
         }
         self.activeIndex = workspaces.indices.contains(activeIndex) ? activeIndex : 0
+        lastIndex = nil
     }
 }

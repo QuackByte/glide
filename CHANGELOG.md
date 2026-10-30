@@ -2,6 +2,20 @@
 
 What's new in each version of Glide for Mac. Glide shows the new entries once after it updates, and each release's notes on GitHub come from here, so write for people using Glide. Add an entry for every change worth knowing about under the next version before tagging it. Glide shows these notes in the app's language: the translations live in `changelog/CHANGELOG.<code>.md`, and a new entry must be translated in every one of them before tagging (`ChangelogTranslationTests` checks that they match this file).
 
+## 0.12.0 — 2026-10-30
+
+### New
+
+- **Back and forth.** ⌃⌥\` goes back to the window you were in before, on any workspace or display, and ⌃⌥⇥ to the last workspace. Press either again to come back.
+- **H J K L for directions.** Settings › Shortcuts › Direction keys swaps the arrows of the focus and move shortcuts for H, J, K and L, as in vim. Display shortcuts keep the arrows.
+- **Your own column widths.** Settings › General › Column widths takes the widths ⌃⌥R steps through, as percentages of the screen. New windows open at the one nearest 50.
+- **Even out the columns on screen.** ⌃⌥E gives the columns on screen, even partly, equal widths that fill it together. In the tiled layout, it resets the splits.
+- **Focus follows the mouse,** if you turn it on in Settings › General. Resting the pointer on a tiled window that's fully on screen focuses it; floating windows, menus and the Dock are left alone.
+- **Scratchpad.** ⌃⌥⇧S makes the focused window (a terminal, notes, a chat) the scratchpad and hides it. ⌃⌥S brings it out, floating in the middle of the screen, and hides it again.
+- **Command line and links.** `glide focus-workspace 3`, or a glide://focus-workspace-3 link, runs any action from scripts, Raycast, Alfred, Stream Deck or Shortcuts. Settings › General › Command line tool copies the command that installs `glide`.
+- **Your layout comes back after a restart.** Glide now finds windows again by their app and title after the Mac restarts, and puts each back on its workspace, at its width and in its stack as it opens.
+- **Export and import settings.** Settings › General › Settings file saves shortcuts, app rules, layout and appearance as a readable JSON file, and loads one on another Mac.
+
 ## 0.11.2 — 2026-10-30
 
 ### New

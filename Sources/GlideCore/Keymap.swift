@@ -15,27 +15,45 @@ public enum GlideModifier: String, CaseIterable, Sendable {
     }
 }
 
+/// The keys the default focus and move shortcuts use for directions.
+public enum DirectionKeys: String, CaseIterable, Sendable {
+    case arrows
+    /// H J K L for left, down, up and right, as in vim.
+    case letters
+
+    /// Left, right, up and down.
+    var keys: (left: UInt32, right: UInt32, up: UInt32, down: UInt32) {
+        switch self {
+        case .arrows: (KeyCode.leftArrow, KeyCode.rightArrow, KeyCode.upArrow, KeyCode.downArrow)
+        case .letters: (KeyCode.h, KeyCode.l, KeyCode.k, KeyCode.j)
+        }
+    }
+}
+
 /// Which shortcut triggers which action: the defaults plus any user overrides.
 public struct Keymap: Equatable, Sendable {
     /// The defaults for the standard ⌃⌥ chord.
     public static let defaults = defaults(for: .controlOption)
 
     /// Defaults are the Glide modifier for focus/commands and the modifier plus ⇧ for "move", plus ⌘
-    /// for displays. See the README for the reasoning.
-    public static func defaults(for modifier: GlideModifier) -> [Action: KeyCombo] {
+    /// for displays. See the README for the reasoning. Display shortcuts keep the arrows whatever
+    /// the direction keys are.
+    public static func defaults(for modifier: GlideModifier, directions: DirectionKeys = .arrows) -> [Action: KeyCombo] {
         let hyper = modifier.modifiers
         let move = hyper.union(.shift)
+        let keys = directions.keys
         var map: [Action: KeyCombo] = [
-            .focusColumnLeft: KeyCombo(KeyCode.leftArrow, hyper),
-            .focusColumnRight: KeyCombo(KeyCode.rightArrow, hyper),
-            .focusWindowUp: KeyCombo(KeyCode.upArrow, hyper),
-            .focusWindowDown: KeyCombo(KeyCode.downArrow, hyper),
+            .focusColumnLeft: KeyCombo(keys.left, hyper),
+            .focusColumnRight: KeyCombo(keys.right, hyper),
+            .focusWindowUp: KeyCombo(keys.up, hyper),
+            .focusWindowDown: KeyCombo(keys.down, hyper),
             .focusFirstColumn: KeyCombo(KeyCode.home, hyper),
             .focusLastColumn: KeyCombo(KeyCode.end, hyper),
-            .moveColumnLeft: KeyCombo(KeyCode.leftArrow, move),
-            .moveColumnRight: KeyCombo(KeyCode.rightArrow, move),
-            .moveWindowUp: KeyCombo(KeyCode.upArrow, move),
-            .moveWindowDown: KeyCombo(KeyCode.downArrow, move),
+            .focusPreviousWindow: KeyCombo(KeyCode.grave, hyper),
+            .moveColumnLeft: KeyCombo(keys.left, move),
+            .moveColumnRight: KeyCombo(keys.right, move),
+            .moveWindowUp: KeyCombo(keys.up, move),
+            .moveWindowDown: KeyCombo(keys.down, move),
             .consumeOrExpelLeft: KeyCombo(KeyCode.leftBracket, hyper),
             .consumeOrExpelRight: KeyCombo(KeyCode.rightBracket, hyper),
             .cycleColumnWidth: KeyCombo(KeyCode.r, hyper),
@@ -43,9 +61,12 @@ public struct Keymap: Equatable, Sendable {
             .toggleFullWidth: KeyCombo(KeyCode.f, hyper),
             .toggleTabbed: KeyCombo(KeyCode.w, hyper),
             .centerColumn: KeyCombo(KeyCode.c, hyper),
+            .evenOutColumns: KeyCombo(KeyCode.e, hyper),
             .toggleOverview: KeyCombo(KeyCode.o, hyper),
             .showShortcuts: KeyCombo(KeyCode.slash, hyper),
             .toggleFloating: KeyCombo(KeyCode.v, hyper),
+            .toggleScratchpad: KeyCombo(KeyCode.s, hyper),
+            .moveToScratchpad: KeyCombo(KeyCode.s, move),
             .toggleTiling: KeyCombo(KeyCode.t, move),
             .toggleLayout: KeyCombo(KeyCode.t, hyper),
             .cycleTiledColumns: KeyCombo(KeyCode.g, hyper),
@@ -53,6 +74,7 @@ public struct Keymap: Equatable, Sendable {
             .focusNextWorkspace: KeyCombo(KeyCode.pageDown, hyper),
             .moveColumnToPreviousWorkspace: KeyCombo(KeyCode.pageUp, move),
             .moveColumnToNextWorkspace: KeyCombo(KeyCode.pageDown, move),
+            .focusLastWorkspace: KeyCombo(KeyCode.tab, hyper),
             .focusDisplayLeft: KeyCombo(KeyCode.leftArrow, hyper.union(.command)),
             .focusDisplayRight: KeyCombo(KeyCode.rightArrow, hyper.union(.command)),
             .moveColumnToDisplayLeft: KeyCombo(KeyCode.leftArrow, move.union(.command)),
@@ -69,16 +91,19 @@ public struct Keymap: Equatable, Sendable {
 
     /// The modifier the defaults are built on.
     public private(set) var modifier: GlideModifier
+    /// The keys the default focus and move shortcuts use.
+    public private(set) var directions: DirectionKeys
     /// Overrides of the defaults. A nil value means the user removed the shortcut.
     public private(set) var overrides: [Action: KeyCombo?]
 
-    public init(modifier: GlideModifier = .controlOption, overrides: [Action: KeyCombo?] = [:]) {
+    public init(modifier: GlideModifier = .controlOption, directions: DirectionKeys = .arrows, overrides: [Action: KeyCombo?] = [:]) {
         self.modifier = modifier
+        self.directions = directions
         self.overrides = overrides
     }
 
     public func defaultCombo(for action: Action) -> KeyCombo? {
-        Self.defaults(for: modifier)[action]
+        Self.defaults(for: modifier, directions: directions)[action]
     }
 
     public func combo(for action: Action) -> KeyCombo? {
@@ -123,8 +148,18 @@ public struct Keymap: Equatable, Sendable {
     /// Rebuilds the defaults on another modifier. Shortcuts the user set keep working, and win
     /// over a new default that lands on the same keys.
     public mutating func setModifier(_ modifier: GlideModifier) {
+        rebuildDefaults(modifier: modifier, directions: directions)
+    }
+
+    /// Rebuilds the defaults on other direction keys, like `setModifier`.
+    public mutating func setDirections(_ directions: DirectionKeys) {
+        rebuildDefaults(modifier: modifier, directions: directions)
+    }
+
+    private mutating func rebuildDefaults(modifier: GlideModifier, directions: DirectionKeys) {
         let custom = overrides
         self.modifier = modifier
+        self.directions = directions
         overrides = [:]
         for (action, combo) in custom {
             if let combo {
@@ -156,7 +191,7 @@ public struct Keymap: Equatable, Sendable {
         return result
     }
 
-    public init(modifier: GlideModifier = .controlOption, storage: [String: String]) {
+    public init(modifier: GlideModifier = .controlOption, directions: DirectionKeys = .arrows, storage: [String: String]) {
         var overrides: [Action: KeyCombo?] = [:]
         for (key, value) in storage {
             guard let action = Action(rawValue: key) else { continue }
@@ -166,7 +201,7 @@ public struct Keymap: Equatable, Sendable {
                 overrides[action] = .some(combo)
             }
         }
-        self.init(modifier: modifier, overrides: overrides)
+        self.init(modifier: modifier, directions: directions, overrides: overrides)
     }
 }
 

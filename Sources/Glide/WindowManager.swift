@@ -68,6 +68,9 @@ final class WindowManager {
     private var workspaceObservers: [NSObjectProtocol] = []
     /// The layout to rebuild when tiling starts, saved when it stops or after changes.
     private var snapshot: StripSnapshot?
+    /// The layout from before the Mac restarted, waiting for its windows to open again.
+    private var restartPlan: RestartPlan?
+    private var restartPlanExpiry: Date?
     private var saveWork: DispatchWorkItem?
     static let snapshotKey = "stripSnapshot"
     private let decorations = FocusDecorations()
@@ -95,6 +98,14 @@ final class WindowManager {
     private var foregroundFullScreenDisplay: Int?
     /// The displays showing a full-screen window, as of `at`.
     private var fullScreenDisplays: (at: CFTimeInterval, displays: Set<Int>) = (0, [])
+
+    /// Managed windows in the order they last had focus, the most recent last.
+    private var focusHistory: [WindowID] = []
+    private var mouseMonitor: Any?
+    /// The window that shows and hides with one shortcut, floating over everything, and whether it shows.
+    private var scratchpad: WindowID?
+    private var scratchpadShown = false
+    private var hoverWork: DispatchWorkItem?
 
     /// Per-app float/tile, width and workspace rules, applied as windows appear.
     var rules = AppRules()
@@ -141,7 +152,7 @@ final class WindowManager {
         let frames = screens.map(\.frame)
         var next = screens.enumerated().map { index, screen in
             var display = previous.first { $0.id == screen.id }
-                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: LayoutSettings(gap: Appearance.gap, defaultLayout: Appearance.defaultLayout, defaultTiledColumns: Appearance.tiledColumns)))
+                ?? Display(id: screen.id, frame: screen.frame, spaces: WorkspaceSet(viewport: screen.viewport, settings: Appearance.layoutSettings))
             display.frame = screen.frame
             display.spaces.viewport = screen.viewport
             display.spaces.hiddenCorner = DisplayGeometry.hiddenCorner(of: index, in: frames)
@@ -176,6 +187,7 @@ final class WindowManager {
         let apps = NSWorkspace.shared.runningApplications.filter(isManageable)
         for app in apps { observe(app) }
         reconcile(Set(apps.map(\.processIdentifier)), adopting: true)
+        updateMouseMonitor()
     }
 
     /// Stops tiling and moves every window somewhere fully on screen.
@@ -192,6 +204,10 @@ final class WindowManager {
             if let frame = restored[window.id] { window.element.setFrame(frame) }
         }
 
+        if let id = scratchpad, !scratchpadShown, let window = windows[id] {
+            window.element.setFrame(floatingFrame(for: window.element, on: focusedDisplay))
+        }
+        scratchpad = nil
         saveSnapshot()
         dropHighlightTimer?.invalidate()
         dropHighlightTimer = nil
@@ -202,7 +218,10 @@ final class WindowManager {
         fullScreenWindows = []
         foregroundFullScreenDisplay = nil
         departures = [:]
+        restartPlan = nil
+        focusHistory = []
         isEnabled = false
+        updateMouseMonitor()
         reassertWork?.cancel()
         for observer in observers.values {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .commonModes)
@@ -240,7 +259,11 @@ final class WindowManager {
     private func saveSnapshot() {
         saveWork?.cancel()
         guard isEnabled, let bootTime = Self.bootTime else { return }
-        let snapshot = StripSnapshot(displays: displays.map { ($0.id, $0.spaces) }, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
+        var snapshot = StripSnapshot(displays: displays.map { ($0.id, $0.spaces) }, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
+        snapshot.identities = snapshot.allWindows.compactMap { id in
+            guard let bundleID = bundleID(of: id) else { return nil }
+            return WindowIdentity(window: id, bundleID: bundleID, title: windows[id]?.element.value(kAXTitleAttribute) ?? "")
+        }
         self.snapshot = snapshot
         if let data = try? JSONEncoder().encode(snapshot) {
             UserDefaults.standard.set(data, forKey: Self.snapshotKey)
@@ -253,11 +276,38 @@ final class WindowManager {
             snapshot = try? JSONDecoder().decode(StripSnapshot.self, from: data)
         }
         guard let saved = snapshot, let bootTime = Self.bootTime, abs(saved.bootTime.timeIntervalSince(bootTime)) < 1 else {
+            // Saved before the Mac restarted: its windows have new IDs, so find them by app and title as they open.
+            if let saved = snapshot, let plan = RestartPlan(snapshot: saved, mainDisplay: displays[0].id) {
+                restartPlan = plan
+                restartPlanExpiry = Date().addingTimeInterval(Self.restartPlanLifetime)
+                for index in displays.indices {
+                    if let layouts = plan.layouts[displays[index].id] {
+                        displays[index].spaces.restore(strips: [], activeIndex: 0, layouts: layouts.layouts, tiledColumns: layouts.tiledColumns)
+                    }
+                }
+                log.debug("restoring the layout from before the restart as windows open")
+            }
             snapshot = nil
             return
         }
         userFloating = Set(saved.userFloating)
         userTiled = Set(saved.userTiled)
+    }
+
+    /// How long after Glide starts windows from before a restart are still put back where they were.
+    private static let restartPlanLifetime: TimeInterval = 600
+
+    /// Where a window that just opened was before the Mac restarted, if the restart plan knows it.
+    private func restartPlace(for id: WindowID) -> (display: Int, departure: WorkspaceSet.Departure)? {
+        guard restartPlan != nil else { return nil }
+        if let expiry = restartPlanExpiry, Date() > expiry {
+            restartPlan = nil
+            return nil
+        }
+        guard let bundleID = bundleID(of: id),
+              let place = restartPlan?.claim(id, bundleID: bundleID, title: windows[id]?.element.value(kAXTitleAttribute) ?? "") else { return nil }
+        if restartPlan?.isEmpty == true { restartPlan = nil }
+        return (displays.firstIndex { $0.id == place.display } ?? 0, place.departure)
     }
 
     private static let bootTime: Date? = {
@@ -270,12 +320,11 @@ final class WindowManager {
     /// Applies changed gap, default layout and tiled columns, focus ring and dimming settings.
     func appearanceChanged() {
         guard isEnabled else { return }
-        let gapChanged = spaces.settings.gap != Appearance.gap
-        if gapChanged || spaces.settings.defaultLayout != Appearance.defaultLayout || spaces.settings.defaultTiledColumns != Appearance.tiledColumns {
+        let settings = Appearance.layoutSettings
+        let gapChanged = spaces.settings.gap != settings.gap
+        if spaces.settings != settings {
             for index in displays.indices {
-                displays[index].spaces.settings.gap = Appearance.gap
-                displays[index].spaces.settings.defaultLayout = Appearance.defaultLayout
-                displays[index].spaces.settings.defaultTiledColumns = Appearance.tiledColumns
+                displays[index].spaces.settings = settings
                 if gapChanged { displays[index].spaces.active.minimumWidths = [:] }
                 displays[index].spaces.settleScroll()
             }
@@ -300,6 +349,18 @@ final class WindowManager {
         }
         if action == .toggleFloating {
             toggleFloating()
+            return
+        }
+        if action == .focusPreviousWindow {
+            focusPreviousWindow()
+            return
+        }
+        if action == .toggleScratchpad {
+            toggleScratchpad()
+            return
+        }
+        if action == .moveToScratchpad {
+            moveToScratchpad()
             return
         }
         if action == .toggleLayout {
@@ -346,6 +407,10 @@ final class WindowManager {
             track(id, pid: pid, element: element)
         }
         guard let window = windows[id] else { return NSSound.beep() }
+        if id == scratchpad {
+            scratchpad = nil
+            scratchpadShown = false
+        }
 
         if let display = displayIndex(of: id) {
             displays[display].spaces.remove(id)
@@ -366,6 +431,67 @@ final class WindowManager {
             applyLayout()
         }
         didChange()
+    }
+
+    // MARK: Scratchpad
+
+    /// Makes the focused window the scratchpad and hides it. Pressed on the scratchpad itself, it
+    /// tiles the window again. A previous scratchpad stays where it is, as a floating window.
+    private func moveToScratchpad() {
+        guard let id = focusedWindowID() else { return NSSound.beep() }
+        if windows[id] == nil, let element = focusedWindowElement(), let pid = element.pid,
+           WindowClassifier.classify(element) != .ignored {
+            track(id, pid: pid, element: element)
+        }
+        guard windows[id] != nil else { return NSSound.beep() }
+        if id == scratchpad {
+            // Tiling it again clears the scratchpad.
+            toggleFloating()
+            onWorkspaceEvent?(String(localized: "No scratchpad"))
+            return
+        }
+        if let display = displayIndex(of: id) {
+            displays[display].spaces.remove(id)
+            userTiled.remove(id)
+            lastApplied[id] = nil
+            applyLayout()
+        }
+        userFloating.insert(id)
+        if let previous = scratchpad, previous != id, !scratchpadShown, let window = windows[previous] {
+            window.element.setFrame(floatingFrame(for: window.element, on: focusedDisplay))
+        }
+        scratchpad = id
+        hideScratchpad()
+        didChange()
+        onWorkspaceEvent?(String(localized: "Scratchpad set"))
+    }
+
+    /// Shows the scratchpad over the focused display, or hides it if it has focus.
+    private func toggleScratchpad() {
+        guard let id = scratchpad, windows[id] != nil else { return NSSound.beep() }
+        if scratchpadShown && focusedWindowID() == id {
+            hideScratchpad()
+        } else {
+            showScratchpad()
+        }
+    }
+
+    private func showScratchpad() {
+        guard let id = scratchpad, let window = windows[id] else { return }
+        if !scratchpadShown {
+            window.element.setFrame(floatingFrame(for: window.element, on: focusedDisplay))
+            scratchpadShown = true
+        }
+        focus(id)
+    }
+
+    /// Moves the scratchpad to its display's hidden corner and focuses what was there before it.
+    private func hideScratchpad() {
+        guard let id = scratchpad, let window = windows[id] else { return }
+        let size = window.element.size ?? .zero
+        window.element.setPosition(displays[focusedDisplay].spaces.active.hiddenFrame(size: size).origin)
+        scratchpadShown = false
+        if let next = workspace.strip.focusedWindow { focus(next) } else { refreshOverlays() }
     }
 
     /// A floated window keeps its size (up to 70% of the screen) and moves to the center of its display.
@@ -598,7 +724,12 @@ final class WindowManager {
                 hide(inactiveWindows)
             } else {
                 for tile in ordered {
-                    let landed = addTile(tile.id, on: tile.display, focus: false, atEnd: true)
+                    let landed: (display: Int, workspace: Int)
+                    if let place = restartPlace(for: tile.id) {
+                        landed = (place.display, displays[place.display].spaces.rejoin(tile.id, from: place.departure, focus: false))
+                    } else {
+                        landed = addTile(tile.id, on: tile.display, focus: false, atEnd: true)
+                    }
                     if !isActive(landed) { hide([tile.id]) }
                 }
             }
@@ -608,6 +739,9 @@ final class WindowManager {
                     let display = displays.firstIndex { $0.id == left.display } ?? tile.display
                     let workspace = displays[display].spaces.rejoin(tile.id, from: left.departure, focus: tile.id == focusedID)
                     if !isActive((display, workspace)) { hide([tile.id]) }
+                } else if let place = restartPlace(for: tile.id) {
+                    let workspace = displays[place.display].spaces.rejoin(tile.id, from: place.departure, focus: tile.id == focusedID)
+                    if !isActive((place.display, workspace)) { hide([tile.id]) }
                 } else {
                     let landed = addTile(tile.id, on: tile.display, focus: tile.id == focusedID, atEnd: false)
                     if !isActive(landed) { hide([tile.id]) }
@@ -776,6 +910,8 @@ final class WindowManager {
         lastObserved[id] = nil
         motions[id] = nil
         hiddenWindows.remove(id)
+        focusHistory.removeAll { $0 == id }
+        if scratchpad == id { scratchpad = nil }
     }
 
     private func onScreenWindowIDs() -> Set<WindowID> {
@@ -897,6 +1033,14 @@ final class WindowManager {
         if windows[id] != nil { checkFullScreen(id) }
         updateForegroundFullScreen()
         if let lock = focusLock, Date() < lock.until, lock.window != id { return }
+        // ⌘-Tab or a click in the Dock reached the hidden scratchpad: bring it out. (Hidden while
+        // focused, it still has focus until something else takes it.)
+        let focusMoved = focusHistory.last != id
+        if windows[id] != nil { noteFocus(id) }
+        if id == scratchpad, !scratchpadShown, focusMoved {
+            showScratchpad()
+            return
+        }
         guard let display = displayIndex(of: id), let index = displays[display].spaces.index(of: id) else {
             if windows[id] == nil, let pid = focusedWindowElement()?.pid { scheduleReconcile(pid) }
             return
@@ -926,6 +1070,28 @@ final class WindowManager {
         refreshOverlays()
         // Apps raise windows asynchronously; restack once the raise has landed.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.refreshOverlays() }
+    }
+
+    private func noteFocus(_ id: WindowID) {
+        guard focusHistory.last != id else { return }
+        focusHistory.removeAll { $0 == id }
+        focusHistory.append(id)
+        if focusHistory.count > 20 { focusHistory.removeFirst() }
+    }
+
+    /// Goes back to the window that had focus before this one, on whichever workspace or display
+    /// it is. Pressed again, it comes back.
+    private func focusPreviousWindow() {
+        let current = focusedWindowID()
+        let target = focusHistory.reversed().first { id in
+            id != current && windows[id].map { !$0.element.isMinimized } == true
+        }
+        guard let target else { return NSSound.beep() }
+        if displayIndex(of: target) != nil {
+            focusFromOverview(target)
+        } else {
+            focus(target)
+        }
     }
 
     // MARK: Workspaces
@@ -1171,6 +1337,63 @@ final class WindowManager {
     // MARK: Applying frames
 
     /// Whether layout changes slide into place. Read each time so the setting applies at once.
+    // MARK: Focus follows mouse
+
+    static var focusFollowsMouse: Bool {
+        get { UserDefaults.standard.bool(forKey: "focusFollowsMouse") }
+        set { UserDefaults.standard.set(newValue, forKey: "focusFollowsMouse") }
+    }
+
+    /// Watches the pointer while focus follows the mouse and tiling is on.
+    func updateMouseMonitor() {
+        let wanted = isEnabled && Self.focusFollowsMouse
+        if wanted, mouseMonitor == nil {
+            mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
+                MainActor.assumeIsolated { self?.pointerMoved() }
+            }
+        } else if !wanted, let monitor = mouseMonitor {
+            NSEvent.removeMonitor(monitor)
+            mouseMonitor = nil
+            hoverWork?.cancel()
+        }
+    }
+
+    /// Focuses the tiled window under the pointer once it rests there briefly.
+    private func pointerMoved() {
+        hoverWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.focusWindowUnderPointer() }
+        hoverWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: work)
+    }
+
+    /// Only a tiled window fully on screen, and the frontmost window there, takes focus: the
+    /// strip never scrolls under the pointer, and floating windows, menus and other apps' panels
+    /// in front keep the pointer to themselves.
+    private func focusWindowUnderPointer() {
+        // Glide's own windows (overview, Settings) keep it active while they're up.
+        guard isEnabled, !NSApp.isActive, NSEvent.pressedMouseButtons == 0, !isSwiping, motions.isEmpty, draggedWindow == nil else { return }
+        let point = ScreenGeometry.axPoint(fromCocoa: NSEvent.mouseLocation)
+        guard let display = DisplayGeometry.display(at: point, in: displayFrames),
+              let target = frontmostWindow(at: point), target != focusedWindowID(),
+              displays[display].spaces.active.placements().contains(where: { $0.window == target && $0.visibility == .visible }) else { return }
+        focusFromOverview(target)
+    }
+
+    /// The window in front at a point, leaving out Glide's own overlays.
+    private func frontmostWindow(at point: CGPoint) -> WindowID? {
+        guard let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return nil }
+        let ownPID = ProcessInfo.processInfo.processIdentifier
+        for entry in info {
+            guard let pid = entry[kCGWindowOwnerPID as String] as? pid_t, pid != ownPID,
+                  let bounds = (entry[kCGWindowBounds as String] as? NSDictionary).flatMap({ CGRect(dictionaryRepresentation: $0 as CFDictionary) }),
+                  bounds.contains(point) else { continue }
+            let layer = entry[kCGWindowLayer as String] as? Int ?? 0
+            // Menus, the Dock and other system panels sit above the normal layer.
+            return layer == 0 ? entry[kCGWindowNumber as String] as? WindowID : nil
+        }
+        return nil
+    }
+
     static var animatesWindows: Bool {
         get { UserDefaults.standard.object(forKey: "animateWindows") as? Bool ?? true }
         set { UserDefaults.standard.set(newValue, forKey: "animateWindows") }

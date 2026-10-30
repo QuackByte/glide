@@ -2,6 +2,20 @@
 
 Novedades de cada versión de Glide para Mac. Glide muestra las entradas nuevas una sola vez tras actualizarse, y las notas de cada versión en GitHub salen de aquí. Esta es una traducción de CHANGELOG.md, que es el original.
 
+## 0.12.0 — 2026-10-30
+
+### Novedades
+
+- **Ir y volver.** ⌃⌥\` vuelve a la ventana en la que estabas antes, en cualquier escritorio o pantalla, y ⌃⌥⇥ al último escritorio. Pulsa cualquiera otra vez para regresar.
+- **H J K L para las direcciones.** Ajustes › Atajos › Teclas de dirección cambia las flechas de los atajos de enfocar y mover por H, J, K y L, como en vim. Los atajos de pantallas siguen con las flechas.
+- **Tus propios anchos de columna.** Ajustes › General › Anchos de columna acepta los anchos que recorre ⌃⌥R, en porcentaje de la pantalla. Las ventanas nuevas se abren con el más cercano a 50.
+- **Iguala las columnas en pantalla.** ⌃⌥E da a las columnas que se ven, aunque sea en parte, el mismo ancho para que llenen juntas la pantalla. En el layout en mosaico, restablece las divisiones.
+- **El foco sigue al ratón,** si lo activas en Ajustes › General. Al dejar el puntero sobre una ventana en mosaico que se ve entera, se enfoca; las ventanas flotantes, los menús y el Dock no se tocan.
+- **Ventana rápida.** ⌃⌥⇧S convierte la ventana enfocada (un terminal, notas, un chat) en la ventana rápida y la oculta. ⌃⌥S la muestra, flotando en el centro de la pantalla, y la vuelve a ocultar.
+- **Línea de comandos y enlaces.** `glide focus-workspace 3`, o un enlace glide://focus-workspace-3, ejecuta cualquier acción desde scripts, Raycast, Alfred, Stream Deck o Atajos. Ajustes › General › Herramienta de línea de comandos copia el comando que instala `glide`.
+- **Tu layout vuelve tras reiniciar.** Glide ahora reconoce las ventanas por su app y su título después de reiniciar el Mac, y devuelve cada una a su escritorio, con su ancho y en su pila, a medida que se abre.
+- **Exporta e importa los ajustes.** Ajustes › General › Archivo de ajustes guarda los atajos, las reglas de apps, el layout y la apariencia en un archivo JSON legible, y lo carga en otro Mac.
+
 ## 0.11.2 — 2026-10-30
 
 ### Novedades

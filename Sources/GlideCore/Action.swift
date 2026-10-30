@@ -8,6 +8,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case focusWindowDown
     case focusFirstColumn
     case focusLastColumn
+    case focusPreviousWindow
     case moveColumnLeft
     case moveColumnRight
     case moveWindowUp
@@ -19,10 +20,12 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case toggleFullWidth
     case toggleTabbed
     case centerColumn
+    case evenOutColumns
     case focusPreviousWorkspace
     case focusNextWorkspace
     case moveColumnToPreviousWorkspace
     case moveColumnToNextWorkspace
+    case focusLastWorkspace
     case focusWorkspace1
     case focusWorkspace2
     case focusWorkspace3
@@ -48,6 +51,8 @@ public enum Action: String, CaseIterable, Codable, Sendable {
     case toggleOverview
     case showShortcuts
     case toggleFloating
+    case toggleScratchpad
+    case moveToScratchpad
     case toggleTiling
     case toggleLayout
     case cycleTiledColumns
@@ -87,6 +92,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .focusWindowDown: String(localized: "Focus Window Down", bundle: #bundle)
         case .focusFirstColumn: String(localized: "Focus First Column", bundle: #bundle)
         case .focusLastColumn: String(localized: "Focus Last Column", bundle: #bundle)
+        case .focusPreviousWindow: String(localized: "Focus Previously Focused Window", bundle: #bundle)
         case .moveColumnLeft: String(localized: "Move Column Left", bundle: #bundle)
         case .moveColumnRight: String(localized: "Move Column Right", bundle: #bundle)
         case .moveWindowUp: String(localized: "Move Window Up", bundle: #bundle)
@@ -98,10 +104,12 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .toggleFullWidth: String(localized: "Toggle Full Width", bundle: #bundle)
         case .toggleTabbed: String(localized: "Toggle Tabbed Column", bundle: #bundle)
         case .centerColumn: String(localized: "Center Column", bundle: #bundle)
+        case .evenOutColumns: String(localized: "Even Out Columns on Screen", bundle: #bundle)
         case .focusPreviousWorkspace: String(localized: "Focus Previous Workspace", bundle: #bundle)
         case .focusNextWorkspace: String(localized: "Focus Next Workspace", bundle: #bundle)
         case .moveColumnToPreviousWorkspace: String(localized: "Move Window to Previous Workspace", bundle: #bundle)
         case .moveColumnToNextWorkspace: String(localized: "Move Window to Next Workspace", bundle: #bundle)
+        case .focusLastWorkspace: String(localized: "Back to Last Workspace", bundle: #bundle)
         case .focusDisplayLeft: String(localized: "Focus Display Left", bundle: #bundle)
         case .focusDisplayRight: String(localized: "Focus Display Right", bundle: #bundle)
         case .moveColumnToDisplayLeft: String(localized: "Move Column to Display Left", bundle: #bundle)
@@ -109,6 +117,8 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .toggleOverview: String(localized: "Show or Hide Overview", bundle: #bundle)
         case .showShortcuts: String(localized: "Show Shortcuts", bundle: #bundle)
         case .toggleFloating: String(localized: "Toggle Floating", bundle: #bundle)
+        case .toggleScratchpad: String(localized: "Show or Hide Scratchpad", bundle: #bundle)
+        case .moveToScratchpad: String(localized: "Make Window the Scratchpad", bundle: #bundle)
         case .toggleTiling: String(localized: "Enable or Disable Tiling", bundle: #bundle)
         case .toggleLayout: String(localized: "Switch Between Scrolling and Tiled", bundle: #bundle)
         case .cycleTiledColumns: String(localized: "Switch Between 2 and 3 Columns", bundle: #bundle)
@@ -123,15 +133,16 @@ public enum Action: String, CaseIterable, Codable, Sendable {
 
     public var group: Group {
         switch self {
-        case .focusColumnLeft, .focusColumnRight, .focusWindowUp, .focusWindowDown, .focusFirstColumn, .focusLastColumn:
+        case .focusColumnLeft, .focusColumnRight, .focusWindowUp, .focusWindowDown, .focusFirstColumn, .focusLastColumn,
+             .focusPreviousWindow:
             .focus
         case .moveColumnLeft, .moveColumnRight, .moveWindowUp, .moveWindowDown, .consumeOrExpelLeft, .consumeOrExpelRight:
             .move
-        case .cycleColumnWidth, .cycleColumnWidthBackward, .toggleFullWidth, .toggleTabbed, .centerColumn:
+        case .cycleColumnWidth, .cycleColumnWidthBackward, .toggleFullWidth, .toggleTabbed, .centerColumn, .evenOutColumns:
             .column
         case .focusDisplayLeft, .focusDisplayRight, .moveColumnToDisplayLeft, .moveColumnToDisplayRight:
             .displays
-        case .toggleOverview, .showShortcuts, .toggleFloating, .toggleTiling:
+        case .toggleOverview, .showShortcuts, .toggleFloating, .toggleTiling, .toggleScratchpad, .moveToScratchpad:
             .general
         default:
             .workspaces
@@ -145,6 +156,7 @@ public enum Action: String, CaseIterable, Codable, Sendable {
         case .focusNextWorkspace: (.next, false)
         case .moveColumnToPreviousWorkspace: (.previous, true)
         case .moveColumnToNextWorkspace: (.next, true)
+        case .focusLastWorkspace: (.last, false)
         case .focusWorkspace1: (.index(0), false)
         case .focusWorkspace2: (.index(1), false)
         case .focusWorkspace3: (.index(2), false)
@@ -169,6 +181,27 @@ public enum Action: String, CaseIterable, Codable, Sendable {
 }
 
 extension Action {
+    /// The name the command line and `glide://` URLs use: the raw value in kebab case, e.g.
+    /// "focus-column-left" or "focus-workspace-3".
+    public var commandName: String {
+        var name = ""
+        var previous: Character?
+        for character in rawValue {
+            if let previous, character.isUppercase || (character.isNumber && !previous.isNumber) { name.append("-") }
+            name.append(contentsOf: character.lowercased())
+            previous = character
+        }
+        return name
+    }
+
+    /// Reads a command name, case and separators ignored: "focus-column-left", "focus_column_left"
+    /// and "focusColumnLeft" all work.
+    public init?(commandName: String) {
+        let key = commandName.lowercased().filter { $0.isLetter || $0.isNumber }
+        guard let action = Action.allCases.first(where: { $0.rawValue.lowercased() == key }) else { return nil }
+        self = action
+    }
+
     /// For display actions: which way (-1 left, +1 right), and whether the focused column goes along.
     public var displayCommand: (direction: Int, movesColumn: Bool)? {
         switch self {
@@ -186,4 +219,6 @@ public enum WorkspaceTarget: Equatable, Sendable {
     case index(Int)
     case previous
     case next
+    /// The workspace that was active before this one, for going back and forth.
+    case last
 }

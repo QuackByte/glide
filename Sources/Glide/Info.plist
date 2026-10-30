@@ -8,5 +8,16 @@
 	<string>1HMn0Zspr9ZPEGHwpMglUGgo8W01dAzOLZoIPxDlGgc=</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>dev.quackbyte.glide.command</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>glide</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
