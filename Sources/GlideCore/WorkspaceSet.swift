@@ -128,6 +128,15 @@ public struct WorkspaceSet: Equatable, Sendable {
         public var widthIndex: Int
         public var isFullWidth: Bool
         public var customWidth: CGFloat?
+
+        public init(workspace: Int, sibling: WindowID?, leftNeighbour: WindowID?, widthIndex: Int, isFullWidth: Bool, customWidth: CGFloat?) {
+            self.workspace = workspace
+            self.sibling = sibling
+            self.leftNeighbour = leftNeighbour
+            self.widthIndex = widthIndex
+            self.isFullWidth = isFullWidth
+            self.customWidth = customWidth
+        }
     }
 
     public func departure(of window: WindowID) -> Departure? {

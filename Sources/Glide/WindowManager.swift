@@ -68,6 +68,9 @@ final class WindowManager {
     private var workspaceObservers: [NSObjectProtocol] = []
     /// The layout to rebuild when tiling starts, saved when it stops or after changes.
     private var snapshot: StripSnapshot?
+    /// The layout from before the Mac restarted, waiting for its windows to open again.
+    private var restartPlan: RestartPlan?
+    private var restartPlanExpiry: Date?
     private var saveWork: DispatchWorkItem?
     static let snapshotKey = "stripSnapshot"
     private let decorations = FocusDecorations()
@@ -215,6 +218,7 @@ final class WindowManager {
         fullScreenWindows = []
         foregroundFullScreenDisplay = nil
         departures = [:]
+        restartPlan = nil
         focusHistory = []
         isEnabled = false
         updateMouseMonitor()
@@ -255,7 +259,11 @@ final class WindowManager {
     private func saveSnapshot() {
         saveWork?.cancel()
         guard isEnabled, let bootTime = Self.bootTime else { return }
-        let snapshot = StripSnapshot(displays: displays.map { ($0.id, $0.spaces) }, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
+        var snapshot = StripSnapshot(displays: displays.map { ($0.id, $0.spaces) }, userFloating: userFloating, userTiled: userTiled, bootTime: bootTime)
+        snapshot.identities = snapshot.allWindows.compactMap { id in
+            guard let bundleID = bundleID(of: id) else { return nil }
+            return WindowIdentity(window: id, bundleID: bundleID, title: windows[id]?.element.value(kAXTitleAttribute) ?? "")
+        }
         self.snapshot = snapshot
         if let data = try? JSONEncoder().encode(snapshot) {
             UserDefaults.standard.set(data, forKey: Self.snapshotKey)
@@ -268,11 +276,38 @@ final class WindowManager {
             snapshot = try? JSONDecoder().decode(StripSnapshot.self, from: data)
         }
         guard let saved = snapshot, let bootTime = Self.bootTime, abs(saved.bootTime.timeIntervalSince(bootTime)) < 1 else {
+            // Saved before the Mac restarted: its windows have new IDs, so find them by app and title as they open.
+            if let saved = snapshot, let plan = RestartPlan(snapshot: saved, mainDisplay: displays[0].id) {
+                restartPlan = plan
+                restartPlanExpiry = Date().addingTimeInterval(Self.restartPlanLifetime)
+                for index in displays.indices {
+                    if let layouts = plan.layouts[displays[index].id] {
+                        displays[index].spaces.restore(strips: [], activeIndex: 0, layouts: layouts.layouts, tiledColumns: layouts.tiledColumns)
+                    }
+                }
+                log.debug("restoring the layout from before the restart as windows open")
+            }
             snapshot = nil
             return
         }
         userFloating = Set(saved.userFloating)
         userTiled = Set(saved.userTiled)
+    }
+
+    /// How long after Glide starts windows from before a restart are still put back where they were.
+    private static let restartPlanLifetime: TimeInterval = 600
+
+    /// Where a window that just opened was before the Mac restarted, if the restart plan knows it.
+    private func restartPlace(for id: WindowID) -> (display: Int, departure: WorkspaceSet.Departure)? {
+        guard restartPlan != nil else { return nil }
+        if let expiry = restartPlanExpiry, Date() > expiry {
+            restartPlan = nil
+            return nil
+        }
+        guard let bundleID = bundleID(of: id),
+              let place = restartPlan?.claim(id, bundleID: bundleID, title: windows[id]?.element.value(kAXTitleAttribute) ?? "") else { return nil }
+        if restartPlan?.isEmpty == true { restartPlan = nil }
+        return (displays.firstIndex { $0.id == place.display } ?? 0, place.departure)
     }
 
     private static let bootTime: Date? = {
@@ -689,7 +724,12 @@ final class WindowManager {
                 hide(inactiveWindows)
             } else {
                 for tile in ordered {
-                    let landed = addTile(tile.id, on: tile.display, focus: false, atEnd: true)
+                    let landed: (display: Int, workspace: Int)
+                    if let place = restartPlace(for: tile.id) {
+                        landed = (place.display, displays[place.display].spaces.rejoin(tile.id, from: place.departure, focus: false))
+                    } else {
+                        landed = addTile(tile.id, on: tile.display, focus: false, atEnd: true)
+                    }
                     if !isActive(landed) { hide([tile.id]) }
                 }
             }
@@ -699,6 +739,9 @@ final class WindowManager {
                     let display = displays.firstIndex { $0.id == left.display } ?? tile.display
                     let workspace = displays[display].spaces.rejoin(tile.id, from: left.departure, focus: tile.id == focusedID)
                     if !isActive((display, workspace)) { hide([tile.id]) }
+                } else if let place = restartPlace(for: tile.id) {
+                    let workspace = displays[place.display].spaces.rejoin(tile.id, from: place.departure, focus: tile.id == focusedID)
+                    if !isActive((place.display, workspace)) { hide([tile.id]) }
                 } else {
                     let landed = addTile(tile.id, on: tile.display, focus: tile.id == focusedID, atEnd: false)
                     if !isActive(landed) { hide([tile.id]) }

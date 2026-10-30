@@ -66,8 +66,10 @@ public struct StripSnapshot: Codable, Equatable, Sendable {
     /// Windows the user floated, and floating-by-default windows the user tiled.
     public var userFloating: [WindowID]
     public var userTiled: [WindowID]
-    /// Window IDs are only unique until the Mac restarts, so a snapshot from an earlier boot is ignored.
+    /// Window IDs are only unique until the Mac restarts, so a snapshot from an earlier boot is
+    /// only found again through each window's app and title. nil in snapshots saved before that.
     public var bootTime: Date
+    public var identities: [WindowIdentity]?
 
     public init(strip: Strip, userFloating: Set<WindowID>, userTiled: Set<WindowID>, bootTime: Date) {
         columns = strip.columns.map(ColumnState.init)
