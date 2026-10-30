@@ -1,12 +1,30 @@
 import Foundation
 
+/// The modifier every default shortcut is built on: the "Glide" chord.
+public enum GlideModifier: String, CaseIterable, Sendable {
+    /// ⌃⌥: leaves text editing and typed characters alone.
+    case controlOption
+    /// ⌥ alone: easier to press, but takes over ⌥ + arrows (word jumps) and ⌥ + letters (special characters).
+    case option
+
+    public var modifiers: KeyModifiers {
+        switch self {
+        case .controlOption: [.control, .option]
+        case .option: .option
+        }
+    }
+}
+
 /// Which shortcut triggers which action: the defaults plus any user overrides.
 public struct Keymap: Equatable, Sendable {
-    /// Defaults are ⌃⌥ for focus/commands and ⌃⌥⇧ for "move", plus ⌘ for displays. See the README
-    /// for the reasoning.
-    public static let defaults: [Action: KeyCombo] = {
-        let hyper: KeyModifiers = [.control, .option]
-        let move: KeyModifiers = [.control, .option, .shift]
+    /// The defaults for the standard ⌃⌥ chord.
+    public static let defaults = defaults(for: .controlOption)
+
+    /// Defaults are the Glide modifier for focus/commands and the modifier plus ⇧ for "move", plus ⌘
+    /// for displays. See the README for the reasoning.
+    public static func defaults(for modifier: GlideModifier) -> [Action: KeyCombo] {
+        let hyper = modifier.modifiers
+        let move = hyper.union(.shift)
         var map: [Action: KeyCombo] = [
             .focusColumnLeft: KeyCombo(KeyCode.leftArrow, hyper),
             .focusColumnRight: KeyCombo(KeyCode.rightArrow, hyper),
@@ -40,25 +58,32 @@ public struct Keymap: Equatable, Sendable {
             .moveColumnToDisplayLeft: KeyCombo(KeyCode.leftArrow, move.union(.command)),
             .moveColumnToDisplayRight: KeyCombo(KeyCode.rightArrow, move.union(.command)),
         ]
-        // ⌃⌥1…9 switch workspaces; ⌃⌥⇧1…9 send the focused window there.
+        // Modifier + 1…9 switch workspaces; with ⇧ they send the focused window there.
         for (index, key) in KeyCode.digits.enumerated() {
             let number = index + 1
             if let focus = Action(rawValue: "focusWorkspace\(number)") { map[focus] = KeyCombo(key, hyper) }
             if let send = Action(rawValue: "moveColumnToWorkspace\(number)") { map[send] = KeyCombo(key, move) }
         }
         return map
-    }()
+    }
 
+    /// The modifier the defaults are built on.
+    public private(set) var modifier: GlideModifier
     /// Overrides of the defaults. A nil value means the user removed the shortcut.
     public private(set) var overrides: [Action: KeyCombo?]
 
-    public init(overrides: [Action: KeyCombo?] = [:]) {
+    public init(modifier: GlideModifier = .controlOption, overrides: [Action: KeyCombo?] = [:]) {
+        self.modifier = modifier
         self.overrides = overrides
+    }
+
+    public func defaultCombo(for action: Action) -> KeyCombo? {
+        Self.defaults(for: modifier)[action]
     }
 
     public func combo(for action: Action) -> KeyCombo? {
         if let override = overrides[action] { return override }
-        return Self.defaults[action]
+        return defaultCombo(for: action)
     }
 
     public func action(for combo: KeyCombo) -> Action? {
@@ -86,7 +111,7 @@ public struct Keymap: Equatable, Sendable {
     }
 
     public mutating func reset(_ action: Action) {
-        let displaced = Action.allCases.filter { $0 != action && combo(for: $0) == Self.defaults[action] }
+        let displaced = Action.allCases.filter { $0 != action && combo(for: $0) == defaultCombo(for: action) }
         overrides[action] = nil
         for other in displaced { store(nil, for: other) }
     }
@@ -95,8 +120,23 @@ public struct Keymap: Equatable, Sendable {
         overrides = [:]
     }
 
+    /// Rebuilds the defaults on another modifier. Shortcuts the user set keep working, and win
+    /// over a new default that lands on the same keys.
+    public mutating func setModifier(_ modifier: GlideModifier) {
+        let custom = overrides
+        self.modifier = modifier
+        overrides = [:]
+        for (action, combo) in custom {
+            if let combo {
+                set(combo, for: action)
+            } else {
+                store(nil, for: action)
+            }
+        }
+    }
+
     private mutating func store(_ combo: KeyCombo?, for action: Action) {
-        if combo == Self.defaults[action] {
+        if combo == defaultCombo(for: action) {
             overrides[action] = nil
         } else {
             overrides[action] = .some(combo)
@@ -116,7 +156,7 @@ public struct Keymap: Equatable, Sendable {
         return result
     }
 
-    public init(storage: [String: String]) {
+    public init(modifier: GlideModifier = .controlOption, storage: [String: String]) {
         var overrides: [Action: KeyCombo?] = [:]
         for (key, value) in storage {
             guard let action = Action(rawValue: key) else { continue }
@@ -126,7 +166,7 @@ public struct Keymap: Equatable, Sendable {
                 overrides[action] = .some(combo)
             }
         }
-        self.init(overrides: overrides)
+        self.init(modifier: modifier, overrides: overrides)
     }
 }
 

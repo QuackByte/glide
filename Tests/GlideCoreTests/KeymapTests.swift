@@ -85,6 +85,39 @@ final class KeymapTests: XCTestCase {
         XCTAssertEqual(keymap, Keymap())
     }
 
+    func testOptionModifierDefaults() {
+        let defaults = Keymap.defaults(for: .option)
+        XCTAssertEqual(Set(defaults.keys), Set(Keymap.defaults.keys))
+        XCTAssertEqual(Set(defaults.values).count, defaults.count)
+        XCTAssertEqual(defaults[.focusColumnLeft]?.description, "⌥←")
+        XCTAssertEqual(defaults[.moveColumnRight]?.description, "⌥⇧→")
+        XCTAssertEqual(defaults[.focusDisplayLeft]?.description, "⌥⌘←")
+        XCTAssertEqual(defaults[.focusWorkspace1], KeyCombo(18, .option))
+    }
+
+    func testChangingModifierKeepsCustomShortcuts() {
+        var keymap = Keymap()
+        keymap.set(KeyCombo(KeyCode.c, .option), for: .toggleOverview)
+        keymap.set(nil, for: .toggleTiling)
+        keymap.setModifier(.option)
+        XCTAssertEqual(keymap.combo(for: .focusColumnLeft), KeyCombo(KeyCode.leftArrow, .option))
+        XCTAssertNil(keymap.combo(for: .toggleTiling))
+        // The custom ⌥C wins over centerColumn's new default.
+        XCTAssertEqual(keymap.action(for: KeyCombo(KeyCode.c, .option)), .toggleOverview)
+        XCTAssertNil(keymap.combo(for: .centerColumn))
+        XCTAssertEqual(Set(keymap.bindings.map(\.combo)).count, keymap.bindings.count)
+
+        keymap.reset(.centerColumn)
+        XCTAssertEqual(keymap.combo(for: .centerColumn), KeyCombo(KeyCode.c, .option))
+        XCTAssertNil(keymap.combo(for: .toggleOverview))
+    }
+
+    func testModifierSurvivesStorage() {
+        var keymap = Keymap(modifier: .option)
+        keymap.set(KeyCombo(4, [.control, .option, .command]), for: .focusColumnLeft)
+        XCTAssertEqual(Keymap(modifier: .option, storage: keymap.storage), keymap)
+    }
+
     func testCarbonFlags() {
         XCTAssertEqual(KeyModifiers([.control, .option]).carbonFlags, 0x1800)
         XCTAssertEqual(KeyModifiers([.command, .shift]).carbonFlags, 0x0300)

@@ -2387,6 +2387,100 @@
         }
       }
     },
+    "Every default shortcut uses ⌃⌥, and ⇧ to move windows. Shortcuts you changed stay as they are." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Standard-Tastenkürzel verwenden ⌃⌥, mit ⇧ zum Bewegen von Fenstern. Tastenkürzel, die du geändert hast, bleiben unverändert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los atajos predeterminados usan ⌃⌥, y ⇧ para mover ventanas. Los atajos que hayas cambiado se quedan como están."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les raccourcis par défaut utilisent ⌃⌥, et ⇧ pour déplacer les fenêtres. Les raccourcis que vous avez modifiés restent tels quels."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての標準ショートカットで⌃⌥を使い、ウインドウの移動には⇧を加えます。変更したショートカットはそのまま残ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 기본 단축키는 ⌃⌥를 사용하며, 윈도우를 이동할 때는 ⇧를 함께 누릅니다. 변경한 단축키는 그대로 유지됩니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos os atalhos padrão usam ⌃⌥, e ⇧ para mover janelas. Os atalhos que você mudou continuam como estão."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有默认快捷键都使用 ⌃⌥，加 ⇧ 可移动窗口。你更改过的快捷键保持不变。"
+          }
+        }
+      }
+    },
+    "Every default shortcut uses ⌥, and ⇧ to move windows. ⌥ + arrows no longer jump by word in text, and ⌥ + letters and digits no longer type special characters like é or ©. Shortcuts you changed stay as they are." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Standard-Tastenkürzel verwenden ⌥, mit ⇧ zum Bewegen von Fenstern. ⌥ + Pfeiltasten springen in Text nicht mehr wortweise, und ⌥ + Buchstaben und Ziffern tippen keine Sonderzeichen wie é oder © mehr. Tastenkürzel, die du geändert hast, bleiben unverändert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los atajos predeterminados usan ⌥, y ⇧ para mover ventanas. ⌥ + flechas ya no saltan de palabra en palabra en el texto, y ⌥ + letras y números ya no escriben caracteres especiales como é o ©. Los atajos que hayas cambiado se quedan como están."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les raccourcis par défaut utilisent ⌥, et ⇧ pour déplacer les fenêtres. ⌥ + flèches ne sautent plus de mot en mot dans le texte, et ⌥ + lettres et chiffres ne tapent plus de caractères spéciaux comme é ou ©. Les raccourcis que vous avez modifiés restent tels quels."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての標準ショートカットで⌥を使い、ウインドウの移動には⇧を加えます。テキスト内で⌥＋矢印キーによる単語単位の移動ができなくなり、⌥＋文字や数字でéや©などの特殊文字を入力できなくなります。変更したショートカットはそのまま残ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 기본 단축키는 ⌥를 사용하며, 윈도우를 이동할 때는 ⇧를 함께 누릅니다. 텍스트에서 ⌥ + 화살표로 단어 단위 이동을 할 수 없게 되고, ⌥ + 문자나 숫자로 é나 © 같은 특수 문자를 입력할 수 없게 됩니다. 변경한 단축키는 그대로 유지됩니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos os atalhos padrão usam ⌥, e ⇧ para mover janelas. ⌥ + setas deixam de pular de palavra em palavra no texto, e ⌥ + letras e números deixam de digitar caracteres especiais como é ou ©. Os atalhos que você mudou continuam como estão."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有默认快捷键都使用 ⌥，加 ⇧ 可移动窗口。⌥ + 箭头键将不再在文本中按单词跳转，⌥ + 字母和数字也将不再输入 é 或 © 等特殊字符。你更改过的快捷键保持不变。"
+          }
+        }
+      }
+    },
     "Filter" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2712,6 +2806,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Glide %@"
+          }
+        }
+      }
+    },
+    "Glide modifier" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide-Modifikatortaste"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tecla modificadora de Glide"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touche de modification de Glide"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glideの修飾キー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide 보조 키"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tecla modificadora do Glide"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glide 修饰键"
           }
         }
       }
@@ -4361,49 +4502,49 @@
         }
       }
     },
-    "Rules apply as windows open. Float and tile take effect right away; width and workspace apply to new windows. ⌃⌥V still floats or tiles a single window." : {
+    "Rules apply as windows open. Float and tile take effect right away; width and workspace apply to new windows. %@ still floats or tiles a single window." : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Regeln gelten, sobald Fenster geöffnet werden. Schweben und Kacheln wirken sofort; Breite und Arbeitsbereich gelten für neue Fenster. Mit ⌃⌥V lässt sich weiterhin ein einzelnes Fenster schweben lassen oder kacheln."
+            "value" : "Regeln gelten, sobald Fenster geöffnet werden. Schweben und Kacheln wirken sofort; Breite und Arbeitsbereich gelten für neue Fenster. Mit %@ lässt sich weiterhin ein einzelnes Fenster schweben lassen oder kacheln."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las reglas se aplican al abrirse las ventanas. Flotante y mosaico surten efecto al momento; el ancho y el escritorio se aplican a las ventanas nuevas. ⌃⌥V sigue haciendo flotar o poniendo en mosaico una sola ventana."
+            "value" : "Las reglas se aplican al abrirse las ventanas. Flotante y mosaico surten efecto al momento; el ancho y el escritorio se aplican a las ventanas nuevas. %@ sigue haciendo flotar o poniendo en mosaico una sola ventana."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les règles s’appliquent à l’ouverture des fenêtres. Flottante et mosaïque prennent effet immédiatement ; la largeur et le bureau s’appliquent aux nouvelles fenêtres. ⌃⌥V permet toujours de mettre une seule fenêtre en flottant ou en mosaïque."
+            "value" : "Les règles s’appliquent à l’ouverture des fenêtres. Flottante et mosaïque prennent effet immédiatement ; la largeur et le bureau s’appliquent aux nouvelles fenêtres. %@ permet toujours de mettre une seule fenêtre en flottant ou en mosaïque."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ルールはウインドウを開いたときに適用されます。フローティングとタイル表示はすぐに反映され、幅とワークスペースは新しいウインドウに適用されます。⌃⌥Vで個別のウインドウをフローティングにしたり、タイル表示に戻したりすることもできます。"
+            "value" : "ルールはウインドウを開いたときに適用されます。フローティングとタイル表示はすぐに反映され、幅とワークスペースは新しいウインドウに適用されます。%@で個別のウインドウをフローティングにしたり、タイル表示に戻したりすることもできます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "규칙은 윈도우가 열릴 때 적용됩니다. 플로팅과 타일링은 즉시 적용되며, 너비와 워크스페이스는 새 윈도우에 적용됩니다. ⌃⌥V로는 여전히 윈도우 하나를 플로팅하거나 타일링할 수 있습니다."
+            "value" : "규칙은 윈도우가 열릴 때 적용됩니다. 플로팅과 타일링은 즉시 적용되며, 너비와 워크스페이스는 새 윈도우에 적용됩니다. %@로는 여전히 윈도우 하나를 플로팅하거나 타일링할 수 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "As regras são aplicadas quando as janelas abrem. Flutuante e mosaico valem na hora; largura e espaço de trabalho valem para as janelas novas. ⌃⌥V continua alternando uma única janela entre flutuante e mosaico."
+            "value" : "As regras são aplicadas quando as janelas abrem. Flutuante e mosaico valem na hora; largura e espaço de trabalho valem para as janelas novas. %@ continua alternando uma única janela entre flutuante e mosaico."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "规则会在窗口打开时应用。浮动和平铺会立即生效；宽度和工作区适用于新窗口。⌃⌥V 仍可让单个窗口浮动或平铺。"
+            "value" : "规则会在窗口打开时应用。浮动和平铺会立即生效；宽度和工作区适用于新窗口。%@ 仍可让单个窗口浮动或平铺。"
           }
         }
       }
@@ -5019,49 +5160,49 @@
         }
       }
     },
-    "Tilting the mouse wheel (or a thumb wheel) glides the strip. ⌃⌥ with the wheel always does, whatever this is set to." : {
+    "Tilting the mouse wheel (or a thumb wheel) glides the strip. %@ with the wheel always does, whatever this is set to." : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das seitliche Kippen des Mausrads (oder ein Daumenrad) bewegt das Band. ⌃⌥ mit dem Mausrad tut das immer, unabhängig von dieser Einstellung."
+            "value" : "Das seitliche Kippen des Mausrads (oder ein Daumenrad) bewegt das Band. %@ mit dem Mausrad tut das immer, unabhängig von dieser Einstellung."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inclinar la rueda del ratón (o una rueda para el pulgar) recorre la tira. ⌃⌥ con la rueda siempre lo hace, sea cual sea este ajuste."
+            "value" : "Inclinar la rueda del ratón (o una rueda para el pulgar) recorre la tira. %@ con la rueda siempre lo hace, sea cual sea este ajuste."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Incliner la molette de la souris (ou utiliser une molette pour le pouce) fait glisser la bande. ⌃⌥ avec la molette le fait toujours, quel que soit ce réglage."
+            "value" : "Incliner la molette de la souris (ou utiliser une molette pour le pouce) fait glisser la bande. %@ avec la molette le fait toujours, quel que soit ce réglage."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "マウスのホイール（または親指ホイール）を左右に倒すと、ストリップが滑らかに動きます。この設定にかかわらず、⌃⌥を押しながらホイールを回しても動かせます。"
+            "value" : "マウスのホイール（または親指ホイール）を左右に倒すと、ストリップが滑らかに動きます。この設定にかかわらず、%@を押しながらホイールを回しても動かせます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "마우스 휠(또는 엄지 휠)을 좌우로 기울이면 스트립이 이동합니다. 이 설정과 관계없이 ⌃⌥와 휠을 함께 사용하면 항상 이동합니다."
+            "value" : "마우스 휠(또는 엄지 휠)을 좌우로 기울이면 스트립이 이동합니다. 이 설정과 관계없이 %@와 휠을 함께 사용하면 항상 이동합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inclinar a roda do mouse (ou uma roda para o polegar) desliza a faixa. ⌃⌥ com a roda sempre faz isso, qualquer que seja este ajuste."
+            "value" : "Inclinar a roda do mouse (ou uma roda para o polegar) desliza a faixa. %@ com a roda sempre faz isso, qualquer que seja este ajuste."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "倾斜鼠标滚轮（或拇指滚轮）即可滑动条带。无论如何设置，⌃⌥ 加滚轮始终可以滑动条带。"
+            "value" : "倾斜鼠标滚轮（或拇指滚轮）即可滑动条带。无论如何设置，%@ 加滚轮始终可以滑动条带。"
           }
         }
       }
@@ -5677,49 +5818,49 @@
         }
       }
     },
-    "With ⌃⌥" : {
+    "With %@" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mit ⌃⌥"
+            "value" : "Mit %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Con ⌃⌥"
+            "value" : "Con %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avec ⌃⌥"
+            "value" : "Avec %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌃⌥を押しながら"
+            "value" : "%@を押しながら"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌃⌥ 사용 시"
+            "value" : "%@ 사용 시"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Com ⌃⌥"
+            "value" : "Com %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "使用 ⌃⌥"
+            "value" : "使用 %@"
           }
         }
       }
@@ -6284,6 +6425,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "⅔ 宽度"
+          }
+        }
+      }
+    },
+    "⌃⌥ Control-Option" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌃⌥ Control-Wahl"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌃⌥ Control-Opción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌃⌥ Contrôle-Option"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌃⌥ Control-Option"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌃⌥ Control-Option"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌃⌥ Control-Option"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌃⌥ Control-Option"
+          }
+        }
+      }
+    },
+    "⌥ Option" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Wahl"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Opción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Option"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Option"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Option"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Option"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Option"
           }
         }
       }

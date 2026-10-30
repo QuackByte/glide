@@ -108,6 +108,7 @@ struct SettingsView: View {
 
     var body: some View {
         let _ = controller.revision
+        let chord = controller.shortcuts.modifier.modifiers.symbols
         VStack(alignment: .leading, spacing: 12) {
             Form {
                 Section("General") {
@@ -174,10 +175,10 @@ struct SettingsView: View {
                         set: { controller.horizontalWheelMode = $0 }
                     )) {
                         Text("Always").tag(HorizontalWheelMode.always)
-                        Text("With ⌃⌥").tag(HorizontalWheelMode.withModifier)
+                        Text("With \(chord)").tag(HorizontalWheelMode.withModifier)
                         Text("Off").tag(HorizontalWheelMode.off)
                     }
-                    .help("Tilting the mouse wheel (or a thumb wheel) glides the strip. ⌃⌥ with the wheel always does, whatever this is set to.")
+                    .help("Tilting the mouse wheel (or a thumb wheel) glides the strip. \(chord) with the wheel always does, whatever this is set to.")
                     Toggle("Apps reopen where you keep them", isOn: Binding(
                         get: { WindowManager.remembersApps },
                         set: { WindowManager.remembersApps = $0 }
@@ -207,7 +208,30 @@ struct SettingsView: View {
 
                 AppearanceSection(controller: controller)
 
-                AppRulesSection(store: controller.appRules)
+                AppRulesSection(store: controller.appRules,
+                                floatCombo: controller.shortcuts.keymap.combo(for: .toggleFloating)?.description ?? String(localized: "A shortcut"))
+
+                Section {
+                    Picker("Glide modifier", selection: Binding(
+                        get: { controller.shortcuts.modifier },
+                        set: { recorder.stop(); controller.shortcuts.modifier = $0 }
+                    )) {
+                        Text("⌃⌥ Control-Option").tag(GlideModifier.controlOption)
+                        Text("⌥ Option").tag(GlideModifier.option)
+                    }
+                } header: {
+                    Text("Shortcuts")
+                } footer: {
+                    Group {
+                        if controller.shortcuts.modifier == .option {
+                            Text("Every default shortcut uses ⌥, and ⇧ to move windows. ⌥ + arrows no longer jump by word in text, and ⌥ + letters and digits no longer type special characters like é or ©. Shortcuts you changed stay as they are.")
+                        } else {
+                            Text("Every default shortcut uses ⌃⌥, and ⇧ to move windows. Shortcuts you changed stay as they are.")
+                        }
+                    }
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                }
 
                 ForEach(Action.Group.allCases, id: \.self) { group in
                     Section(group.title) {
@@ -239,6 +263,7 @@ struct SettingsView: View {
 
 private struct AppRulesSection: View {
     let store: RuleStore
+    let floatCombo: String
 
     var body: some View {
         Section {
@@ -258,7 +283,7 @@ private struct AppRulesSection: View {
         } header: {
             Text("App Rules")
         } footer: {
-            Text("Rules apply as windows open. Float and tile take effect right away; width and workspace apply to new windows. ⌃⌥V still floats or tiles a single window.")
+            Text("Rules apply as windows open. Float and tile take effect right away; width and workspace apply to new windows. \(floatCombo) still floats or tiles a single window.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -442,8 +467,8 @@ private struct ShortcutRow: View {
                 Image(systemName: "arrow.uturn.backward")
             }
             .buttonStyle(.borderless)
-            .help("Restore the default (\(Keymap.defaults[action]?.description ?? String(localized: "none")))")
-            .disabled(combo == Keymap.defaults[action])
+            .help("Restore the default (\(controller.shortcuts.keymap.defaultCombo(for: action)?.description ?? String(localized: "none")))")
+            .disabled(combo == controller.shortcuts.keymap.defaultCombo(for: action))
         }
     }
 }

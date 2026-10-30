@@ -2,6 +2,12 @@
 
 Novidades de cada versão do Glide para Mac. O Glide mostra as novas entradas uma vez após se atualizar, e as notas de cada versão no GitHub vêm daqui, então escreva para quem usa o Glide. Adicione uma entrada para cada mudança que vale a pena conhecer na próxima versão antes de criar a tag. Esta é uma tradução de CHANGELOG.md, que é o original.
 
+## 0.11.2 — 2026-10-30
+
+### Novidades
+
+- **Use só ⌥ como tecla modificadora do Glide.** Ajustes › Atalhos › Tecla modificadora do Glide troca todos os atalhos padrão de ⌃⌥ para ⌥, como fazem o AeroSpace e apps parecidos: ⌥→ foca à direita, ⌥⇧→ move a janela e ⌥ + roda desliza a faixa. Em troca, ⌥ + setas deixam de pular de palavra em palavra no texto, e ⌥ + letras e números deixam de digitar caracteres como é ou ©. Os atalhos que você mesmo mudou continuam como estão.
+
 ## 0.11.1 — 2026-10-20
 
 ### Mudanças

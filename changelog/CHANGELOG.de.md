@@ -2,6 +2,12 @@
 
 Neuigkeiten in jeder Version von Glide für Mac. Glide zeigt die neuen Einträge einmal nach einem Update an, und die Hinweise zu jedem Release auf GitHub stammen von hier. Dies ist eine Übersetzung von CHANGELOG.md, das Original ist die englische Datei.
 
+## 0.11.2 — 2026-10-30
+
+### Neu
+
+- **⌥ allein als Glide-Modifikatortaste.** Einstellungen › Tastenkürzel › Glide-Modifikatortaste stellt alle Standard-Tastenkürzel von ⌃⌥ auf ⌥ um, wie bei AeroSpace und ähnlichen Apps: ⌥→ fokussiert nach rechts, ⌥⇧→ verschiebt das Fenster, und ⌥ + Mausrad bewegt das Band. ⌥ + Pfeiltasten springen in Text dann nicht mehr wortweise, und ⌥ + Buchstaben und Ziffern tippen keine Zeichen wie é oder © mehr. Tastenkürzel, die du selbst geändert hast, bleiben unverändert.
+
 ## 0.11.1 — 2026-10-20
 
 ### Änderungen
